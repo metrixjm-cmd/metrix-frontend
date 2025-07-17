@@ -1,0 +1,50 @@
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Lista de Colaboradores</h4>
+  </div>
+
+  <table class="table table-bordered table-hover table-sm text-center align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Puesto</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let colaborador of colaboradores">
+        <td>
+          <img [src]="colaborador.fotoUrl || defaultImage" width="40" height="40" class="rounded-circle" />
+        </td>
+        <td>{{ colaborador.nombreCompleto }}</td>
+        <td>{{ colaborador.puesto }}</td>
+        <td>
+          <span class="badge" [ngClass]="rolClass(colaborador.rol)">
+            {{ colaborador.rol }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-sm" (click)="eliminar(colaborador.id)">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="card mt-4 p-3">
+    <h5>Agregar Colaborador</h5>
+    <input class="form-control mb-2" [(ngModel)]="colaborador.nombreCompleto" placeholder="Nombre completo">
+    <input class="form-control mb-2" [(ngModel)]="colaborador.puesto" placeholder="Puesto">
+    <select class="form-control mb-2" [(ngModel)]="colaborador.rol">
+      <option value="gerente">Gerente</option>
+      <option value="lider">Líder</option>
+      <option value="desarrollo">Desarrollo</option>
+    </select>
+    <input class="form-control mb-2" [(ngModel)]="colaborador.fotoUrl" placeholder="URL de la foto">
+    <button class="btn btn-success w-100" (click)="agregarColaborador()">Guardar</button>
+  </div>
+</div>
