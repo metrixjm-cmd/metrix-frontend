@@ -1,0 +1,74 @@
+<div style="max-width: 920px; margin: 24px auto; font-family: Arial, sans-serif;">
+  <h2>Books UI (Local)</h2>
+  <p style="color:#666; margin-top:-6px;">
+    API: <b>{{ apiBase }}</b>
+  </p>
+
+  <div style="border:1px solid #ddd; border-radius:10px; padding:16px; margin: 16px 0;">
+    <h3 style="margin-top:0;">{{ editingId ? 'Editar libro' : 'Nuevo libro' }}</h3>
+
+    <form [formGroup]="form" (ngSubmit)="save()" style="display:flex; gap:12px; flex-wrap:wrap;">
+      <input formControlName="title" placeholder="Título"
+             style="flex:1; min-width:260px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+      <input formControlName="author" placeholder="Autor"
+             style="flex:1; min-width:260px; padding:10px; border:1px solid #ccc; border-radius:8px;">
+
+      <button type="submit" [disabled]="form.invalid"
+              style="padding:10px 14px; border-radius:8px; border:1px solid #333; background:#333; color:#fff;">
+        {{ editingId ? 'Actualizar' : 'Guardar' }}
+      </button>
+
+      <button type="button" *ngIf="editingId" (click)="cancelEdit()"
+              style="padding:10px 14px; border-radius:8px; border:1px solid #888; background:#fff;">
+        Cancelar
+      </button>
+    </form>
+
+    <p *ngIf="error" style="margin:12px 0 0; color:#b00020;">
+      {{ error }}
+    </p>
+  </div>
+
+  <div style="border:1px solid #ddd; border-radius:10px; padding:16px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+      <h3 style="margin:0;">Listado</h3>
+      <button (click)="load()"
+              style="padding:10px 14px; border-radius:8px; border:1px solid #888; background:#fff;">
+        Recargar
+      </button>
+    </div>
+
+    <table width="100%" cellpadding="10" cellspacing="0" style="border-collapse:collapse; margin-top:12px;">
+      <thead>
+        <tr style="background:#f6f6f6; border-bottom:1px solid #eee;">
+          <th align="left">ID</th>
+          <th align="left">Título</th>
+          <th align="left">Autor</th>
+          <th align="left">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let b of books" style="border-bottom:1px solid #eee;">
+          <td>{{ b.id }}</td>
+          <td>{{ b.title }}</td>
+          <td>{{ b.author }}</td>
+          <td>
+            <button (click)="edit(b)" [disabled]="!b.id"
+                    style="margin-right:8px; padding:8px 10px; border-radius:8px; border:1px solid #444; background:#fff;">
+              Editar
+            </button>
+            <button (click)="remove(b)" [disabled]="!b.id"
+                    style="padding:8px 10px; border-radius:8px; border:1px solid #b00020; background:#fff; color:#b00020;">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="books.length === 0">
+          <td colspan="4" style="color:#666; padding:16px;">Sin datos.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
