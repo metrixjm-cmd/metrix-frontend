@@ -1,0 +1,149 @@
+<div class="p-6 max-w-2xl mx-auto">
+
+  <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3 mb-6">
+    <a routerLink="/training"
+       class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900">Nueva capacitación</h1>
+      <p class="text-sm text-stone-500">Asigna una sesión de formación a un colaborador</p>
+    </div>
+  </div>
+
+  <!-- ── Error ──────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── Formulario ─────────────────────────────────────────────────────── -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()"
+        class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-5">
+
+    <!-- Título -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Título *</label>
+      <input formControlName="title" type="text"
+             placeholder="Ej. Manipulación de alimentos BPM"
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+      @if (form.get('title')?.invalid && form.get('title')?.touched) {
+        <p class="text-xs text-red-600 mt-1">El título es obligatorio (mín. 3 caracteres)</p>
+      }
+    </div>
+
+    <!-- Descripción -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Descripción *</label>
+      <textarea formControlName="description" rows="3"
+                placeholder="Objetivos, contenido y materiales de la capacitación..."
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+      @if (form.get('description')?.invalid && form.get('description')?.touched) {
+        <p class="text-xs text-red-600 mt-1">La descripción es obligatoria</p>
+      }
+    </div>
+
+    <!-- Nivel + Duración en fila -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Nivel *</label>
+        <select formControlName="level"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+          @for (l of levels; track l) {
+            <option [value]="l">{{ levelLabels[l] }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Duración (horas) *</label>
+        <input formControlName="durationHours" type="number" min="1" max="40"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        @if (form.get('durationHours')?.invalid && form.get('durationHours')?.touched) {
+          <p class="text-xs text-red-600 mt-1">Debe ser entre 1 y 40 horas</p>
+        }
+      </div>
+    </div>
+
+    <!-- Nota mínima aprobatoria -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Nota mínima aprobatoria (0–10) *</label>
+      <input formControlName="minPassGrade" type="number" min="0" max="10" step="0.5"
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+      @if (form.get('minPassGrade')?.invalid && form.get('minPassGrade')?.touched) {
+        <p class="text-xs text-red-600 mt-1">Debe ser entre 0 y 10</p>
+      }
+    </div>
+
+    <!-- Colaborador asignado -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Colaborador asignado *</label>
+      <select formControlName="assignedUserId"
+              class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+        <option value="">— Selecciona un colaborador —</option>
+        @for (u of users(); track u.id) {
+          <option [value]="u.id">{{ u.nombre }} · {{ u.puesto }}</option>
+        }
+      </select>
+      @if (form.get('assignedUserId')?.invalid && form.get('assignedUserId')?.touched) {
+        <p class="text-xs text-red-600 mt-1">Selecciona un colaborador</p>
+      }
+    </div>
+
+    <!-- Sucursal + Turno en fila -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
+        <input formControlName="storeId" type="text"
+               [attr.readonly]="storeIdDisabled ? true : null"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 read-only:bg-stone-50 read-only:text-stone-400">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
+        <select formControlName="shift"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+          @for (t of turnos; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Fecha de vencimiento -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Fecha de vencimiento *</label>
+      <input formControlName="dueAt" type="datetime-local"
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+      @if (form.get('dueAt')?.invalid && form.get('dueAt')?.touched) {
+        <p class="text-xs text-red-600 mt-1">La fecha de vencimiento es obligatoria</p>
+      }
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
+      <a routerLink="/training"
+         class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+        Cancelar
+      </a>
+      <button type="submit"
+              [disabled]="form.invalid || saving()"
+              class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        @if (saving()) {
+          <span class="inline-flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            Guardando...
+          </span>
+        } @else {
+          Crear capacitación
+        }
+      </button>
+    </div>
+
+  </form>
+</div>

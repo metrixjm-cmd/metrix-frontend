@@ -1,0 +1,151 @@
+<div class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900">Ranking de Equipo</h1>
+      <p class="text-sm text-stone-500 mt-0.5">Desempeño y gamificación de la sucursal</p>
+    </div>
+    <a routerLink="me"
+       class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+      <span>Mis Insignias</span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+      </svg>
+    </a>
+  </div>
+
+  <!-- Period tabs -->
+  <div class="flex gap-2">
+    <button (click)="selectPeriod('weekly')"
+            [class]="period() === 'weekly'
+              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
+              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
+      Esta semana
+    </button>
+    <button (click)="selectPeriod('monthly')"
+            [class]="period() === 'monthly'
+              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
+              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
+      Este mes
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="bg-white border border-stone-200 rounded-xl p-6 animate-pulse">
+          <div class="h-4 bg-stone-200 rounded w-1/2 mb-3"></div>
+          <div class="h-8 bg-stone-200 rounded w-3/4"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error() && !loading()) {
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading() && leaderboard().length > 0) {
+
+    <!-- Podio top-3 -->
+    <div class="bg-white border border-stone-200 rounded-xl p-6">
+      <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-6">Top 3</h2>
+      <div class="flex items-end justify-center gap-4">
+        @for (entry of podium(); track entry.userId) {
+          <div [class]="'flex flex-col items-center gap-2 ' + podiumOrder(entry.rank)">
+            <!-- Avatar -->
+            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg font-bold text-orange-600 relative">
+              {{ entry.nombre.charAt(0).toUpperCase() }}
+              <span class="absolute -top-1 -right-1 text-base">{{ podiumBadge(entry.rank) }}</span>
+            </div>
+            <!-- Nombre -->
+            <p class="text-xs font-medium text-stone-700 text-center max-w-[80px] truncate">
+              {{ entry.nombre }}
+            </p>
+            <!-- IGEO -->
+            <p [class]="igeoClass(entry.igeo) + ' text-sm'">{{ entry.igeo }}%</p>
+            <!-- Podio bar -->
+            <div [class]="'w-16 rounded-t-lg bg-orange-500 ' + podiumHeight(entry.rank)"></div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Tabla completa -->
+    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-stone-50 border-b border-stone-200">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">#</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Colaborador</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide">IGEO</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide hidden sm:table-cell">On-Time</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide hidden md:table-cell">Completadas</th>
+            <th class="px-4 py-3 text-center text-xs font-semibold text-stone-500 uppercase tracking-wide hidden lg:table-cell">Insignias</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide">Delta</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-stone-100">
+          @for (entry of leaderboard(); track entry.userId) {
+            <tr class="hover:bg-stone-50 transition-colors">
+              <td class="px-4 py-3 font-bold text-stone-500">{{ entry.rank }}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600">
+                    {{ entry.nombre.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="font-medium text-stone-900">{{ entry.nombre }}</p>
+                    <p class="text-xs text-stone-400">{{ entry.turno }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span [class]="igeoClass(entry.igeo)">{{ entry.igeo }}%</span>
+              </td>
+              <td class="px-4 py-3 text-right text-stone-600 hidden sm:table-cell">
+                {{ entry.onTimeRate >= 0 ? entry.onTimeRate.toFixed(1) + '%' : 'S/D' }}
+              </td>
+              <td class="px-4 py-3 text-right text-stone-600 hidden md:table-cell">
+                {{ entry.completedTasks }} / {{ entry.totalTasks }}
+              </td>
+              <td class="px-4 py-3 text-center hidden lg:table-cell">
+                <div class="flex justify-center gap-1">
+                  @for (badge of entry.badges; track badge.type) {
+                    <span [title]="badge.title" class="text-base">{{ badge.icon }}</span>
+                  }
+                  @if (entry.badges.length === 0) {
+                    <span class="text-stone-300 text-xs">—</span>
+                  }
+                </div>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span [class]="deltaClass(entry.igeoChange)" class="text-xs font-medium">
+                  {{ deltaIcon(entry.igeoChange) }}
+                  @if (entry.igeoChange !== 0) {
+                    {{ entry.igeoChange > 0 ? '+' : '' }}{{ entry.igeoChange.toFixed(1) }}
+                  }
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!loading() && leaderboard().length === 0 && !error()) {
+    <div class="bg-white border border-stone-200 rounded-xl p-12 text-center">
+      <div class="text-4xl mb-3">🏆</div>
+      <p class="text-stone-500">Sin datos de colaboradores para este período.</p>
+    </div>
+  }
+
+</div>

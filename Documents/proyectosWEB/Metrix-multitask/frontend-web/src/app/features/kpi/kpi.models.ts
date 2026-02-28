@@ -22,6 +22,7 @@ export interface KpiSummary {
   sparklineOnTime: number[];
   sparklineIgeo: number[];
   avgQualityRating: number;
+  trainingCompletionRate: number;
 }
 
 export interface StoreRankingEntry {

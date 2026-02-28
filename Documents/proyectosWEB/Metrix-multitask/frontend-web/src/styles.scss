@@ -1,0 +1,60 @@
+/* ── Tailwind CSS ──────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fuente Inter (Google Fonts) ──────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Variables globales ───────────────────────── */
+:root {
+  --transition-base: 150ms ease-in-out;
+}
+
+/* ── Reset base ───────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  @apply bg-stone-50 font-sans text-stone-900;
+  margin: 0;
+}
+
+/* ── Scrollbar personalizada ──────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { @apply bg-stone-100; }
+::-webkit-scrollbar-thumb { @apply bg-stone-300 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-stone-400; }
+
+/* ── Componentes reutilizables ────────────────── */
+@layer components {
+
+  /* Input base — tema claro restaurante */
+  .input-field {
+    @apply w-full px-4 py-2.5
+           bg-white border border-stone-300
+           rounded-lg text-sm text-stone-900 placeholder-stone-400
+           focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+           transition-all duration-150;
+  }
+
+  /* Input con ícono a la izquierda */
+  .input-field-icon {
+    @apply w-full pl-10 pr-4 py-2.5
+           bg-white border border-stone-300
+           rounded-lg text-sm text-stone-900 placeholder-stone-400
+           focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+           transition-all duration-150;
+  }
+
+  .input-error {
+    @apply border-red-400 focus:ring-red-500 focus:border-red-500;
+  }
+}

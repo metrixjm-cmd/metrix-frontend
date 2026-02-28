@@ -63,6 +63,33 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/gerente/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers("/api/v1/reports/**").hasAnyRole("ADMIN", "GERENTE")
 
+                // ── Módulo RH (Sprint 9) ────────────────────────────
+                .requestMatchers(HttpMethod.GET,   "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.POST,  "/api/v1/users").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,   "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/users/**").hasRole("ADMIN")
+
+                // ── Módulo Capacitación (Sprint 10) ──────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/v1/trainings/store/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.POST,   "/api/v1/trainings").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/trainings/**").hasRole("ADMIN")
+
+                // ── Módulo Configuración / Stores (Sprint 11) ────────
+                .requestMatchers(HttpMethod.GET,   "/api/v1/stores/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.POST,  "/api/v1/stores").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,   "/api/v1/stores/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/**").hasRole("ADMIN")
+
+                // ── Módulo Gamificación (Sprint 12) ──────────────────
+                .requestMatchers(HttpMethod.GET, "/api/v1/gamification/store/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.GET, "/api/v1/gamification/me").authenticated()
+
+                // ── Módulo Contingencias (Sprint 15) ──────────────────
+                .requestMatchers(HttpMethod.POST,  "/api/v1/incidents").authenticated()
+                .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/my").authenticated()
+                .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/store/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/incidents/**").hasAnyRole("ADMIN", "GERENTE")
+
                 // ── Todo lo demás requiere autenticación ───────────
                 .anyRequest().authenticated()
             )

@@ -1,0 +1,149 @@
+<div class="p-4 md:p-6 max-w-2xl mx-auto space-y-5">
+
+  <!-- ── Navegación ─────────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3">
+    <a routerLink="/incidents"
+       class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-stone-900">Reportar incidencia</h1>
+  </div>
+
+  <!-- ── Error ──────────────────────────────────────────────────────────── -->
+  @if (incidentSvc.error()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ incidentSvc.error() }}
+    </div>
+  }
+
+  <!-- ── Formulario ─────────────────────────────────────────────────────── -->
+  <div class="bg-white border border-stone-200 rounded-xl shadow-card p-6">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+
+      <!-- Título -->
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Título de la incidencia *</label>
+        <input formControlName="title" type="text" placeholder="Describe brevemente el problema"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        @if (hasError('title', 'required')) {
+          <p class="text-xs text-red-600 mt-1">El título es obligatorio.</p>
+        }
+        @if (hasError('title', 'minlength')) {
+          <p class="text-xs text-red-600 mt-1">Mínimo 4 caracteres.</p>
+        }
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">Descripción detallada *</label>
+        <textarea formControlName="description" rows="4"
+                  placeholder="Describe qué ocurrió, dónde y en qué circunstancias..."
+                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none">
+        </textarea>
+        @if (hasError('description', 'required')) {
+          <p class="text-xs text-red-600 mt-1">La descripción es obligatoria.</p>
+        }
+      </div>
+
+      <!-- Categoría + Severidad -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Categoría *</label>
+          <select formControlName="category"
+                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="">Seleccionar…</option>
+            @for (cat of categories; track cat) {
+              <option [value]="cat">{{ categoryLabels[cat] }}</option>
+            }
+          </select>
+          @if (hasError('category', 'required')) {
+            <p class="text-xs text-red-600 mt-1">Requerido.</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Severidad *</label>
+          <select formControlName="severity"
+                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="">Seleccionar…</option>
+            @for (sev of severities; track sev) {
+              <option [value]="sev">{{ severityLabels[sev] }}</option>
+            }
+          </select>
+          @if (hasError('severity', 'required')) {
+            <p class="text-xs text-red-600 mt-1">Requerido.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Aviso CRITICA -->
+      @if (form.get('severity')?.value === 'CRITICA') {
+        <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+          <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          Las incidencias CRÍTICAS notifican de inmediato a los gerentes y admin de la sucursal.
+        </div>
+      }
+
+      <!-- Sucursal + Turno -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Sucursal</label>
+          <input formControlName="storeId" type="text"
+                 class="w-full border border-stone-100 rounded-lg px-3 py-2 text-sm bg-stone-50 text-stone-500 cursor-not-allowed">
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Turno *</label>
+          <input formControlName="shift" type="text" placeholder="Ej. Matutino"
+                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+        </div>
+      </div>
+
+      <!-- Tarea relacionada (opcional) -->
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">ID de tarea relacionada <span class="text-stone-400">(opcional)</span></label>
+        <input formControlName="taskId" type="text" placeholder="ID de la tarea si aplica"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+      </div>
+
+      <!-- Evidencias (opcional) -->
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">
+          URLs de evidencia <span class="text-stone-400">(opcional — una por línea)</span>
+        </label>
+        <textarea formControlName="evidenceUrls" rows="3"
+                  placeholder="https://storage.googleapis.com/metrix/…"
+                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none">
+        </textarea>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
+        <a routerLink="/incidents"
+           class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+          Cancelar
+        </a>
+        <button type="submit"
+                [disabled]="form.invalid || incidentSvc.saving()"
+                class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          @if (incidentSvc.saving()) {
+            <span class="inline-flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Enviando…
+            </span>
+          } @else {
+            Reportar incidencia
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

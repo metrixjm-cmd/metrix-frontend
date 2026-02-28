@@ -1,0 +1,214 @@
+<div class="p-4 md:p-6 max-w-3xl mx-auto space-y-5">
+
+  <!-- ── Navegación ─────────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3">
+    <a routerLink="/incidents"
+       class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <h1 class="text-2xl font-bold text-stone-900">Detalle de incidencia</h1>
+  </div>
+
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  @if (incidentSvc.loading() && !incident()) {
+    <div class="bg-white border border-stone-200 rounded-xl p-6 space-y-4 animate-pulse">
+      <div class="h-6 bg-stone-100 rounded w-2/3"></div>
+      <div class="h-4 bg-stone-100 rounded w-1/2"></div>
+      <div class="h-4 bg-stone-100 rounded w-3/4"></div>
+    </div>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────── -->
+  @if (incidentSvc.error()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ incidentSvc.error() }}
+    </div>
+  }
+
+  @if (incident(); as inc) {
+
+    <!-- ── Card principal ─────────────────────────────────────────────── -->
+    <div class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-5">
+
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span [class]="'px-2.5 py-1 rounded-full text-xs font-medium ' + statusBadgeClass(inc.status)">
+              {{ statusLabels[inc.status] }}
+            </span>
+            <span [class]="'px-2.5 py-1 rounded-full text-xs font-medium ' + severityBadgeClass(inc.severity)">
+              {{ severityLabels[inc.severity] }}
+            </span>
+            <span [class]="'px-2 py-0.5 rounded text-xs ' + categoryBadgeClass(inc.category)">
+              {{ categoryLabels[inc.category] }}
+            </span>
+          </div>
+          <h2 class="text-lg font-semibold text-stone-900">{{ inc.title }}</h2>
+          <p class="text-sm text-stone-600 mt-1 leading-relaxed">{{ inc.description }}</p>
+        </div>
+      </div>
+
+      <!-- Metadatos -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm pt-4 border-t border-stone-100">
+        <div>
+          <p class="text-xs text-stone-400 mb-0.5">Reportado por</p>
+          <p class="font-medium text-stone-700">{{ inc.reporterName }}</p>
+          <p class="text-xs text-stone-400">{{ inc.reporterPosition }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-stone-400 mb-0.5">Sucursal · Turno</p>
+          <p class="font-medium text-stone-700">{{ inc.storeId }}</p>
+          <p class="text-xs text-stone-400">{{ inc.shift }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-stone-400 mb-0.5">Fecha de reporte</p>
+          <p class="font-medium text-stone-700 text-xs">{{ formatDate(inc.createdAt) }}</p>
+        </div>
+        @if (inc.taskId) {
+          <div>
+            <p class="text-xs text-stone-400 mb-0.5">Tarea relacionada</p>
+            <p class="font-medium text-orange-600 text-xs font-mono">#{{ inc.taskId }}</p>
+          </div>
+        }
+        @if (inc.resolvedAt) {
+          <div>
+            <p class="text-xs text-stone-400 mb-0.5">Fecha de cierre</p>
+            <p class="font-medium text-stone-700 text-xs">{{ formatDate(inc.resolvedAt) }}</p>
+          </div>
+        }
+        @if (inc.resolvedByUserId) {
+          <div>
+            <p class="text-xs text-stone-400 mb-0.5">Cerrada por</p>
+            <p class="font-medium text-stone-700 text-xs">{{ inc.resolvedByUserId }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Notas de resolución -->
+      @if (inc.resolutionNotes) {
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <p class="text-xs font-semibold text-emerald-700 mb-1">Resolución aplicada</p>
+          <p class="text-sm text-emerald-800 leading-relaxed">{{ inc.resolutionNotes }}</p>
+        </div>
+      }
+
+      <!-- Evidencias -->
+      @if (inc.evidenceUrls.length > 0) {
+        <div>
+          <p class="text-xs text-stone-400 mb-2 font-medium uppercase tracking-wide">Evidencias</p>
+          <div class="space-y-1">
+            @for (url of inc.evidenceUrls; track url) {
+              <a [href]="url" target="_blank" rel="noopener"
+                 class="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 hover:underline">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+                <span class="truncate">{{ url }}</span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ── Acciones GERENTE/ADMIN ─────────────────────────────────── -->
+      @if (isManagerView()) {
+        <div class="flex flex-wrap items-center justify-end gap-2 pt-4 border-t border-stone-100">
+
+          @if (inc.status === 'ABIERTA') {
+            <button type="button"
+                    (click)="takeResolution()"
+                    [disabled]="incidentSvc.saving()"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+              @if (incidentSvc.saving()) { Procesando… } @else { Tomar en resolución }
+            </button>
+          }
+
+          @if (inc.status === 'EN_RESOLUCION') {
+            <button type="button"
+                    (click)="showCloseModal.set(true)"
+                    [disabled]="incidentSvc.saving()"
+                    class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+              Cerrar incidencia
+            </button>
+          }
+
+          @if (inc.status === 'CERRADA') {
+            <button type="button"
+                    (click)="reopenIncident()"
+                    [disabled]="incidentSvc.saving()"
+                    class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 disabled:opacity-50 transition-colors">
+              Re-abrir
+            </button>
+          }
+
+        </div>
+      }
+
+    </div>
+
+  }
+
+</div>
+
+<!-- ── Modal: Cerrar incidencia ────────────────────────────────────────────── -->
+@if (showCloseModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-4">
+
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold text-stone-900">Cerrar incidencia</h3>
+        <button (click)="showCloseModal.set(false)"
+                class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-sm text-stone-500">Describe la acción correctiva aplicada para resolver la incidencia.</p>
+
+      @if (incidentSvc.error()) {
+        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {{ incidentSvc.error() }}
+        </div>
+      }
+
+      <form [formGroup]="closeForm" (ngSubmit)="closeIncident()" class="space-y-3">
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Resolución aplicada *</label>
+          <textarea formControlName="resolutionNotes" rows="4"
+                    placeholder="Describe qué se hizo para resolver el problema…"
+                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none">
+          </textarea>
+          @if (closeForm.get('resolutionNotes')?.hasError('required') && closeForm.get('resolutionNotes')?.touched) {
+            <p class="text-xs text-red-600 mt-1">Obligatorio para cerrar la incidencia.</p>
+          }
+          @if (closeForm.get('resolutionNotes')?.hasError('minlength') && closeForm.get('resolutionNotes')?.touched) {
+            <p class="text-xs text-red-600 mt-1">Mínimo 10 caracteres.</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Notas adicionales <span class="text-stone-400">(opcional)</span></label>
+          <input formControlName="notes" type="text"
+                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" (click)="showCloseModal.set(false)"
+                  class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50">
+            Cancelar
+          </button>
+          <button type="submit"
+                  [disabled]="closeForm.invalid || incidentSvc.saving()"
+                  class="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50">
+            @if (incidentSvc.saving()) { Cerrando… } @else { Confirmar cierre }
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}

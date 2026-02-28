@@ -228,14 +228,140 @@ Build: **0 errores, 0 warnings** ✅
 - `core/layout/app-layout.ts`: nav item "Monitoreo" → "Reportes" (`/reports`)
 - Build final: **0 errores, 0 warnings** ✅
 
+### ✅ Sprint 15 — Módulo de Contingencias / Incidencias
+**Backend (12 archivos nuevos + 2 modificados):**
+- `IncidentStatus.java`, `IncidentCategory.java`, `IncidentSeverity.java` (enums)
+- `IncidentTransition.java` (embedded doc, mirrors StatusTransition)
+- `Incident.java` (@Document "incidents", compound indexes por reporter, store y severity)
+- `IncidentRepository.java` (7 derived queries + 2 count methods)
+- `CreateIncidentRequest.java`, `UpdateIncidentStatusRequest.java`, `IncidentResponse.java` (DTOs)
+- `IncidentService.java` (interface) + `IncidentServiceImpl.java` (transiciones ABIERTA→EN_RESOLUCION→CERRADA←→ABIERTA, SSE notifications: INCIDENT_CREATED/IN_RESOLUTION/RESOLVED/REOPENED)
+- `IncidentController.java` (5 endpoints: POST /, GET /my, GET /store/{id}?status=, GET /{id}, PATCH /{id}/status)
+- `SecurityConfig.java`: matchers /api/v1/incidents/** por rol + método HTTP
+- `NotificationEvent.java`: campo `incidentId` agregado
+
+**Frontend (9 archivos nuevos + 5 modificados):**
+- `incident.models.ts` (tipos, interfaces, constantes de etiquetas INCIDENT_STATUS_LABELS/CATEGORY_LABELS/SEVERITY_LABELS)
+- `services/incident.service.ts` (signals + computed openCount/inResolutionCount/closedCount/criticalOpenCount/criticalOpen + Promise mutations)
+- `incidents.routes.ts` (3 rutas: list, create, :id)
+- `incident-list/` (ts+html): 4 counter cards, filtros status/severity, lista con barra de color por severidad
+- `incident-create/` (ts+html): ReactiveForm, storeId bloqueado al user.storeId, alerta naranja para CRITICA
+- `incident-detail/` (ts+html): lifecycle actions (tomar/cerrar/reabrir), modal con resolutionNotes min 10 chars
+- `app.routes.ts`: ruta `/incidents` lazy loaded
+- `app-layout.ts`: nav item "Incidencias" (triángulo warning, entre Delegación y Reportes)
+- `notification.models.ts`: TASK_REOPENED + 4 tipos INCIDENT_* + campo `incidentId` en NotificationEvent
+- `dashboard.ts`: inyecta IncidentService, computed openIncidentsCount/criticalOpenIncidents, ngOnInit llama loadByStore en ADMIN y GERENTE
+- `dashboard.html`: panel "Incidencias Activas" con 3 contadores + lista críticas top-3 (isManagerView)
+- Build final: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 11 — Módulo Configuración: Gestión de Sucursales
+**Backend (8 archivos nuevos + 3 modificados):** Store.java (@Document "stores"), StoreRepository (findByActivoTrue, findByCodigo, existsByCodigo); CreateStoreRequest/UpdateStoreRequest/StoreResponse DTOs; StoreService interface + StoreServiceImpl (create valida código único, toResponse enriquece con 3 conteos, soft-delete); StoreController (5 endpoints).
+- UserRepository: +`countByStoreIdAndActivoTrue`; TaskRepository: +`countByStoreIdAndActivoTrue` (TrainingRepository ya tenía este método)
+- SecurityConfig: matchers `/api/v1/stores/**` GET→ADMIN|GERENTE, POST/PUT/PATCH→ADMIN
+
+**Frontend (9 archivos nuevos + 1 modificado):** settings.models.ts (StoreResponse, CreateStoreRequest, UpdateStoreRequest, TURNOS_DISPONIBLES); settings.routes.ts; settings.service.ts (signals + Promise); store-list (grid de cards con stats); store-create (ReactiveForm + checkboxes turnos, autoUppercase código); store-detail (header con badges, 3 stat cards, form edición inline, modal desactivación); app.routes.ts: ruta `/settings` lazy loaded
+- Bug fix: `?.toUpperCase()` → `(value ?? '').toUpperCase()` para evitar TS2345 en template
+- Build final: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 10 — Módulo Capacitación
+**Backend (11 archivos):** TrainingStatus, TrainingLevel (enums); TrainingProgress (embedded), Training (@Document "trainings"); TrainingRepository (6 queries + 2 counts); CreateTrainingRequest, UpdateTrainingProgressRequest, TrainingResponse DTOs; TrainingService interface + TrainingServiceImpl (transiciones PROGRAMADA→EN_CURSO→COMPLETADA|NO_COMPLETADA, notificaciones SSE); TrainingController (6 endpoints).
+- SecurityConfig: matchers training GET store/** (GERENTE/ADMIN), POST (GERENTE/ADMIN), DELETE (ADMIN)
+- KpiSummaryResponse: nuevo campo `trainingCompletionRate`
+- KpiServiceImpl: inyecta TrainingRepository, calcula % COMPLETADAS en STORE context
+
+**Frontend (9 archivos nuevos + 5 modificados):** training.models.ts, training.routes.ts, training.service.ts (signals + Promise); training-list (tabla filtrable estado/nivel, progress bar); training-create (ReactiveForm, datetime-local, select colaboradores desde RhService); training-detail (barra progreso, modales Completar/No Completar con grade/comments); app.routes.ts (/training lazy), kpi.models.ts (trainingCompletionRate), kpi.service.ts (nueva KPI card), dashboard.ts (fallback card Capacitación).
+- Build Angular: **0 errores, 0 warnings** ✅
+- `CurrentUser` no tiene campo `id` — usar `storeId`/`numeroUsuario` para routing
+
+### ✅ Sprint 9 — Módulo RH (Recursos Humanos)
+**Backend:**
+- `dto/UserResponse.java`, `dto/CreateUserRequest.java`, `dto/UpdateUserRequest.java` (nuevos)
+- `service/UserService.java` (interface) + `service/UserServiceImpl.java`: CRUD de colaboradores, GERENTE scope, hash password, soft-delete
+- `controller/UserController.java`: 5 endpoints (`GET /users?storeId=`, `GET /users/{id}`, `POST /users`, `PUT /users/{id}`, `PATCH /users/{id}/deactivate`)
+- `SecurityConfig.java`: matchers HttpMethod-específicos para `/api/v1/users/**`
+
+**Frontend:**
+- `features/rh/rh.models.ts`: interfaces `UserProfile`, `CreateUserRequest`, `UpdateUserRequest`, constantes `TURNOS`, `ROL_LABELS`, `ROLES_DISPONIBLES`
+- `features/rh/services/rh.service.ts`: signals + CRUD completo, Promise-based para mutaciones
+- `features/rh/rh.routes.ts`: `''` → UserList, `create` → UserCreate, `':id'` → UserProfile
+- `features/rh/user-list/` (ts + html): tabla filtrable por turno y rol, badge activo/inactivo, row click → perfil
+- `features/rh/user-create/` (ts + html): ReactiveForm, toggle de roles (ADMIN), storeId bloqueado para GERENTE
+- `features/rh/user-profile/` (ts + html): vista/edición inline, mini-dashboard KPI #7 (IGEO, On-Time Rate, Re-trabajo, Ranking, conteos de tareas), desactivación con confirmación (ADMIN)
+- `app.routes.ts`: ruta `/rh` lazy loaded
+- Build final: **0 errores, 0 warnings** ✅
+
 ---
+
+### ✅ Sprint 12 — Gamificación + Ficha de Desempeño Individual
+**Backend (6 archivos nuevos + 4 modificados):**
+- `BadgeDTO.java`, `LeaderboardEntryDTO.java`, `GamificationSummaryDTO.java` — DTOs nuevos
+- `GamificationService.java` (interface) + `GamificationServiceImpl.java`: computeBadges (5 insignias), getLeaderboard (weekly/monthly con Δ IGEO vs período anterior), getMyGamification
+- `GamificationController.java`: `GET /api/v1/gamification/store/{id}/leaderboard?period=`, `GET /gamification/me`
+- `SecurityConfig.java`: matchers `/api/v1/gamification/**`
+- `ReportService.java` + `ReportServiceImpl.java`: nuevo método `generatePerformanceCard(userId)` — PDF con datos personales + KPIs + insignias
+- `ReportController.java`: `GET /api/v1/reports/user/{userId}/performance-card`
+
+**Insignias (computed on-the-fly, sin persistencia):**
+- `PUNTUAL_ELITE` — OnTimeRate ≥ 95% (min 10 tareas cerradas)
+- `CERO_RETRABAJOS` — ReworkRate = 0% (min 5 tareas)
+- `VELOCIDAD_RAYO` — AvgExecMin ≤ 50% promedio de sucursal
+- `COLABORADOR_MES` — Rank #1 del leaderboard mensual
+- `RACHA_7` — 7+ tareas completadas en los últimos 7 días
+
+**Frontend (8 archivos nuevos + 4 modificados):**
+- `features/gamification/gamification.models.ts` — Badge, LeaderboardEntry, GamificationSummary, ALL_BADGES catálogo
+- `features/gamification/gamification.routes.ts`
+- `features/gamification/services/gamification.service.ts` — signals + métodos HTTP
+- `features/gamification/leaderboard/` (ts + html): podio top-3, tabla completa, tabs weekly/monthly, Δ IGEO
+- `features/gamification/my-badges/` (ts + html): stats personales, barra de progreso, cuadrícula earned/locked
+- `app.routes.ts`: ruta `/gamification` lazy loaded
+- `core/layout/app-layout.ts`: nav item "Gamificación" (estrella icon)
+- `features/rh/user-profile/user-profile.ts + .html`: botón "Ficha PDF" → descarga performance-card
+- `features/reports/services/report.service.ts`: método `downloadPerformanceCard(userId)`
+- Build final: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 13 — Dashboards Especializados por Rol
+**Solo frontend — 2 archivos modificados:**
+- `dashboard.ts`: +`isAdmin`, +`isEjecutador` computed; +`GamificationService` inject; +`teamRanking` (KPI #7 top-5), +`shiftBreakdown`, +`trainingRate`, +`storesInAlert` (IGEO < 70), +`gamifSummary` computed; `ngOnInit` tri-branch (ADMIN / GERENTE / EJECUTADOR); helpers `igeoTextClass`, `shiftBarColor`, `otrLabel`
+- `dashboard.html`: 3 secciones condicionales:
+  - **ADMIN**: Feed en vivo + Pipeline mini, Ranking inter-sucursal, Sucursales en alerta, Grid de 4 shortcuts ejecutivos (Reportes, Gamificación, RH, Configuración)
+  - **GERENTE**: Pipeline del turno, Tabla de equipo KPI #7 top-5, Desglose por turno KPI #5 con barras, Tasa de capacitación
+  - **EJECUTADOR**: Card de gamificación (rank + IGEO + badges), Grid de 3 accesos rápidos, Pipeline personal, Lista completa de mis tareas
+- Build final: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 14 — PWA + Responsive Tablet
+**Solo frontend — 6 archivos modificados / 2 nuevos:**
+- `package.json`: `@angular/service-worker@^21.0.0` instalado
+- `ngsw-config.json` (NUEVO): estrategia `prefetch` para app-shell (index.html, CSS, JS) + `lazy/prefetch` para assets estáticos; APIs NO cacheadas (dinámicas + auth)
+- `public/manifest.webmanifest` (NUEVO): `name:"METRIX Restaurantes"`, `short_name:"METRIX"`, `theme_color:#ea580c`, `display:standalone`, `start_url:/dashboard`, iconos 72→512px
+- `angular.json`: `"serviceWorker": "ngsw-config.json"` en build options
+- `src/index.html`: meta PWA (`theme-color`, `apple-mobile-web-app-*`, `description`), `<link rel="manifest">`, `<link rel="apple-touch-icon">`
+- `src/app/app.config.ts`: `provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode(), registrationStrategy: 'registerWhenStable:30000' })`
+- `app-layout.ts`: señal `mobileOpen = signal(false)`; computed `asideClass()` con mobile translate + lg desktop width; métodos `toggleMobileSidebar()` / `closeMobileSidebar()`
+- `app-layout.html`: aside con clases `fixed...lg:relative` responsive; backdrop semitransparente `lg:hidden` al abrir drawer; botón "X" cierra drawer (mobile); `(click)="closeMobileSidebar()"` en cada nav link; botón hamburger ☰ en header `lg:hidden`; dropdowns con `max-w-[calc(100vw-1rem)]`
+- Build final: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 16 — Alertas Preventivas Programadas
+**Backend (1 nuevo + 3 modificados):**
+- `MetrixApplication.java`: `@EnableScheduling` añadido junto a `@SpringBootApplication` y `@EnableMongoAuditing`
+- `TaskRepository.java`: 2 nuevas derived queries — `findByExecution_StatusInAndDueAtBetweenAndActivoTrue` (vencimiento próximo) y `findByExecution_StatusInAndDueAtBeforeAndActivoTrue` (ya vencidas); importa `Collection`
+- `NotificationService.java`: nuevo método `sendToAllAdmins(event)` — itera `UserRepository.findByRolesContaining(Role.ADMIN)` y envía SSE a cada uno
+- `AlertScheduler.java` (NUEVO — `scheduler/` package): `@Component` con 4 métodos `@Scheduled`:
+  - `checkUpcomingDeadlines()` `cron="0 */5 * * * *"` → `TASK_DEADLINE_WARNING` (warning) a asignado + managers
+  - `checkOverdueTasks()` `cron="0 */10 * * * *"` → `TASK_OVERDUE` (warning/critical) a asignado + managers
+  - `sendDailyIgeoAlert()` `cron="0 0 8 * * *"` → `DAILY_IGEO_ALERT` (critical) a todos los ADMINs si IGEO < 70%
+  - `clearWarningSets()` `cron="0 0 * * * *"` → limpia los 2 `Set<String>` de deduplicación cada hora
+  - Deduplicación via `ConcurrentHashMap.newKeySet()` (warnedDeadlineIds + warnedOverdueIds)
+
+**Frontend (1 modificado):**
+- `notification.models.ts`: 3 nuevos tipos en `NotificationType` union — `TASK_DEADLINE_WARNING`, `TASK_OVERDUE`, `DAILY_IGEO_ALERT`
+- Build Angular: **0 errores, 0 warnings** ✅
 
 ## Próximos Sprints
 
 | Sprint | Descripción |
 |--------|------------|
-| Sprint 9 | Módulo RH — gestión de colaboradores, perfiles, turnos |
-| Sprint 10 | Módulo Capacitación — asignación y seguimiento de formaciones |
+| Sprint 17 | Por definir |
 
 ---
 
@@ -259,6 +385,31 @@ backend-api/src/main/java/com/metrix/api/dto/KpiSummaryResponse.java            
 backend-api/src/main/java/com/metrix/api/dto/UserResponsibilityResponse.java     ← Sprint 8
 backend-api/src/main/java/com/metrix/api/dto/CorrectionSpeedResponse.java        ← Sprint 8
 backend-api/src/main/java/com/metrix/api/dto/DailyReportResponse.java            ← Sprint 8
+backend-api/src/main/java/com/metrix/api/controller/UserController.java           ← Sprint 9
+backend-api/src/main/java/com/metrix/api/service/UserService.java                 ← Sprint 9
+backend-api/src/main/java/com/metrix/api/service/UserServiceImpl.java             ← Sprint 9
+backend-api/src/main/java/com/metrix/api/dto/UserResponse.java                    ← Sprint 9
+backend-api/src/main/java/com/metrix/api/dto/CreateUserRequest.java               ← Sprint 9
+backend-api/src/main/java/com/metrix/api/dto/UpdateUserRequest.java               ← Sprint 9
+backend-api/src/main/java/com/metrix/api/model/Training.java                      ← Sprint 10
+backend-api/src/main/java/com/metrix/api/model/TrainingProgress.java              ← Sprint 10
+backend-api/src/main/java/com/metrix/api/model/TrainingStatus.java                ← Sprint 10
+backend-api/src/main/java/com/metrix/api/model/TrainingLevel.java                 ← Sprint 10
+backend-api/src/main/java/com/metrix/api/repository/TrainingRepository.java       ← Sprint 10
+backend-api/src/main/java/com/metrix/api/service/TrainingService.java             ← Sprint 10
+backend-api/src/main/java/com/metrix/api/service/TrainingServiceImpl.java         ← Sprint 10
+backend-api/src/main/java/com/metrix/api/controller/TrainingController.java       ← Sprint 10
+backend-api/src/main/java/com/metrix/api/dto/CreateTrainingRequest.java           ← Sprint 10
+backend-api/src/main/java/com/metrix/api/dto/UpdateTrainingProgressRequest.java   ← Sprint 10
+backend-api/src/main/java/com/metrix/api/dto/TrainingResponse.java                ← Sprint 10
+backend-api/src/main/java/com/metrix/api/model/Store.java                          ← Sprint 11
+backend-api/src/main/java/com/metrix/api/repository/StoreRepository.java           ← Sprint 11
+backend-api/src/main/java/com/metrix/api/service/StoreService.java                 ← Sprint 11
+backend-api/src/main/java/com/metrix/api/service/StoreServiceImpl.java             ← Sprint 11
+backend-api/src/main/java/com/metrix/api/controller/StoreController.java           ← Sprint 11
+backend-api/src/main/java/com/metrix/api/dto/CreateStoreRequest.java               ← Sprint 11
+backend-api/src/main/java/com/metrix/api/dto/UpdateStoreRequest.java               ← Sprint 11
+backend-api/src/main/java/com/metrix/api/dto/StoreResponse.java                    ← Sprint 11
 ```
 
 ### Frontend
@@ -272,13 +423,31 @@ frontend-web/src/app/core/layout/app-layout.ts
 frontend-web/src/app/features/auth/services/auth.service.ts
 frontend-web/src/app/features/tasks/services/task.service.ts
 frontend-web/src/app/features/tasks/models/task.models.ts
-frontend-web/src/app/features/kpi/kpi.models.ts                  ← Sprint 7+8
-frontend-web/src/app/features/kpi/services/kpi.service.ts        ← Sprint 7+8
-frontend-web/src/app/features/reports/reports.ts                  ← Sprint 8
-frontend-web/src/app/features/reports/reports.html                ← Sprint 8
-frontend-web/src/app/features/reports/services/report.service.ts  ← Sprint 8
-frontend-web/src/app/features/dashboard/dashboard.ts              ← Sprint 7
-frontend-web/src/app/features/dashboard/dashboard.html            ← Sprint 7
+frontend-web/src/app/features/kpi/kpi.models.ts                       ← Sprint 7+8
+frontend-web/src/app/features/kpi/services/kpi.service.ts             ← Sprint 7+8
+frontend-web/src/app/features/reports/reports.ts                       ← Sprint 8
+frontend-web/src/app/features/reports/reports.html                     ← Sprint 8
+frontend-web/src/app/features/reports/services/report.service.ts       ← Sprint 8
+frontend-web/src/app/features/dashboard/dashboard.ts                   ← Sprint 7
+frontend-web/src/app/features/dashboard/dashboard.html                 ← Sprint 7
+frontend-web/src/app/features/rh/rh.models.ts                          ← Sprint 9
+frontend-web/src/app/features/rh/services/rh.service.ts                ← Sprint 9
+frontend-web/src/app/features/rh/rh.routes.ts                          ← Sprint 9
+frontend-web/src/app/features/rh/user-list/user-list.ts                ← Sprint 9
+frontend-web/src/app/features/rh/user-create/user-create.ts            ← Sprint 9
+frontend-web/src/app/features/rh/user-profile/user-profile.ts          ← Sprint 9
+frontend-web/src/app/features/training/training.models.ts               ← Sprint 10
+frontend-web/src/app/features/training/training.routes.ts               ← Sprint 10
+frontend-web/src/app/features/training/services/training.service.ts     ← Sprint 10
+frontend-web/src/app/features/training/training-list/training-list.ts   ← Sprint 10
+frontend-web/src/app/features/training/training-create/training-create.ts ← Sprint 10
+frontend-web/src/app/features/training/training-detail/training-detail.ts ← Sprint 10
+frontend-web/src/app/features/settings/settings.models.ts                  ← Sprint 11
+frontend-web/src/app/features/settings/settings.routes.ts                  ← Sprint 11
+frontend-web/src/app/features/settings/services/settings.service.ts        ← Sprint 11
+frontend-web/src/app/features/settings/store-list/store-list.ts            ← Sprint 11
+frontend-web/src/app/features/settings/store-create/store-create.ts        ← Sprint 11
+frontend-web/src/app/features/settings/store-detail/store-detail.ts        ← Sprint 11
 ```
 
 ---
@@ -307,3 +476,57 @@ frontend-web/src/app/features/dashboard/dashboard.html            ← Sprint 7
 - ReportServiceImpl: PDF con OpenPDF + Excel con Apache POI (3 hojas)
 - Módulo /reports en Angular con preview JSON + descarga blob PDF/Excel
 - Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-27 (sesión 5)
+- Sprint 10 completo: Módulo Capacitación
+- **Backend** (11 archivos): TrainingStatus/TrainingLevel enums; TrainingProgress/Training model; TrainingRepository; 3 DTOs; TrainingService interface + TrainingServiceImpl (transiciones + SSE); TrainingController (6 endpoints)
+- SecurityConfig + KpiSummaryResponse + KpiServiceImpl actualizados
+- **Frontend** (9 nuevos + 5 modificados): training.models.ts, training.routes.ts, training.service.ts, training-list/create/detail (ts+html), app.routes.ts, kpi.models.ts, kpi.service.ts, dashboard.ts
+- Bug fix: `CurrentUser` no tiene campo `id` → training-list usa solo `storeId` para routing
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-28 (sesión 10)
+- Sprint 15 completo: Módulo de Contingencias / Incidencias
+- **Backend** (12 nuevos + 2 modificados): 3 enums; IncidentTransition (embedded); Incident (@Document, compound indexes); IncidentRepository (7 queries); 3 DTOs; IncidentService/Impl (máquina de estados + SSE 4 eventos); IncidentController (5 endpoints); SecurityConfig matchers /incidents/**; NotificationEvent +incidentId
+- **Frontend** (9 nuevos + 5 modificados): incident.models.ts, incident.service.ts (signals+computed+Promise), incidents.routes.ts, incident-list/create/detail (ts+html); app.routes.ts /incidents; app-layout nav Incidencias; notification.models.ts +incidentId +tipos; dashboard.ts inyecta IncidentService + computed + ngOnInit; dashboard.html panel "Incidencias Activas" (isManagerView)
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-28 (sesión 9)
+- Sprint 14 completo: PWA + Responsive Tablet
+- `@angular/service-worker@^21.0.0` instalado; `ngsw-config.json` (app-shell prefetch + assets lazy); `manifest.webmanifest` (standalone, theme orange-600, start_url /dashboard)
+- `angular.json` → `serviceWorker: "ngsw-config.json"`; `index.html` → meta PWA + apple-touch + manifest link; `app.config.ts` → `provideServiceWorker('ngsw-worker.js', enabled: !isDevMode())`
+- Sidebar responsive: señal `mobileOpen`, computed `asideClass()`, aside con `fixed lg:relative`, backdrop `lg:hidden`, botón X cierre, hamburger en header `lg:hidden`, nav links cierran drawer automáticamente
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-27 (sesión 8)
+- Sprint 13 completo: Dashboards Especializados por Rol
+- 2 archivos modificados: dashboard.ts + dashboard.html
+- ADMIN: Feed + Ranking + Alertas IGEO<70 + 4 shortcuts ejecutivos
+- GERENTE: Pipeline + Tabla equipo KPI#7 + Desglose turno KPI#5 + Tasa capacitación
+- EJECUTADOR: Card gamificación (rank/IGEO/badges) + accesos + pipeline + mis tareas completas
+- 0 endpoints nuevos — reutiliza GamificationService y KpiService existentes
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-27 (sesión 7)
+- Sprint 12 completo: Gamificación + Ficha de Desempeño Individual
+- **Backend** (6 nuevos + 4 modificados): 3 DTOs; GamificationService/Impl (5 insignias on-the-fly, leaderboard weekly/monthly con Δ IGEO); GamificationController (2 endpoints); SecurityConfig matchers gamificación; ReportService/Impl + ReportController: performance-card PDF; ReportServiceImpl inyecta UserRepository + GamificationService
+- **Frontend** (8 nuevos + 4 modificados): gamification.models.ts, gamification.routes.ts, gamification.service.ts, leaderboard (podio+tabla+tabs), my-badges (cuadrícula earned/locked); user-profile: botón "Ficha PDF"; report.service.ts: downloadPerformanceCard; app.routes.ts + app-layout.ts: /gamification lazy
+- Fix: import environment con 5 niveles → corregido a 4 (`../../../../environments/environment`)
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-27 (sesión 6)
+- Sprint 11 completo: Módulo Configuración — Gestión de Sucursales
+- **Backend** (8 nuevos + 3 modificados): Store.java, StoreRepository, 3 DTOs, StoreService/Impl, StoreController; UserRepository + TaskRepository +countByStoreIdAndActivoTrue; SecurityConfig matchers stores
+- **Frontend** (9 nuevos + 1 modificado): settings.models.ts, settings.routes.ts, settings.service.ts, store-list/create/detail (ts+html cada uno), app.routes.ts /settings
+- Bug fix: template `?.toUpperCase()` → `(value ?? '').toUpperCase()` (TS2345)
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-27 (sesión 4)
+- Sprint 9 completo: Módulo RH — gestión de colaboradores
+- **Backend** (7 archivos): UserResponse, CreateUserRequest, UpdateUserRequest DTOs; UserService interface; UserServiceImpl (GERENTE scope, hash password, soft-delete); UserController (5 endpoints); SecurityConfig (matchers HttpMethod por rol)
+- **Frontend** (9 archivos + app.routes.ts): rh.models.ts, rh.service.ts (signals + Promise), rh.routes.ts, user-list (tabla filtrable), user-create (ReactiveForm), user-profile (edición inline + mini-dashboard KPI #7)
+- Build Angular: **0 errores, 0 warnings** ✅
+- **Bug fixes Sprint 8** detectados al levantar backend:
+  - `TaskServiceImpl.java`: variables `type/severity/title` sin inicializar en switch → agregados valores por defecto antes del switch
+  - `ReportServiceImpl.java`: `import com.lowagie.text.*` importaba `com.lowagie.text.Row` que colisionaba con `org.apache.poi.ss.usermodel.Row` → reemplazado wildcard por imports explícitos (`Chunk`, `Document`, `Paragraph`, etc.)
+- Backend levanta correctamente en puerto 8080 ✅
