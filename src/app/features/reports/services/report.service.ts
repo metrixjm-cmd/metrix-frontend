@@ -38,6 +38,14 @@ export class ReportService {
     );
   }
 
+  /** Sprint 12: descarga la Ficha de Desempeño Individual en PDF para un colaborador. */
+  downloadPerformanceCard(userId: string): Observable<Blob> {
+    return this.http.get(
+      `${this.base}/user/${userId}/performance-card`,
+      { responseType: 'blob' }
+    );
+  }
+
   triggerDownload(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');

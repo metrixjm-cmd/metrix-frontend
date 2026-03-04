@@ -4,7 +4,15 @@ export type NotificationType =
   | 'TASK_ASSIGNED'
   | 'TASK_STARTED'
   | 'TASK_COMPLETED'
-  | 'TASK_FAILED';
+  | 'TASK_FAILED'
+  | 'TASK_REOPENED'
+  | 'INCIDENT_CREATED'
+  | 'INCIDENT_IN_RESOLUTION'
+  | 'INCIDENT_RESOLVED'
+  | 'INCIDENT_REOPENED'
+  | 'TASK_DEADLINE_WARNING'
+  | 'TASK_OVERDUE'
+  | 'DAILY_IGEO_ALERT';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
@@ -16,8 +24,9 @@ export interface NotificationEvent {
   severity:  NotificationSeverity;
   title:     string;
   body:      string;
-  taskId:    string | null;
-  storeId:   string;
+  taskId:     string | null;
+  incidentId: string | null;
+  storeId:    string;
   timestamp: string; // ISO-8601
 }
 

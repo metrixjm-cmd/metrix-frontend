@@ -1,17 +1,28 @@
-<!-- Overlay para cerrar dropdowns -->
+<!-- ── Overlay: cierra dropdowns de header ──────────────────────────── -->
 @if (showNotifs() || showProfile()) {
   <div class="fixed inset-0 z-30" (click)="closeDropdowns()"></div>
+}
+
+<!-- ── Backdrop móvil: cierra el drawer del sidebar ─────────────────── -->
+@if (mobileOpen()) {
+  <div
+    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+    (click)="closeMobileSidebar()"
+  ></div>
 }
 
 <div class="flex h-screen bg-stone-50 overflow-hidden">
 
   <!-- ══════════════════════════════════════════════════════════
-       SIDEBAR
+       SIDEBAR  (drawer en mobile/tablet, estático en desktop)
   ════════════════════════════════════════════════════════════ -->
   <aside
-    class="flex flex-col bg-white border-r border-stone-200 transition-all duration-300 z-40 shrink-0 shadow-[1px_0_0_0_rgb(231,229,228)]"
-    [class]="collapsed() ? 'w-[68px]' : 'w-[220px]'"
+    class="flex flex-col bg-white border-r border-stone-200 transition-all duration-300
+           fixed inset-y-0 left-0 z-50 shadow-xl w-[220px]
+           lg:relative lg:z-40 lg:inset-auto lg:shadow-[1px_0_0_0_rgb(231,229,228)] lg:shrink-0"
+    [class]="asideClass()"
   >
+
     <!-- Logo -->
     <div class="flex items-center h-14 px-4 border-b border-stone-100 shrink-0">
       <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
@@ -20,12 +31,23 @@
             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       </div>
+      <!-- Texto siempre visible en mobile; oculto en desktop colapsado -->
       @if (!collapsed()) {
         <div class="ml-2.5">
           <span class="text-stone-900 font-bold text-sm tracking-tight block leading-none">METRIX</span>
           <span class="text-orange-600 text-[10px] font-semibold tracking-widest uppercase">Restaurantes</span>
         </div>
       }
+      <!-- Botón cerrar drawer (solo mobile) -->
+      <button
+        (click)="closeMobileSidebar()"
+        class="ml-auto -mr-1 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 lg:hidden"
+        aria-label="Cerrar menú"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
     <!-- Nav items -->
@@ -37,6 +59,7 @@
           [routerLinkActiveOptions]="{ exact: item.exact }"
           class="relative flex items-center gap-3 px-2.5 py-2.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors group"
           [title]="collapsed() ? item.label : ''"
+          (click)="closeMobileSidebar()"
         >
           <svg class="w-4.5 h-[18px] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="item.iconPath" />
@@ -54,8 +77,8 @@
       }
     </nav>
 
-    <!-- Separador + colapsar -->
-    <div class="border-t border-stone-100 p-2 shrink-0">
+    <!-- Colapsar (solo desktop) -->
+    <div class="border-t border-stone-100 p-2 shrink-0 hidden lg:block">
       <button
         (click)="toggleSidebar()"
         class="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
@@ -71,6 +94,7 @@
         }
       </button>
     </div>
+
   </aside>
 
   <!-- ══════════════════════════════════════════════════════════
@@ -79,7 +103,18 @@
   <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
     <!-- ── HEADER ──────────────────────────────────────────── -->
-    <header class="h-14 bg-white border-b border-stone-200 flex items-center gap-4 px-5 shrink-0 z-40">
+    <header class="h-14 bg-white border-b border-stone-200 flex items-center gap-3 px-4 md:gap-4 md:px-5 shrink-0 z-40">
+
+      <!-- Hamburger: solo visible en mobile/tablet -->
+      <button
+        (click)="toggleMobileSidebar()"
+        class="flex-none w-9 h-9 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors lg:hidden"
+        aria-label="Abrir menú"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
       <!-- Buscador global -->
       <div class="flex-1 max-w-sm">
@@ -99,7 +134,7 @@
 
       <div class="flex items-center gap-2 ml-auto">
 
-        <!-- Turno badge -->
+        <!-- Turno badge (solo md+) -->
         @if (auth.currentUser()?.turno) {
           <span class="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full border border-orange-200">
             <span class="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></span>
@@ -126,7 +161,7 @@
 
           <!-- Dropdown notificaciones -->
           @if (showNotifs()) {
-            <div class="absolute right-0 top-11 w-80 bg-white border border-stone-200 rounded-xl shadow-card-md z-50 overflow-hidden animate-slide-up">
+            <div class="absolute right-0 top-11 w-80 max-w-[calc(100vw-1rem)] bg-white border border-stone-200 rounded-xl shadow-card-md z-50 overflow-hidden animate-slide-up">
               <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
                 <div class="flex items-center gap-2">
                   <span class="text-sm font-semibold text-stone-900">Alertas Operativas</span>
@@ -179,7 +214,7 @@
         <div class="relative">
           <button
             (click)="toggleProfile()"
-            class="flex items-center gap-2 pl-1 pr-3 py-1 rounded-lg hover:bg-stone-100 transition-colors"
+            class="flex items-center gap-2 pl-1 pr-2 md:pr-3 py-1 rounded-lg hover:bg-stone-100 transition-colors"
           >
             <div class="w-7 h-7 bg-orange-600 rounded-lg flex items-center justify-center text-xs font-bold text-white shadow-sm">
               {{ userInitials() }}
@@ -195,7 +230,7 @@
 
           <!-- Dropdown perfil -->
           @if (showProfile()) {
-            <div class="absolute right-0 top-11 w-64 bg-white border border-stone-200 rounded-xl shadow-card-md z-50 overflow-hidden animate-slide-up">
+            <div class="absolute right-0 top-11 w-64 max-w-[calc(100vw-1rem)] bg-white border border-stone-200 rounded-xl shadow-card-md z-50 overflow-hidden animate-slide-up">
               <div class="px-4 py-4 bg-gradient-to-br from-orange-50 to-amber-50 border-b border-stone-100">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-sm">

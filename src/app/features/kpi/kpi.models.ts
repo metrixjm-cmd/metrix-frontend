@@ -22,6 +22,7 @@ export interface KpiSummary {
   sparklineOnTime: number[];
   sparklineIgeo: number[];
   avgQualityRating: number;
+  trainingCompletionRate: number;
 }
 
 export interface StoreRankingEntry {
@@ -72,4 +73,44 @@ export interface DailyReportResponse {
   totalCompleted: number;
   totalFailed: number;
   totalPending: number;
+}
+
+// ── Sprint 17 — IGEO Analítico (microservicio Python analytics-service) ──────
+
+/** Scores de los 4 pilares que componen el IGEO. */
+export interface IgeoPillarScores {
+  cumplimiento: number;
+  tiempo:       number;
+  calidad:      number;
+  consistencia: number;
+}
+
+/** Resultado global del IGEO analítico. */
+export interface IgeoGlobalResult {
+  total_tasks:   number;
+  completed:     number;
+  pillar_scores: IgeoPillarScores;
+  igeo:          number;
+}
+
+/** Resultado por sucursal del IGEO analítico. */
+export interface IgeoStoreResult extends IgeoGlobalResult {
+  store_id: string;
+}
+
+/**
+ * Respuesta completa del endpoint GET /api/v1/kpis/analytics/igeo.
+ * Campos snake_case reflejan la serialización Jackson con @JsonProperty
+ * del record Java que pasa-a-través del JSON del analytics-service Python.
+ */
+export interface IgeoAnalyticsResponse {
+  status:      string;
+  metric:      string;
+  description: string;
+  weights:     IgeoPillarScores;
+  computed_at: string;
+  data: {
+    global:   IgeoGlobalResult;
+    by_store: IgeoStoreResult[];
+  };
 }

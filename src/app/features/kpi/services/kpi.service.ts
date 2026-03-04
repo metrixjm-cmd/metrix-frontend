@@ -2,7 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CorrectionSpeedData, KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
+import { CorrectionSpeedData, IgeoAnalyticsResponse, KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
 import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
 
 /**
@@ -24,6 +24,7 @@ export class KpiService {
   private readonly _error               = signal<string | null>(null);
   private readonly _usersResponsibility = signal<UserResponsibilityEntry[]>([]);
   private readonly _correctionSpeed     = signal<CorrectionSpeedData | null>(null);
+  private readonly _igeoAnalytics       = signal<IgeoAnalyticsResponse | null>(null);
 
   readonly summary             = this._summary.asReadonly();
   readonly ranking             = this._ranking.asReadonly();
@@ -31,19 +32,23 @@ export class KpiService {
   readonly error               = this._error.asReadonly();
   readonly usersResponsibility = this._usersResponsibility.asReadonly();
   readonly correctionSpeed     = this._correctionSpeed.asReadonly();
+  readonly igeoAnalytics       = this._igeoAnalytics.asReadonly();
 
   // ── Computed signals para el dashboard ──────────────────────────────────
 
   readonly kpiCards = computed((): KpiCard[] | null => {
-    const s = this._summary();
+    const s        = this._summary();
     if (!s) return null;
+    const analytics  = this._igeoAnalytics();
+    const igeoValue  = analytics != null ? analytics.data.global.igeo : s.igeo;
+    const igeoSource = analytics != null ? 'Analítico (4 pilares)' : 'Índice Global Ejecución';
     return [
       {
         label:    'IGEO',
-        value:    s.igeo >= 0 ? s.igeo.toFixed(1) : 'S/D',
+        value:    igeoValue >= 0 ? igeoValue.toFixed(1) : 'S/D',
         delta:    '',
         deltaUp:  true,
-        sub:      'Índice Global Ejecución',
+        sub:      igeoSource,
         data:     s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [50],
         color:    '#ea580c',
         accentBg: 'orange',
@@ -77,6 +82,16 @@ export class KpiService {
         data:     [Math.max(s.criticalPending, 1)],
         color:    '#ef4444',
         accentBg: 'red',
+      },
+      {
+        label:    'Capacitación',
+        value:    `${(s.trainingCompletionRate ?? 0).toFixed(1)}%`,
+        delta:    '',
+        deltaUp:  true,
+        sub:      'Capacitaciones completadas',
+        data:     [Math.max(s.trainingCompletionRate ?? 0, 1)],
+        color:    '#8b5cf6',
+        accentBg: 'violet',
       },
     ];
   });
@@ -143,6 +158,19 @@ export class KpiService {
     this.http.get<CorrectionSpeedData>(`${this.apiUrl}/store/${storeId}/correction-speed`).subscribe({
       next:  r   => this._correctionSpeed.set(r),
       error: err => this._error.set(this.extractMessage(err)),
+    });
+  }
+
+  /**
+   * KPI #10 — IGEO Analítico (Sprint 17).
+   * Consume el endpoint de Spring Boot que delega al analytics-service Python.
+   * Si el analytics-service no está disponible, Spring devuelve 503 y se ignora
+   * silenciosamente — el dashboard seguirá mostrando el IGEO calculado en memoria.
+   */
+  loadAnalyticsIgeo(): void {
+    this.http.get<IgeoAnalyticsResponse>(`${this.apiUrl}/analytics/igeo`).subscribe({
+      next:  r   => this._igeoAnalytics.set(r),
+      error: ()  => { /* analytics-service offline — fallback al IGEO local */ },
     });
   }
 
