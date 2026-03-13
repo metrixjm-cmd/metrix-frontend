@@ -72,7 +72,7 @@ public class AlertScheduler {
                         OPEN_STATUSES, now, in30);
 
         for (com.metrix.api.model.Task task : upcoming) {
-            if (warnedDeadlineIds.contains(task.getId())) continue;
+            if (!warnedDeadlineIds.add(task.getId())) continue; // Atómico: check+set
 
             NotificationEvent event = NotificationEvent.builder()
                     .id(UUID.randomUUID().toString())
@@ -91,7 +91,6 @@ public class AlertScheduler {
             }
             notificationService.sendToStoreManagers(task.getStoreId(), event);
 
-            warnedDeadlineIds.add(task.getId());
             log.debug("TASK_DEADLINE_WARNING enviado — taskId: {}", task.getId());
         }
 
@@ -116,7 +115,7 @@ public class AlertScheduler {
                         OPEN_STATUSES, now);
 
         for (com.metrix.api.model.Task task : overdue) {
-            if (warnedOverdueIds.contains(task.getId())) continue;
+            if (!warnedOverdueIds.add(task.getId())) continue; // Atómico: check+set
 
             String severity = task.isCritical() ? "critical" : "warning";
             String title    = task.isCritical() ? "Tarea crítica vencida" : "Tarea vencida";
@@ -139,7 +138,6 @@ public class AlertScheduler {
             }
             notificationService.sendToStoreManagers(task.getStoreId(), event);
 
-            warnedOverdueIds.add(task.getId());
             log.debug("TASK_OVERDUE enviado — taskId: {} | critical: {}",
                     task.getId(), task.isCritical());
         }

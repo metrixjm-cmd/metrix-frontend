@@ -11,6 +11,7 @@ import com.metrix.api.model.*;
 import com.metrix.api.repository.TaskRepository;
 import com.metrix.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -30,6 +31,7 @@ import java.util.UUID;
  *       no de MongoTemplate ni clases concretas de infraestructura.</li>
  * </ul>
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
@@ -74,6 +76,8 @@ public class TaskServiceImpl implements TaskService {
                 .build();
 
         Task saved = taskRepository.save(task);
+        log.info("[AUDIT] Task created: id={}, title='{}', assignee={}, store={}, createdBy={}",
+                saved.getId(), saved.getTitle(), saved.getAssignedUserId(), saved.getStoreId(), createdBy);
 
         // Notifica al EJECUTADOR asignado (Sprint 6)
         notificationService.sendToUser(saved.getAssignedUserId(), NotificationEvent.builder()
@@ -178,6 +182,8 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task saved = taskRepository.save(task);
+        log.info("[AUDIT] Task status changed: id={}, {}→{}, user={}, reworkCount={}",
+                taskId, current, next, currentUser, saved.getReworkCount());
 
         // Notificaciones en tiempo real por cambio de estado (Sprint 6)
         emitStatusNotification(saved, next);
@@ -347,6 +353,8 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task saved = taskRepository.save(task);
+        log.info("[AUDIT] Quality rated: taskId={}, rating={}, ratedBy={}",
+                taskId, request.getRating(), currentUser);
         return toResponse(saved);
     }
 

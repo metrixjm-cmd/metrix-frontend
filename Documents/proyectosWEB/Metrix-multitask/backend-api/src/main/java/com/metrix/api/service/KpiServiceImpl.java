@@ -22,6 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +61,9 @@ public class KpiServiceImpl implements KpiService {
     // de construir el bean.
     @Value("${metrix.analytics.url}")
     private String analyticsUrl;
+
+    @Value("${metrix.analytics.api-key:dev-internal-key}")
+    private String analyticsApiKey;
 
     // ── Puntos de entrada ─────────────────────────────────────────────────
 
@@ -111,9 +119,15 @@ public class KpiServiceImpl implements KpiService {
     public List<UserResponsibilityResponse> getUsersResponsibility(String storeId) {
         List<User> users = userRepository.findByStoreIdAndActivoTrue(storeId);
 
+        // Batch fetch: 1 sola query para TODAS las tareas de la sucursal (elimina N+1)
+        List<Task> allStoreTasks = taskRepository.findByStoreIdAndActivoTrue(storeId);
+        Map<String, List<Task>> tasksByUser = allStoreTasks.stream()
+                .filter(t -> t.getAssignedUserId() != null)
+                .collect(Collectors.groupingBy(Task::getAssignedUserId));
+
         List<UserResponsibilityResponse> result = users.stream()
                 .map(user -> {
-                    List<Task> tasks = taskRepository.findByAssignedUserIdAndActivoTrue(user.getId());
+                    List<Task> tasks     = tasksByUser.getOrDefault(user.getId(), List.of());
                     List<Task> closed    = closedTasks(tasks);
                     List<Task> completed = completedTasks(tasks);
 
@@ -167,7 +181,11 @@ public class KpiServiceImpl implements KpiService {
         String url = analyticsUrl + "/igeo";
         log.debug("[KPI#10] Llamando analytics-service: GET {}", url);
         try {
-            IgeoAnalyticsResponse response = restTemplate.getForObject(url, IgeoAnalyticsResponse.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-API-Key", analyticsApiKey);
+            ResponseEntity<IgeoAnalyticsResponse> entity = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), IgeoAnalyticsResponse.class);
+            IgeoAnalyticsResponse response = entity.getBody();
             if (response == null) {
                 throw new RestClientException("analytics-service devolvió cuerpo vacío en " + url);
             }
@@ -224,16 +242,20 @@ public class KpiServiceImpl implements KpiService {
      */
     private List<double[]> extractCorrectionMinutes(Task task) {
         List<StatusTransition> transitions = task.getTransitions();
+        if (transitions == null || transitions.size() < 2) {
+            return List.of();
+        }
+
         List<double[]> durations = new ArrayList<>();
 
         for (int i = 0; i < transitions.size() - 1; i++) {
             StatusTransition t = transitions.get(i);
-            if (t.getToStatus() == TaskStatus.FAILED) {
-                // Buscar la siguiente transición que llega a COMPLETED
+            if (t.getToStatus() == TaskStatus.FAILED && t.getChangedAt() != null) {
                 for (int j = i + 1; j < transitions.size(); j++) {
-                    if (transitions.get(j).getToStatus() == TaskStatus.COMPLETED) {
+                    StatusTransition next = transitions.get(j);
+                    if (next.getToStatus() == TaskStatus.COMPLETED && next.getChangedAt() != null) {
                         long minutes = Duration.between(t.getChangedAt(),
-                                transitions.get(j).getChangedAt()).toMinutes();
+                                next.getChangedAt()).toMinutes();
                         if (minutes >= 0) {
                             durations.add(new double[]{minutes});
                         }

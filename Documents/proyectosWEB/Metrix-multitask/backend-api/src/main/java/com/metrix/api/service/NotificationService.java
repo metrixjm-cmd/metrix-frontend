@@ -42,7 +42,7 @@ public class NotificationService {
      * @return SseEmitter configurado con timeout infinito
      */
     public SseEmitter subscribe(String userId) {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout (no infinito)
 
         emitter.onCompletion(() -> {
             emitters.remove(userId, emitter);
@@ -51,7 +51,6 @@ public class NotificationService {
 
         emitter.onTimeout(() -> {
             emitters.remove(userId, emitter);
-            emitter.complete();
             log.debug("SSE timeout para usuario: {}", userId);
         });
 
@@ -60,7 +59,15 @@ public class NotificationService {
             log.debug("SSE error para usuario {}: {}", userId, e.getMessage());
         });
 
-        emitters.put(userId, emitter);
+        // Cerrar emitter anterior del mismo usuario (1 conexión por usuario)
+        SseEmitter old = emitters.put(userId, emitter);
+        if (old != null) {
+            try {
+                old.complete();
+            } catch (Exception ignored) {
+                // El emitter anterior puede ya estar cerrado
+            }
+        }
         log.info("SSE conectado — userId: {} | conexiones activas: {}", userId, emitters.size());
 
         // Envía evento inicial de confirmación de conexión

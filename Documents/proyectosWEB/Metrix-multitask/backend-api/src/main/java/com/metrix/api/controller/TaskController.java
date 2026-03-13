@@ -111,13 +111,19 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
     public ResponseEntity<List<TaskResponse>> getTasksByStore(
             @PathVariable String storeId,
-            @RequestParam(required = false) String shift) {
+            @RequestParam(required = false) String shift,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "500") int size) {
 
         List<TaskResponse> tasks = (shift != null && !shift.isBlank())
                 ? taskService.getTasksByStoreAndShift(storeId, shift)
                 : taskService.getTasksByStore(storeId);
 
-        return ResponseEntity.ok(tasks);
+        // Paginación opcional: si size < 500 (default), aplicar offset/limit
+        int safeSize = Math.min(size, 500); // Hard cap
+        int from = Math.min(page * safeSize, tasks.size());
+        int to   = Math.min(from + safeSize, tasks.size());
+        return ResponseEntity.ok(tasks.subList(from, to));
     }
 
     /**
