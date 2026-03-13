@@ -75,6 +75,22 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Cache: Caffeine (in-memory, prep para Redis Memorystore) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <!-- AOP: interceptor de métricas -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- Reports: Apache POI (Excel) -->
         <dependency>
             <groupId>org.apache.poi</groupId>

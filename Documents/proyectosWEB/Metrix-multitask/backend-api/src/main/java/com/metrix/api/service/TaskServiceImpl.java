@@ -12,6 +12,8 @@ import com.metrix.api.repository.TaskRepository;
 import com.metrix.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -50,6 +52,10 @@ public class TaskServiceImpl implements TaskService {
      * y se desnormaliza en el documento Task para garantizar la consistencia
      * de reportes históricos aunque el puesto del usuario cambie (Obj. #11).
      */
+    @Caching(evict = {
+            @CacheEvict(value = "kpiSummary", allEntries = true),
+            @CacheEvict(value = "storeRanking", allEntries = true)
+    })
     @Override
     public TaskResponse createTask(CreateTaskRequest request, String createdBy) {
         User assignedUser = userRepository.findById(request.getAssignedUserId())
@@ -142,6 +148,10 @@ public class TaskServiceImpl implements TaskService {
      *   <li>Persiste y retorna el documento actualizado.</li>
      * </ol>
      */
+    @Caching(evict = {
+            @CacheEvict(value = "kpiSummary", allEntries = true),
+            @CacheEvict(value = "storeRanking", allEntries = true)
+    })
     @Override
     public TaskResponse updateStatus(String taskId, UpdateStatusRequest request, String currentUser) {
         Task task = taskRepository.findById(taskId)

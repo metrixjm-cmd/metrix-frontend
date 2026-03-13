@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -15,8 +16,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class IncidentService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/incidents`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/incidents`;
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
   private readonly _incidents        = signal<IncidentResponse[]>([]);
@@ -60,29 +62,35 @@ export class IncidentService {
   loadMyIncidents(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<IncidentResponse[]>(`${this.apiUrl}/my`).subscribe({
-      next:  list => { this._incidents.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse[]>(`${this.apiUrl}/my`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._incidents.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadByStore(storeId: string, status?: IncidentStatus): void {
     this._loading.set(true);
     this._error.set(null);
     const params = status ? { params: { status } } : {};
-    this.http.get<IncidentResponse[]>(`${this.apiUrl}/store/${storeId}`, params).subscribe({
-      next:  list => { this._incidents.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse[]>(`${this.apiUrl}/store/${storeId}`, params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._incidents.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadById(id: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<IncidentResponse>(`${this.apiUrl}/${id}`).subscribe({
-      next:  i   => { this._selectedIncident.set(i); this._loading.set(false); },
-      error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  i   => { this._selectedIncident.set(i); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   // ── Mutaciones ────────────────────────────────────────────────────────────

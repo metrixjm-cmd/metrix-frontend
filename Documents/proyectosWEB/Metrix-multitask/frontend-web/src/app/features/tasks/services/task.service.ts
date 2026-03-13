@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
@@ -20,8 +21,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/tasks`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/tasks`;
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
   private readonly _tasks        = signal<TaskResponse[]>([]);
@@ -51,6 +53,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/my`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -68,6 +71,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/store/${storeId}`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -85,6 +89,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/user/${userId}`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -100,6 +105,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  task => { this._selectedTask.set(task); this._loading.set(false); },
         error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },

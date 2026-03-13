@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -14,8 +15,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class TrainingService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/trainings`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/trainings`;
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
   private readonly _trainings         = signal<TrainingResponse[]>([]);
@@ -50,37 +52,45 @@ export class TrainingService {
   loadAll(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<TrainingResponse[]>(this.apiUrl).subscribe({
-      next:  list => { this._trainings.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<TrainingResponse[]>(this.apiUrl)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._trainings.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadMyTrainings(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<TrainingResponse[]>(`${this.apiUrl}/my`).subscribe({
-      next:  list => { this._trainings.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<TrainingResponse[]>(`${this.apiUrl}/my`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._trainings.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadByStore(storeId: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<TrainingResponse[]>(`${this.apiUrl}/store/${storeId}`).subscribe({
-      next:  list => { this._trainings.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<TrainingResponse[]>(`${this.apiUrl}/store/${storeId}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._trainings.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadById(id: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<TrainingResponse>(`${this.apiUrl}/${id}`).subscribe({
-      next:  t   => { this._selectedTraining.set(t); this._loading.set(false); },
-      error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<TrainingResponse>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  t   => { this._selectedTraining.set(t); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   // ── Mutaciones (Promise) ──────────────────────────────────────────────────

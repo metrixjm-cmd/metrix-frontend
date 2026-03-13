@@ -35,15 +35,23 @@
   <!-- ══════════════════════════════════════════════
        KPI CARDS CON SPARKLINES — comunes a todos los roles
   ══════════════════════════════════════════════ -->
-  @if (kpiSvc.loading()) {
+  @if (kpisLoading()) {
     <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
       @for (i of [1,2,3,4,5]; track i) {
         <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card h-28 animate-pulse"></div>
       }
     </div>
+  } @else if (kpisError()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      Error cargando KPIs: {{ kpisError() }}
+    </div>
+  } @else if (kpis().length === 0) {
+    <div class="p-4 bg-stone-50 border border-stone-200 rounded-xl text-stone-500 text-sm">
+      Sin datos de KPIs disponibles. Asigna tareas para generar métricas.
+    </div>
   } @else {
     <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
-      @for (kpi of kpis(); track kpi.label) {
+      @for (kpi of kpis(); track kpi.label; let idx = $index) {
         <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card hover:shadow-card-md transition-shadow">
           <div class="flex items-start justify-between mb-3">
             <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide leading-tight">{{ kpi.label }}</p>
@@ -73,8 +81,8 @@
                   <stop offset="100%" [attr.stop-color]="kpi.color" stop-opacity="0" />
                 </linearGradient>
               </defs>
-              <path [attr.d]="sparklineFill(kpi.data)" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
-              <path [attr.d]="sparklinePath(kpi.data)" [attr.stroke]="kpi.color"
+              <path [attr.d]="kpiSparklines()[idx]?.fill" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
+              <path [attr.d]="kpiSparklines()[idx]?.path" [attr.stroke]="kpi.color"
                     stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>

@@ -1,4 +1,5 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -12,8 +13,9 @@ import { GamificationSummary, LeaderboardEntry } from '../gamification.models';
  */
 @Injectable({ providedIn: 'root' })
 export class GamificationService {
-  private readonly http   = inject(HttpClient);
-  private readonly base   = `${environment.apiUrl}/gamification`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly base       = `${environment.apiUrl}/gamification`;
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
   private readonly _leaderboard = signal<LeaderboardEntry[]>([]);
@@ -38,6 +40,7 @@ export class GamificationService {
       .get<LeaderboardEntry[]>(`${this.base}/store/${storeId}/leaderboard`, {
         params: { period },
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  data => { this._leaderboard.set(data); this._loading.set(false); },
         error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -47,10 +50,12 @@ export class GamificationService {
   loadMySummary(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<GamificationSummary>(`${this.base}/me`).subscribe({
-      next:  data => { this._summary.set(data); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<GamificationSummary>(`${this.base}/me`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  data => { this._summary.set(data); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   setPeriod(period: 'weekly' | 'monthly'): void {

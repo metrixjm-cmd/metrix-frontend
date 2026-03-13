@@ -63,29 +63,12 @@ export class Dashboard implements OnInit {
     return 'Mi Turno';
   });
 
-  // ── KPI cards fallback ────────────────────────────────────────────────────
-  private readonly fallbackKpis: KpiCard[] = [
-    { label: 'IGEO',         value: '—', delta: '', deltaUp: true,  sub: 'Índice Global Ejecución',     data: [50,50,50,50,50,50,50,50,50,50], color: '#005a9c', accentBg: 'brand'   },
-    { label: 'On-Time Rate', value: '—', delta: '', deltaUp: true,  sub: 'Tareas completadas a tiempo', data: [50,50,50,50,50,50,50,50,50,50], color: '#10b981', accentBg: 'emerald' },
-    { label: 'Re-trabajo',   value: '—', delta: '', deltaUp: false, sub: 'Tareas devueltas / total',    data: [1],                             color: '#e31717', accentBg: 'red'     },
-    { label: 'Críticas Pend.',value: '—',delta: '', deltaUp: false, sub: 'Sin ejecutar este turno',     data: [1],                             color: '#ef4444', accentBg: 'red'     },
-    { label: 'Capacitación', value: '—', delta: '', deltaUp: true,  sub: 'Capacitaciones completadas',  data: [1],                             color: '#8b5cf6', accentBg: 'violet'  },
-  ];
+  // ── KPI signals desde servicio (sin fallback hardcodeado) ─────────────────
+  readonly kpis    = computed(() => this.kpiSvc.kpiCards() ?? []);
+  readonly ranking = computed(() => this.kpiSvc.rankingForDisplay());
 
-  private readonly fallbackRanking: StoreRanking[] = [
-    { rank: 1, name: 'Suc. Centro Histórico', igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-    { rank: 2, name: 'Suc. Plaza Mayor',      igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-    { rank: 3, name: 'Suc. Torres Norte',     igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-  ];
-
-  // ── KPI signals desde servicio ────────────────────────────────────────────
-  readonly kpis = computed(() => this.kpiSvc.kpiCards() ?? this.fallbackKpis);
-
-  readonly ranking = computed(() =>
-    this.kpiSvc.rankingForDisplay().length > 0
-      ? this.kpiSvc.rankingForDisplay()
-      : this.fallbackRanking
-  );
+  readonly kpisLoading  = this.kpiSvc.loading;
+  readonly kpisError    = this.kpiSvc.error;
 
   readonly pipelineSteps = computed(() => {
     const c = this.kpiSvc.pipelineCounts();
@@ -95,6 +78,15 @@ export class Dashboard implements OnInit {
       { label: 'Completada',  color: 'text-emerald-700', bg: 'bg-emerald-100', count: c?.completed  ?? 0 },
       { label: 'Fallida',     color: 'text-red-600',     bg: 'bg-red-100',     count: c?.failed     ?? 0 },
     ];
+  });
+
+  // ── Sparklines pre-calculados (evita recálculo por change detection) ──────
+  readonly kpiSparklines = computed(() => {
+    const cards = this.kpis();
+    return cards.map(kpi => ({
+      path: this.sparklinePath(kpi.data),
+      fill: this.sparklineFill(kpi.data),
+    }));
   });
 
   // ── GERENTE: Tabla de equipo (KPI #7 top-5) ───────────────────────────────

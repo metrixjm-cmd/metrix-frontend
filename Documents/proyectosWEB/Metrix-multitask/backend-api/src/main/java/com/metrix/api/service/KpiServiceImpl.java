@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -67,6 +68,7 @@ public class KpiServiceImpl implements KpiService {
 
     // ── Puntos de entrada ─────────────────────────────────────────────────
 
+    @Cacheable(value = "kpiSummary", key = "#storeId")
     @Override
     public KpiSummaryResponse getStoreSummary(String storeId) {
         List<Task> tasks = taskRepository.findByStoreIdAndActivoTrue(storeId);
@@ -79,6 +81,7 @@ public class KpiServiceImpl implements KpiService {
         return buildSummary(tasks, "USER", userId);
     }
 
+    @Cacheable(value = "storeRanking")
     @Override
     public List<StoreRankingResponse> getStoreRanking() {
         List<Task> all = taskRepository.findByActivoTrue();
@@ -115,6 +118,7 @@ public class KpiServiceImpl implements KpiService {
 
     // ── KPI #7 — Responsabilidad Individual ──────────────────────────────
 
+    @Cacheable(value = "kpiSummary", key = "'users-' + #storeId")
     @Override
     public List<UserResponsibilityResponse> getUsersResponsibility(String storeId) {
         List<User> users = userRepository.findByStoreIdAndActivoTrue(storeId);
