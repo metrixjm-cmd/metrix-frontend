@@ -6,11 +6,13 @@ import com.metrix.api.repository.StoreRepository;
 import com.metrix.api.repository.TaskRepository;
 import com.metrix.api.service.KpiService;
 import com.metrix.api.service.NotificationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -18,25 +20,16 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Componente de alertas preventivas programadas (Sprint 16).
+ * Alertas preventivas programadas (Sprint 16, refactorizado Fase 4).
  * <p>
- * Cubre el Objetivo #8 de la spec: "Generación de avisos automáticos de tareas
- * terminadas o inconclusas". Complementa las notificaciones reactivas (Sprint 6)
- * con alertas proactivas que el sistema dispara sin intervención del usuario.
- * <p>
- * Alertas implementadas:
+ * Deduplicación:
  * <ul>
- *   <li>{@code TASK_DEADLINE_WARNING} — tarea vence en menos de 30 minutos.</li>
- *   <li>{@code TASK_OVERDUE}          — tarea ya vencida y sigue abierta.</li>
- *   <li>{@code DAILY_IGEO_ALERT}      — sucursal con IGEO &lt; 70% al inicio del día.</li>
+ *   <li>Con Redis: SETNX con TTL 1h (distribuido, auto-limpia, multi-instancia safe)</li>
+ *   <li>Sin Redis: ConcurrentHashMap.newKeySet() local (fallback single-instance)</li>
  * </ul>
- * <p>
- * Deduplicación: dos {@link Set} thread-safe evitan reenviar la misma alerta
- * dentro de la misma hora. Se limpian cada hora vía {@link #clearWarningSets()}.
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AlertScheduler {
 
     private final TaskRepository       taskRepository;
@@ -44,35 +37,42 @@ public class AlertScheduler {
     private final KpiService           kpiService;
     private final NotificationService  notificationService;
 
-    /** IDs de tareas a las que ya se les envió TASK_DEADLINE_WARNING en la hora actual. */
-    private final Set<String> warnedDeadlineIds = ConcurrentHashMap.newKeySet();
+    @Nullable
+    private final StringRedisTemplate  redisTemplate;
 
-    /** IDs de tareas a las que ya se les envió TASK_OVERDUE en la hora actual. */
-    private final Set<String> warnedOverdueIds  = ConcurrentHashMap.newKeySet();
+    // Fallback local (usado cuando Redis no está disponible)
+    private final Set<String> localDeadlineIds = ConcurrentHashMap.newKeySet();
+    private final Set<String> localOverdueIds  = ConcurrentHashMap.newKeySet();
 
-    /** Statuses que se consideran "aún abiertas" para alertas. */
     private static final List<TaskStatus> OPEN_STATUSES =
             List.of(TaskStatus.PENDING, TaskStatus.IN_PROGRESS);
 
+    public AlertScheduler(
+            TaskRepository taskRepository,
+            StoreRepository storeRepository,
+            KpiService kpiService,
+            NotificationService notificationService,
+            @Nullable StringRedisTemplate redisTemplate) {
+        this.taskRepository = taskRepository;
+        this.storeRepository = storeRepository;
+        this.kpiService = kpiService;
+        this.notificationService = notificationService;
+        this.redisTemplate = redisTemplate;
+    }
+
     // ── Alertas de vencimiento próximo ────────────────────────────────────
 
-    /**
-     * Cada 5 minutos detecta tareas que vencen en los próximos 30 minutos
-     * y aún no han sido cerradas.
-     * <p>
-     * Notifica al EJECUTADOR asignado y a los managers de la sucursal.
-     */
     @Scheduled(cron = "0 */5 * * * *")
     public void checkUpcomingDeadlines() {
-        Instant now    = Instant.now();
-        Instant in30   = now.plusSeconds(30 * 60);
+        Instant now  = Instant.now();
+        Instant in30 = now.plusSeconds(30 * 60);
 
         List<com.metrix.api.model.Task> upcoming =
                 taskRepository.findByExecution_StatusInAndDueAtBetweenAndActivoTrue(
                         OPEN_STATUSES, now, in30);
 
         for (com.metrix.api.model.Task task : upcoming) {
-            if (!warnedDeadlineIds.add(task.getId())) continue; // Atómico: check+set
+            if (!tryAcquireDedup("alert:deadline:" + task.getId())) continue;
 
             NotificationEvent event = NotificationEvent.builder()
                     .id(UUID.randomUUID().toString())
@@ -90,7 +90,6 @@ public class AlertScheduler {
                 notificationService.sendToUser(task.getAssignedUserId(), event);
             }
             notificationService.sendToStoreManagers(task.getStoreId(), event);
-
             log.debug("TASK_DEADLINE_WARNING enviado — taskId: {}", task.getId());
         }
 
@@ -102,10 +101,6 @@ public class AlertScheduler {
 
     // ── Alertas de tareas vencidas ────────────────────────────────────────
 
-    /**
-     * Cada 10 minutos detecta tareas cuyo {@code dueAt} ya pasó y siguen abiertas.
-     * Las tareas críticas emiten severidad {@code critical}; el resto {@code warning}.
-     */
     @Scheduled(cron = "0 */10 * * * *")
     public void checkOverdueTasks() {
         Instant now = Instant.now();
@@ -115,18 +110,17 @@ public class AlertScheduler {
                         OPEN_STATUSES, now);
 
         for (com.metrix.api.model.Task task : overdue) {
-            if (!warnedOverdueIds.add(task.getId())) continue; // Atómico: check+set
+            if (!tryAcquireDedup("alert:overdue:" + task.getId())) continue;
 
             String severity = task.isCritical() ? "critical" : "warning";
             String title    = task.isCritical() ? "Tarea crítica vencida" : "Tarea vencida";
-            String body     = String.format("«%s» superó su tiempo límite sin cerrarse.", task.getTitle());
 
             NotificationEvent event = NotificationEvent.builder()
                     .id(UUID.randomUUID().toString())
                     .type("TASK_OVERDUE")
                     .severity(severity)
                     .title(title)
-                    .body(body)
+                    .body(String.format("«%s» superó su tiempo límite sin cerrarse.", task.getTitle()))
                     .taskId(task.getId())
                     .incidentId(null)
                     .storeId(task.getStoreId())
@@ -137,24 +131,16 @@ public class AlertScheduler {
                 notificationService.sendToUser(task.getAssignedUserId(), event);
             }
             notificationService.sendToStoreManagers(task.getStoreId(), event);
-
-            log.debug("TASK_OVERDUE enviado — taskId: {} | critical: {}",
-                    task.getId(), task.isCritical());
+            log.debug("TASK_OVERDUE enviado — taskId: {} | critical: {}", task.getId(), task.isCritical());
         }
 
         if (!overdue.isEmpty()) {
-            log.info("[AlertScheduler] checkOverdueTasks — {} tareas vencidas detectadas",
-                    overdue.size());
+            log.info("[AlertScheduler] checkOverdueTasks — {} tareas vencidas", overdue.size());
         }
     }
 
-    // ── Resumen diario de IGEO ────────────────────────────────────────────
+    // ── Resumen diario de IGEO ──────────────────────────────────────────
 
-    /**
-     * A las 08:00 AM revisa cada sucursal activa. Si su IGEO calculado es menor
-     * a 70% (y existe al menos una tarea — IGEO ≥ 0), envía {@code DAILY_IGEO_ALERT}
-     * a todos los ADMINs conectados.
-     */
     @Scheduled(cron = "0 0 8 * * *")
     public void sendDailyIgeoAlert() {
         Instant now = Instant.now();
@@ -168,7 +154,7 @@ public class AlertScheduler {
                             .type("DAILY_IGEO_ALERT")
                             .severity("critical")
                             .title("Alerta de desempeño operativo")
-                            .body(String.format("Sucursal «%s» inicia el día con IGEO %.1f%% (mínimo requerido: 70%%).",
+                            .body(String.format("Sucursal «%s» inicia el día con IGEO %.1f%% (mínimo: 70%%).",
                                     store.getNombre(), igeo))
                             .taskId(null)
                             .incidentId(null)
@@ -181,25 +167,47 @@ public class AlertScheduler {
                             store.getNombre(), igeo);
                 }
             } catch (Exception e) {
-                log.warn("[AlertScheduler] Error calculando IGEO para sucursal {}: {}",
-                        store.getId(), e.getMessage());
+                log.error("[AlertScheduler] Error IGEO para sucursal {}: {}", store.getId(), e.getMessage());
             }
         });
     }
 
-    // ── Limpieza horaria de sets de deduplicación ─────────────────────────
+    // ── Limpieza (solo para fallback local) ─────────────────────────────
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void clearLocalSets() {
+        if (redisTemplate != null) return; // Redis auto-expira con TTL
+        int d = localDeadlineIds.size();
+        int o = localOverdueIds.size();
+        localDeadlineIds.clear();
+        localOverdueIds.clear();
+        log.info("[AlertScheduler] Local sets limpiados — deadline: {} | overdue: {}", d, o);
+    }
+
+    // ── Deduplicación: Redis SETNX o fallback local ─────────────────────
 
     /**
-     * Al inicio de cada hora limpia los sets de deduplicación para que las alertas
-     * puedan volver a enviarse si la tarea sigue sin cerrarse.
+     * Intenta adquirir un lock de deduplicación.
+     * Con Redis: SETNX + TTL 1h (distribuido, auto-expira).
+     * Sin Redis: Set local (single-instance only).
+     *
+     * @return true si es la primera vez (debe enviar alerta), false si ya existe
      */
-    @Scheduled(cron = "0 0 * * * *")
-    public void clearWarningSets() {
-        int deadlineCleared = warnedDeadlineIds.size();
-        int overdueCleared  = warnedOverdueIds.size();
-        warnedDeadlineIds.clear();
-        warnedOverdueIds.clear();
-        log.info("[AlertScheduler] Sets limpiados — deadline: {} | overdue: {}",
-                deadlineCleared, overdueCleared);
+    private boolean tryAcquireDedup(String key) {
+        if (redisTemplate != null) {
+            try {
+                Boolean isNew = redisTemplate.opsForValue()
+                        .setIfAbsent(key, "1", Duration.ofHours(1));
+                return Boolean.TRUE.equals(isNew);
+            } catch (Exception e) {
+                log.warn("[AlertScheduler] Redis SETNX failed for {}, using local fallback", key);
+            }
+        }
+        // Fallback local
+        if (key.startsWith("alert:deadline:")) {
+            return localDeadlineIds.add(key);
+        } else {
+            return localOverdueIds.add(key);
+        }
     }
 }
