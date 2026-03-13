@@ -49,7 +49,7 @@ export class Leaderboard implements OnInit {
 
   igeoClass(igeo: number): string {
     if (igeo >= 80) return 'text-emerald-600 font-bold';
-    if (igeo >= 60) return 'text-amber-600 font-bold';
+    if (igeo >= 60) return 'text-yellow-600 font-bold';
     return 'text-red-600 font-bold';
   }
 

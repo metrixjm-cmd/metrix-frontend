@@ -42,11 +42,6 @@ export const routes: Routes = [
           import('./features/training/training.routes').then(m => m.TRAINING_ROUTES),
       },
       {
-        path: 'settings',
-        loadChildren: () =>
-          import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES),
-      },
-      {
         path: 'gamification',
         loadChildren: () =>
           import('./features/gamification/gamification.routes').then(m => m.GAMIFICATION_ROUTES),
@@ -55,6 +50,16 @@ export const routes: Routes = [
         path: 'incidents',
         loadChildren: () =>
           import('./features/incidents/incidents.routes').then(m => m.INCIDENTS_ROUTES),
+      },
+      {
+        path: 'trainer',
+        loadChildren: () =>
+          import('./features/trainer/trainer.routes').then(m => m.TRAINER_ROUTES),
+      },
+      {
+        path: 'help',
+        loadChildren: () =>
+          import('./features/help/help.routes').then(m => m.HELP_ROUTES),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],

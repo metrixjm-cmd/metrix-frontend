@@ -46,6 +46,16 @@ export class TrainingService {
 
   // ── Métodos de carga (subscribe) ──────────────────────────────────────────
 
+  /** Solo ADMIN — todas las sucursales. */
+  loadAll(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<TrainingResponse[]>(this.apiUrl).subscribe({
+      next:  list => { this._trainings.set(list); this._loading.set(false); },
+      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+    });
+  }
+
   loadMyTrainings(): void {
     this._loading.set(true);
     this._error.set(null);

@@ -44,6 +44,25 @@ npm start          # dev server en http://localhost:4200
 npx ng build --configuration=development   # build check
 ```
 
+### Docker Compose (local completo)
+```bash
+cp .env.example .env   # editar JWT_SECRET
+docker compose up --build
+# → http://localhost:4200
+```
+
+### GCP sin VMs (Cloud Run + Firebase Hosting)
+```bash
+# 1. Editar deploy.sh → rellenar PROJECT_ID, MONGO_URI, JWT_SECRET
+# 2. Ejecutar desde Cloud Shell o bash local con gcloud + firebase CLI
+./deploy.sh
+
+# Resultados:
+#   Frontend : https://PROJECT_ID.web.app
+#   Backend  : https://metrix-backend-HASH-uc.a.run.app
+#   Analytics: https://metrix-analytics-HASH-uc.a.run.app
+```
+
 ---
 
 ## Usuarios de Prueba (MongoDB metrix_db.users)
@@ -357,11 +376,70 @@ Build: **0 errores, 0 warnings** ✅
 - `notification.models.ts`: 3 nuevos tipos en `NotificationType` union — `TASK_DEADLINE_WARNING`, `TASK_OVERDUE`, `DAILY_IGEO_ALERT`
 - Build Angular: **0 errores, 0 warnings** ✅
 
+### ✅ Sprint 17 — Microservicio Analítico Python + Integración Spring Boot + Angular
+**Stack:** Python 3.12 + FastAPI + motor (async MongoDB) + pandas + numpy → Spring Boot proxy → Angular
+
+**analytics-service/app/main.py — endpoints creados:**
+- `GET /health` → health check Cloud Run
+- `GET /api/v1/analytics/test-kpi` → conteos por estado/sucursal via pandas
+- `GET /api/v1/analytics/on-time-rate` → tasa global + desglose por sucursal (COMPLETED AND on_time / total)
+- `GET /api/v1/analytics/igeo` → IGEO de 4 pilares (Cumplimiento×0.40 + Tiempo×0.25 + Calidad×0.20 + Consistencia×0.15), global + by_store
+
+**seed_data.py:** script asyncio + motor, pobla 75 tareas realistas desde MongoDB; usa @Field names de Spring Data.
+
+**Integración Spring Boot (`backend-api`):**
+- `application.yml`: propiedad `metrix.analytics.url: http://localhost:8001/api/v1/analytics`
+- `config/AppConfig.java` (NUEVO): bean `RestTemplate` singleton
+- `dto/IgeoAnalyticsResponse.java` (NUEVO): Java 21 nested records + `@JsonProperty` snake_case
+- `service/KpiService.java`: + `getGlobalIgeoAnalytics()` en interface
+- `service/KpiServiceImpl.java`: inyecta `RestTemplate` + `@Value analyticsUrl`; `getGlobalIgeoAnalytics()` con fallback log
+- `controller/KpiController.java`: `GET /api/v1/kpis/analytics/igeo` (ADMIN/GERENTE), HTTP 503 si analytics offline
+
+**Integración Angular (`frontend-web`):**
+- `kpi.models.ts`: + `IgeoPillarScores`, `IgeoGlobalResult`, `IgeoStoreResult`, `IgeoAnalyticsResponse`
+- `kpi.service.ts`: + signal `_igeoAnalytics`, readonly `igeoAnalytics`; `kpiCards` usa analytics IGEO si disponible (sub: "Analítico (4 pilares)"); + `loadAnalyticsIgeo()` con error silencioso (fallback al IGEO local)
+- `dashboard.ts`: llama `loadAnalyticsIgeo()` en ngOnInit ADMIN y GERENTE; + `igeoPillarArray(igeo)` helper; import `IgeoAnalyticsResponse`
+- `dashboard.html`: card IGEO muestra desglose de 4 pilares con mini-barras naranjas cuando analytics disponible
+
+**Para levantar local:**
+```bash
+analytics-service\venv\Scripts\activate
+cd analytics-service && uvicorn app.main:app --reload --port 8001
+```
+
+Build Angular: **0 errores, 0 warnings** ✅
+
+### ✅ Sprint 18 — Quality Rating por Gerente + Docker
+**Backend (3 nuevos + 4 modificados):**
+- `QualityRatingRequest.java` (DTO nuevo): `@NotNull rating (1.0–5.0)`, `comments` opcional
+- `TaskService.java`: +`rateQuality(taskId, request, currentUser)` en interface
+- `TaskServiceImpl.java`: `rateQuality()` — valida COMPLETED, setea qualityRating + comments, persiste
+- `TaskController.java`: `PATCH /{taskId}/quality` con `@PreAuthorize ADMIN|GERENTE`
+- `SecurityConfig.java`: matcher `PATCH /api/v1/tasks/*/quality → ADMIN|GERENTE`
+- `application.yml`: env var fallbacks para SPRING_DATA_MONGODB_URI, METRIX_SECURITY_JWT_SECRET_KEY, METRIX_ANALYTICS_URL
+- `application-docker.yml` (NUEVO): override sin fallback local para contenedor
+
+**Frontend (2 modificados):**
+- `task.service.ts`: +`rateQuality(taskId, rating, comments?)` → `PATCH /quality` + tap actualiza signals
+- `task-detail.ts`: +`showRatingForm/hoverStar/selectedStar` signals; +`ratingForm` (rating required + comments optional); +`canRateQuality` computed (isManagerView + COMPLETED); +`submitRating()` + `selectStar()` + `starsArray`; +`isManagerView` computed
+- `task-detail.html`: sección "Evaluación de Calidad" condicional a `canRateQuality()`:
+  - Si ya tiene rating → estrellas readonly + botón "Cambiar calificación"
+  - Si sin rating → botón "Evaluar Calidad" amber
+  - Formulario inline: 5 estrellas clickeables con hover effect + textarea comentarios + spinner
+
+**Docker (6 nuevos):**
+- `backend-api/Dockerfile`: multi-stage (maven:3.9.5-eclipse-temurin-21 → eclipse-temurin:21-jre-alpine)
+- `frontend-web/Dockerfile`: multi-stage (node:22-alpine → nginx:alpine)
+- `frontend-web/nginx.conf`: SPA fallback + proxy `/api → backend:8080` + gzip + cache assets
+- `docker-compose.yml` (raíz): mongodb (healthcheck), backend (SPRING_PROFILES_ACTIVE=docker), analytics, frontend
+- `.env.example` (raíz): JWT_SECRET placeholder
+- Build Angular: **0 errores, 0 warnings** ✅
+
 ## Próximos Sprints
 
 | Sprint | Descripción |
 |--------|------------|
-| Sprint 17 | Por definir |
+| Sprint 19 | Por definir |
 
 ---
 
@@ -378,6 +456,7 @@ backend-api/src/main/java/com/metrix/api/controller/KpiController.java          
 backend-api/src/main/java/com/metrix/api/controller/ReportController.java        ← Sprint 8
 backend-api/src/main/java/com/metrix/api/model/Task.java
 backend-api/src/main/java/com/metrix/api/model/StatusTransition.java             ← Sprint 8
+backend-api/src/main/java/com/metrix/api/scheduler/AlertScheduler.java           ← Sprint 16
 backend-api/src/main/java/com/metrix/api/service/TaskServiceImpl.java
 backend-api/src/main/java/com/metrix/api/service/KpiServiceImpl.java             ← Sprint 7+8
 backend-api/src/main/java/com/metrix/api/service/ReportServiceImpl.java          ← Sprint 8
@@ -530,3 +609,24 @@ frontend-web/src/app/features/settings/store-detail/store-detail.ts        ← S
   - `TaskServiceImpl.java`: variables `type/severity/title` sin inicializar en switch → agregados valores por defecto antes del switch
   - `ReportServiceImpl.java`: `import com.lowagie.text.*` importaba `com.lowagie.text.Row` que colisionaba con `org.apache.poi.ss.usermodel.Row` → reemplazado wildcard por imports explícitos (`Chunk`, `Document`, `Paragraph`, etc.)
 - Backend levanta correctamente en puerto 8080 ✅
+
+### 2026-02-28 (sesión 11)
+- Sprint 16 completo: Alertas Preventivas Programadas
+- Sprint 17 init: analytics-service/ Python (FastAPI + motor + pandas + Dockerfile + seed_data.py)
+- **Feed en Vivo** (`dashboard.ts`): reemplazado `signal<LiveEvent[]>([...])` hardcodeado con `computed<LiveEvent[]>()` derivado de `taskSvc.tasks()` — ordena por timestamp reciente, toma top-6, mapea status→action real
+- Git push: Sprints 9-16 subidos a `CharlyTlelo/Metrix-multitask---backend` y `---frontend` vía `git archive + subtree` (el origin local apunta a Azure DevOps — NO usar)
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-03-03 (sesión 13)
+- Sprint 18 completo: Quality Rating por Gerente + Docker
+- **Backend** (3 nuevos + 4 modificados): QualityRatingRequest DTO; TaskService/Impl +rateQuality(); TaskController +PATCH quality; SecurityConfig +matcher; application.yml env-var fallbacks; application-docker.yml (NUEVO)
+- **Frontend** (2 modificados): task.service.ts +rateQuality(); task-detail.ts +rating signals/form/computed/methods; task-detail.html +sección Evaluación de Calidad con estrellas interactivas
+- **Docker** (6 nuevos): backend/frontend Dockerfiles multi-stage; nginx.conf (SPA+proxy+gzip); docker-compose.yml (healthcheck MongoDB, SPRING_PROFILES_ACTIVE=docker); .env.example
+- Build final: **0 errores, 0 warnings** ✅
+
+### 2026-02-28 (sesión 12)
+- Sprint 17 completo: Python analytics-service → Spring Boot → Angular integración IGEO
+- **analytics-service**: `on-time-rate` endpoint + `igeo` endpoint (4 pilares con `_igeo_pillars()` helper)
+- **Spring Boot**: `AppConfig.java` (RestTemplate bean), `IgeoAnalyticsResponse.java` (Java 21 records), `KpiServiceImpl` +`getGlobalIgeoAnalytics()`, `KpiController` `GET /analytics/igeo` (503 si Python offline)
+- **Angular**: `kpi.models.ts` +4 interfaces; `kpi.service.ts` `_igeoAnalytics` signal + `loadAnalyticsIgeo()` + `kpiCards` prioriza analytics IGEO; `dashboard.ts` llama `loadAnalyticsIgeo()` en ADMIN+GERENTE + helper `igeoPillarArray()`; `dashboard.html` card IGEO muestra mini-barras por pilar cuando analytics disponible
+- Build final: **0 errores, 0 warnings** ✅

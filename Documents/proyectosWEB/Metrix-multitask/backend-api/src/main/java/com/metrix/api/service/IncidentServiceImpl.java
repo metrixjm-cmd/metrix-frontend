@@ -10,8 +10,11 @@ import com.metrix.api.repository.IncidentRepository;
 import com.metrix.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +33,7 @@ public class IncidentServiceImpl implements IncidentService {
     private final IncidentRepository  incidentRepository;
     private final UserRepository      userRepository;
     private final NotificationService notificationService;
+    private final GcsService          gcsService;
 
     // ── Crear ────────────────────────────────────────────────────────────────
 
@@ -50,9 +54,10 @@ public class IncidentServiceImpl implements IncidentService {
                 .reporterPosition(reporter.getPuesto())
                 .storeId(request.getStoreId())
                 .shift(request.getShift())
-                .evidenceUrls(request.getEvidenceUrls() != null
-                        ? request.getEvidenceUrls()
-                        : List.of())
+                .implicados(request.getImplicados() != null
+                        ? new ArrayList<>(request.getImplicados())
+                        : new ArrayList<>())
+                .followUpResponsible(request.getFollowUpResponsible())
                 .build();
 
         Incident saved = incidentRepository.save(incident);
@@ -127,7 +132,8 @@ public class IncidentServiceImpl implements IncidentService {
 
         switch (next) {
             case EN_RESOLUCION -> applyInResolution(incident);
-            case CERRADA       -> applyClosed(incident, now, request.getResolutionNotes(), currentNumeroUsuario);
+            case CERRADA       -> applyClosed(incident, now, request.getResolutionNotes(),
+                                             request.getClosedByName(), currentNumeroUsuario);
             case ABIERTA       -> applyReopened(incident);
         }
 
@@ -166,14 +172,28 @@ public class IncidentServiceImpl implements IncidentService {
     }
 
     private void applyClosed(Incident incident, Instant now, String resolutionNotes,
-                              String resolvedBy) {
+                              String closedByNameOverride, String resolvedBy) {
         if (resolutionNotes == null || resolutionNotes.isBlank()) {
             throw new IllegalStateException(
                     "Al cerrar una incidencia debe proporcionar 'resolutionNotes' con el detalle de la resolución.");
         }
+        // Si el front envía un nombre explícito, usarlo. Si no, obtenerlo del usuario autenticado.
+        String closerName;
+        String closerNumero;
+        if (closedByNameOverride != null && !closedByNameOverride.isBlank()) {
+            closerName   = closedByNameOverride.trim();
+            closerNumero = resolvedBy;
+        } else {
+            User closer = userRepository.findByNumeroUsuario(resolvedBy).orElse(null);
+            closerName   = closer != null ? closer.getNombre()        : resolvedBy;
+            closerNumero = closer != null ? closer.getNumeroUsuario() : resolvedBy;
+        }
+
         incident.setStatus(IncidentStatus.CERRADA);
         incident.setResolutionNotes(resolutionNotes);
         incident.setResolvedByUserId(resolvedBy);
+        incident.setClosedByName(closerName);
+        incident.setClosedByNumero(closerNumero);
         incident.setResolvedAt(now);
     }
 
@@ -181,6 +201,8 @@ public class IncidentServiceImpl implements IncidentService {
         incident.setStatus(IncidentStatus.ABIERTA);
         incident.setResolvedAt(null);
         incident.setResolvedByUserId(null);
+        incident.setClosedByName(null);
+        incident.setClosedByNumero(null);
         incident.setResolutionNotes(null);
     }
 
@@ -225,6 +247,46 @@ public class IncidentServiceImpl implements IncidentService {
         }
     }
 
+    // ── Evidencias Multimedia ─────────────────────────────────────────────────
+
+    @Override
+    public IncidentResponse uploadEvidence(String incidentId, MultipartFile file,
+                                            String currentNumeroUsuario) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .filter(Incident::isActivo)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Incidencia no encontrada: " + incidentId));
+
+        String contentType = file.getContentType() != null ? file.getContentType() : "";
+        String tipo;
+        String extension;
+
+        if (contentType.startsWith("image/")) {
+            tipo      = "img";
+            extension = contentType.equals("image/png") ? "png"
+                      : contentType.equals("image/webp") ? "webp" : "jpg";
+        } else if (contentType.startsWith("video/")) {
+            tipo      = "vid";
+            extension = contentType.equals("video/webm") ? "webm" : "mp4";
+        } else {
+            throw new IllegalArgumentException(
+                    "Tipo de archivo no soportado. Se aceptan imágenes (JPG, PNG, WebP) y videos (MP4, WebM).");
+        }
+
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer el archivo de evidencia.", e);
+        }
+
+        String url = gcsService.uploadFile(
+                incident.getStoreId(), incidentId, tipo, bytes, contentType, extension);
+
+        incident.getEvidenceUrls().add(url);
+        return toResponse(incidentRepository.save(incident));
+    }
+
     // ── Mapper ───────────────────────────────────────────────────────────────
 
     private IncidentResponse toResponse(Incident incident) {
@@ -240,8 +302,12 @@ public class IncidentServiceImpl implements IncidentService {
                 .reporterPosition(incident.getReporterPosition())
                 .storeId(incident.getStoreId())
                 .shift(incident.getShift())
+                .implicados(incident.getImplicados())
+                .followUpResponsible(incident.getFollowUpResponsible())
                 .status(incident.getStatus())
                 .resolvedByUserId(incident.getResolvedByUserId())
+                .closedByName(incident.getClosedByName())
+                .closedByNumero(incident.getClosedByNumero())
                 .resolutionNotes(incident.getResolutionNotes())
                 .resolvedAt(incident.getResolvedAt())
                 .evidenceUrls(incident.getEvidenceUrls())

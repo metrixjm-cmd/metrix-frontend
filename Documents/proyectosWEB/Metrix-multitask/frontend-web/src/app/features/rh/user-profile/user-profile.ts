@@ -59,7 +59,7 @@ export class UserProfile implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.router.navigate(['/rh']); return; }
+    if (!id) { this.router.navigate(['/rh/usuarios']); return; }
 
     this.rhSvc.loadUserById(id);
 
@@ -130,7 +130,7 @@ export class UserProfile implements OnInit {
 
     try {
       await this.rhSvc.deactivateUser(id);
-      this.router.navigate(['/rh']);
+      this.router.navigate(['/rh/usuarios']);
     } catch {
       this.confirmDeact.set(false);
     }
@@ -150,13 +150,13 @@ export class UserProfile implements OnInit {
 
   igeoClass(igeo: number): string {
     if (igeo >= 80) return 'text-emerald-600';
-    if (igeo >= 60) return 'text-amber-600';
+    if (igeo >= 60) return 'text-yellow-600';
     return 'text-red-600';
   }
 
   igeoBg(igeo: number): string {
     if (igeo >= 80) return 'bg-emerald-50 border-emerald-200';
-    if (igeo >= 60) return 'bg-amber-50 border-amber-200';
+    if (igeo >= 60) return 'bg-yellow-50 border-yellow-200';
     return 'bg-red-50 border-red-200';
   }
 }

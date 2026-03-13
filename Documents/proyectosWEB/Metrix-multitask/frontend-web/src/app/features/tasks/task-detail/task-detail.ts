@@ -7,12 +7,13 @@ import { TaskService } from '../services/task.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { EvidenceUpload } from '../evidence-upload/evidence-upload';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { CATEGORY_LABELS, SHIFT_LABELS } from '../models/task.models';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, StatusBadgeComponent, ButtonComponent, EvidenceUpload],
+  imports: [ReactiveFormsModule, StatusBadgeComponent, ButtonComponent, EvidenceUpload, AppDatePipe],
   templateUrl: './task-detail.html',
 })
 export class TaskDetail implements OnInit {
@@ -30,6 +31,9 @@ export class TaskDetail implements OnInit {
   actionError = signal<string | null>(null);
   showCompleteForm = signal(false);
   showFailForm     = signal(false);
+  showRatingForm   = signal(false);
+  hoverStar        = signal(0);
+  selectedStar     = signal(0);
 
   // ── Formulario para COMPLETAR (qualityRating opcional) ───────────────
   completeForm = this.fb.group({
@@ -39,6 +43,12 @@ export class TaskDetail implements OnInit {
   // ── Formulario para FALLAR (comments obligatorio) ────────────────────
   failForm = this.fb.group({
     comments: ['', [Validators.required, Validators.minLength(10)]],
+  });
+
+  // ── Formulario para CALIFICAR CALIDAD (GERENTE/ADMIN) ────────────────
+  ratingForm = this.fb.group({
+    rating:   [null as number | null, [Validators.required, Validators.min(1), Validators.max(5)]],
+    comments: [''],
   });
 
   // ── Computed desde el servicio ───────────────────────────────────────
@@ -59,7 +69,13 @@ export class TaskDetail implements OnInit {
     return t?.status === 'IN_PROGRESS';
   });
 
-  readonly isEjecutador = computed(() => this.auth.hasRole('EJECUTADOR'));
+  readonly isEjecutador   = computed(() => this.auth.hasRole('EJECUTADOR'));
+  readonly isManagerView  = computed(() => this.auth.hasRole('ADMIN') || this.auth.hasRole('GERENTE'));
+
+  readonly canRateQuality = computed(() => {
+    const t = this.task();
+    return this.isManagerView() && t?.status === 'COMPLETED';
+  });
 
   readonly hasEvidence = computed(() => {
     const t = this.task();
@@ -135,17 +151,41 @@ export class TaskDetail implements OnInit {
     });
   }
 
+  submitRating(): void {
+    const id = this.task()?.id;
+    if (!id || this.ratingForm.invalid) return;
+
+    const rating   = this.ratingForm.value.rating!;
+    const comments = this.ratingForm.value.comments ?? undefined;
+
+    this.submitting.set(true);
+    this.actionError.set(null);
+
+    this.taskSvc.rateQuality(id, rating, comments || undefined).subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.showRatingForm.set(false);
+        this.ratingForm.reset();
+        this.selectedStar.set(0);
+      },
+      error: err => {
+        this.actionError.set(this.extractMsg(err));
+        this.submitting.set(false);
+      },
+    });
+  }
+
+  selectStar(n: number): void {
+    this.selectedStar.set(n);
+    this.ratingForm.patchValue({ rating: n });
+  }
+
+  readonly starsArray = [1, 2, 3, 4, 5];
+
   goBack(): void {
     this.router.navigate(['/tasks']);
   }
 
-  formatDate(iso: string | null | undefined): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'long', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-  }
 
   filenameFromUrl(url: string): string {
     return url.split('/').pop() ?? url;

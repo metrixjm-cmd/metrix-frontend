@@ -1,8 +1,8 @@
-<div class="p-6 max-w-2xl mx-auto">
+﻿<div class="p-6 max-w-2xl mx-auto">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3 mb-6">
-    <a routerLink="/rh"
+    <a routerLink="/rh/usuarios"
        class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -30,7 +30,7 @@
       <label class="block text-sm font-medium text-stone-700 mb-1">Nombre completo *</label>
       <input formControlName="nombre" type="text"
              placeholder="Ej. Ana López García"
-             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
         <p class="text-xs text-red-600 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
       }
@@ -41,7 +41,7 @@
       <label class="block text-sm font-medium text-stone-700 mb-1">Puesto *</label>
       <input formControlName="puesto" type="text"
              placeholder="Ej. Cajera, Cocinero, Supervisor"
-             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       @if (form.get('puesto')?.invalid && form.get('puesto')?.touched) {
         <p class="text-xs text-red-600 mt-1">El puesto es obligatorio</p>
       }
@@ -53,12 +53,12 @@
         <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
         <input formControlName="storeId" type="text"
                [attr.readonly]="storeIdDisabled ? true : null"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-stone-50 read-only:bg-stone-50 read-only:text-stone-400">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-stone-50 read-only:bg-stone-50 read-only:text-stone-400">
       </div>
       <div>
         <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
         <select formControlName="turno"
-                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
           @for (t of turnos; track t) {
             <option [value]="t">{{ t }}</option>
           }
@@ -72,7 +72,7 @@
         <label class="block text-sm font-medium text-stone-700 mb-1">Número de usuario *</label>
         <input formControlName="numeroUsuario" type="text"
                placeholder="Ej. EJE003"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
         @if (form.get('numeroUsuario')?.invalid && form.get('numeroUsuario')?.touched) {
           <p class="text-xs text-red-600 mt-1">El número de usuario es obligatorio</p>
         }
@@ -81,7 +81,7 @@
         <label class="block text-sm font-medium text-stone-700 mb-1">Contraseña *</label>
         <input formControlName="password" type="password"
                placeholder="Mínimo 8 caracteres"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
         @if (form.get('password')?.invalid && form.get('password')?.touched) {
           <p class="text-xs text-red-600 mt-1">La contraseña debe tener al menos 8 caracteres</p>
         }
@@ -95,8 +95,8 @@
         @for (rol of roles; track rol) {
           <button type="button"
                   [class]="isRolSelected(rol)
-                    ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-orange-600 text-white border border-orange-600 transition-colors'
-                    : 'px-3 py-1.5 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:border-orange-300 transition-colors'"
+                    ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-600 text-white border border-brand-600 transition-colors'
+                    : 'px-3 py-1.5 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:border-brand-300 transition-colors'"
                   [disabled]="!isAdmin()"
                   (click)="toggleRol(rol)">
             {{ rolLabels[rol] }}
@@ -110,13 +110,13 @@
 
     <!-- Acciones -->
     <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
-      <a routerLink="/rh"
+      <a routerLink="/rh/usuarios"
          class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
         Cancelar
       </a>
       <button type="submit"
               [disabled]="form.invalid || saving()"
-              class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
         @if (saving()) {
           <span class="inline-flex items-center gap-2">
             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">

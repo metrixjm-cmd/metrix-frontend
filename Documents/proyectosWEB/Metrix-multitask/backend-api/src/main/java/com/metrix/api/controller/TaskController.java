@@ -1,6 +1,7 @@
 package com.metrix.api.controller;
 
 import com.metrix.api.dto.CreateTaskRequest;
+import com.metrix.api.dto.QualityRatingRequest;
 import com.metrix.api.dto.TaskResponse;
 import com.metrix.api.dto.UpdateStatusRequest;
 import com.metrix.api.exception.ResourceNotFoundException;
@@ -153,6 +154,26 @@ public class TaskController {
 
         TaskResponse response = taskService.updateStatus(taskId, request, auth.getName());
         return ResponseEntity.ok(response);
+    }
+
+    // ── Calificación de Calidad (Sprint 18) ──────────────────────────────
+
+    /**
+     * PATCH /api/v1/tasks/{taskId}/quality
+     * <p>
+     * Permite a GERENTE/ADMIN calificar la calidad de una tarea COMPLETADA.
+     * Alimenta el Pilar Calidad del IGEO analítico.
+     * <p>
+     * Ejemplo de body: {@code { "rating": 4.5, "comments": "Excelente ejecución." }}
+     */
+    @PatchMapping("/{taskId}/quality")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GERENTE')")
+    public ResponseEntity<TaskResponse> rateQuality(
+            @PathVariable String taskId,
+            @Valid @RequestBody QualityRatingRequest request,
+            Authentication auth) {
+
+        return ResponseEntity.ok(taskService.rateQuality(taskId, request, auth.getName()));
     }
 
     // ── Helper ───────────────────────────────────────────────────────────

@@ -1,26 +1,25 @@
 <div class="min-h-screen flex bg-stone-50">
 
   <!-- ════════════════════════════════════════════════
-       PANEL IZQUIERDO — Branding METRIX
+       PANEL IZQUIERDO — Branding + Selector de Tema
        (visible solo en lg+)
   ════════════════════════════════════════════════ -->
-  <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 p-12 relative overflow-hidden">
+  <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-brand-600 p-12 relative overflow-hidden">
 
-    <!-- Decoración de fondo -->
+    <!-- Decoración geométrica — formas sólidas, sin degradados -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      <div class="absolute -top-40 -left-40 w-[500px] h-[500px] bg-white/10 rounded-full filter blur-3xl"></div>
-      <div class="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-orange-900/20 rounded-full filter blur-3xl"></div>
-      <div class="absolute top-1/3 right-0 w-72 h-72 bg-amber-300/20 rounded-full filter blur-2xl"></div>
-      <!-- Grid pattern sutil -->
-      <div class="absolute inset-0 opacity-[0.07]"
-        style="background-image: linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px); background-size: 40px 40px;">
+      <div class="absolute -top-32 -left-32 w-80 h-80 bg-brand-700 rounded-full opacity-60"></div>
+      <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-brand-500 rounded-full opacity-50"></div>
+      <div class="absolute top-1/2 right-10 w-20 h-20 bg-brand-500 rounded-2xl opacity-40 rotate-12"></div>
+      <div class="absolute inset-0 opacity-[0.06]"
+        style="background-image: linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px); background-size: 40px 40px;">
       </div>
     </div>
 
     <!-- Logo + wordmark -->
     <div class="relative z-10">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30 shadow-sm">
+        <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center border border-white/30 shadow-sm">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -28,7 +27,7 @@
         </div>
         <div>
           <span class="text-white font-extrabold text-xl tracking-tight leading-none block">METRIX</span>
-          <span class="text-orange-200 text-[11px] font-semibold tracking-widest uppercase leading-none">Restaurantes</span>
+          <span class="text-brand-200 text-[11px] font-semibold tracking-widest uppercase leading-none">Restaurantes</span>
         </div>
       </div>
     </div>
@@ -37,43 +36,79 @@
     <div class="relative z-10 flex-1 flex flex-col justify-center max-w-sm">
       <h1 class="text-4xl font-extrabold text-white leading-tight mb-4 tracking-tight">
         Sistema Integral de Gestión<br/>
-        <span class="text-orange-200">de Tareas Empresariales</span>
+        <span class="text-brand-200">de Tareas Empresariales</span>
       </h1>
-      <p class="text-orange-100 text-base leading-relaxed">
+      <p class="text-brand-100 text-base leading-relaxed">
         Organiza, delega y monitorea las actividades de tu equipo en tiempo real.
       </p>
 
-      <!-- Feature cards -->
+      <!-- Feature cards — sólidas, sin glassmorphism -->
       <div class="grid grid-cols-2 gap-3 mt-10">
-        <div class="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+        <div class="bg-brand-700 border border-brand-500 rounded-xl p-4">
           <div class="text-2xl mb-2">🏢</div>
           <p class="text-white font-semibold text-sm leading-tight">Multi-unidad</p>
-          <p class="text-orange-200 text-xs mt-0.5">5-10 unidades de trabajo</p>
+          <p class="text-brand-200 text-xs mt-0.5">5-10 unidades de trabajo</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+        <div class="bg-brand-700 border border-brand-500 rounded-xl p-4">
           <div class="text-2xl mb-2">📊</div>
           <p class="text-white font-semibold text-sm leading-tight">KPIs en vivo</p>
-          <p class="text-orange-200 text-xs mt-0.5">Analíticas detalladas</p>
+          <p class="text-brand-200 text-xs mt-0.5">Analíticas detalladas</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+        <div class="bg-brand-700 border border-brand-500 rounded-xl p-4">
           <div class="text-2xl mb-2">🔔</div>
           <p class="text-white font-semibold text-sm leading-tight">Notificaciones</p>
-          <p class="text-orange-200 text-xs mt-0.5">Alertas en tiempo real</p>
+          <p class="text-brand-200 text-xs mt-0.5">Alertas en tiempo real</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+        <div class="bg-brand-700 border border-brand-500 rounded-xl p-4">
           <div class="text-2xl mb-2">👥</div>
           <p class="text-white font-semibold text-sm leading-tight">30+ usuarios</p>
-          <p class="text-orange-200 text-xs mt-0.5">Por unidad de trabajo</p>
+          <p class="text-brand-200 text-xs mt-0.5">Por unidad de trabajo</p>
         </div>
       </div>
     </div>
 
-    <!-- Footer izquierdo -->
+    <!-- ── SELECTOR DE TEMA ──────────────────────── -->
     <div class="relative z-10">
-      <p class="text-orange-200/70 text-xs">
+      <p class="text-brand-200 text-[11px] font-semibold tracking-widest uppercase mb-3">
+        Tema de color
+      </p>
+      <div class="flex items-center gap-4">
+        @for (theme of themeSvc.themes; track theme.id) {
+          <button
+            (click)="themeSvc.set(theme.id)"
+            class="flex flex-col items-center gap-2 group focus:outline-none"
+            [attr.aria-label]="'Tema ' + theme.label"
+          >
+            <!-- Swatch circular -->
+            <span
+              class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm"
+              [class]="themeSvc.current() === theme.id
+                ? 'ring-2 ring-white ring-offset-2 ring-offset-brand-600 scale-110'
+                : 'ring-2 ring-white/30 group-hover:ring-white/70 group-hover:scale-105'"
+              [style.background-color]="theme.color"
+            >
+              @if (themeSvc.current() === theme.id) {
+                <svg class="w-3.5 h-3.5 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              }
+            </span>
+            <!-- Label -->
+            <span
+              class="text-[10px] font-semibold transition-colors"
+              [class]="themeSvc.current() === theme.id ? 'text-white' : 'text-brand-200 group-hover:text-white'"
+            >
+              {{ theme.label }}
+            </span>
+          </button>
+        }
+      </div>
+
+      <p class="text-brand-200/60 text-xs mt-5">
         METRIX v1.0 &copy; {{ currentYear }} &middot; Todos los derechos reservados
       </p>
     </div>
+
   </div>
 
   <!-- ════════════════════════════════════════════════
@@ -84,7 +119,7 @@
 
       <!-- Logo mobile (solo visible en sm/md) -->
       <div class="flex items-center justify-center gap-2.5 mb-8 lg:hidden">
-        <div class="w-9 h-9 bg-orange-600 rounded-xl flex items-center justify-center shadow-sm">
+        <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -92,7 +127,7 @@
         </div>
         <div>
           <span class="text-stone-900 font-extrabold text-xl tracking-tight leading-none block">METRIX</span>
-          <span class="text-orange-600 text-[10px] font-semibold tracking-widest uppercase leading-none">Restaurantes</span>
+          <span class="text-brand-600 text-[10px] font-semibold tracking-widest uppercase leading-none">Restaurantes</span>
         </div>
       </div>
 
@@ -157,7 +192,6 @@
               class="input-field pl-10 pr-11"
               [class.input-error]="isFieldInvalid('password')"
             />
-            <!-- Toggle show/hide password -->
             <button
               type="button"
               (click)="togglePassword()"
@@ -203,10 +237,10 @@
         <button
           type="submit"
           [disabled]="isLoading() || form.invalid"
-          class="w-full py-2.5 px-4 bg-orange-600 hover:bg-orange-700 disabled:bg-stone-200 disabled:text-stone-400
+          class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-stone-200 disabled:text-stone-400
                  disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-200
                  flex items-center justify-center gap-2 shadow-sm
-                 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
         >
           @if (isLoading()) {
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -228,23 +262,52 @@
       <div class="mt-8 pt-6 border-t border-stone-100">
         <p class="text-xs text-stone-400 text-center mb-3 font-medium uppercase tracking-wide">Roles del sistema</p>
         <div class="flex justify-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-orange-50 text-orange-700 rounded-full border border-orange-200 font-medium">
-            <span class="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full border border-brand-200 font-medium">
+            <span class="w-1.5 h-1.5 bg-brand-600 rounded-full"></span>
             Administrador
           </span>
-          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200 font-medium">
-            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-stone-100 text-stone-600 rounded-full border border-stone-200 font-medium">
+            <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
             Gerente
           </span>
-          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-stone-50 text-stone-600 rounded-full border border-stone-200 font-medium">
-            <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+          <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-stone-50 text-stone-500 rounded-full border border-stone-200 font-medium">
+            <span class="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>
             Ejecutador
           </span>
         </div>
       </div>
 
-      <!-- Footer -->
-      <p class="text-center text-stone-400 text-xs mt-6">
+      <!-- ── Selector de tema mobile (solo visible en mobile) ── -->
+      <div class="mt-6 pt-5 border-t border-stone-100 lg:hidden">
+        <p class="text-xs text-stone-400 text-center mb-3 font-medium uppercase tracking-wide">Tema de color</p>
+        <div class="flex items-center justify-center gap-5">
+          @for (theme of themeSvc.themes; track theme.id) {
+            <button
+              (click)="themeSvc.set(theme.id)"
+              class="flex flex-col items-center gap-1.5 focus:outline-none"
+              [attr.aria-label]="'Tema ' + theme.label"
+            >
+              <span
+                class="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200"
+                [class]="themeSvc.current() === theme.id
+                  ? 'ring-2 ring-offset-2 scale-110'
+                  : 'ring-2 ring-stone-200 hover:ring-stone-400 hover:scale-105'"
+                [style.background-color]="theme.color"
+                [style.--tw-ring-color]="theme.color"
+              >
+                @if (themeSvc.current() === theme.id) {
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </span>
+              <span class="text-[10px] font-medium text-stone-500">{{ theme.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <p class="text-center text-stone-400 text-xs mt-5">
         METRIX v1.0 &copy; {{ currentYear }} &middot; Sistema Integral de Gestión de Tareas
       </p>
 

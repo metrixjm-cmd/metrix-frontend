@@ -21,6 +21,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,6 +44,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsServiceImpl userDetailsService;
+
+    @Value("${metrix.cors.allowed-origins}")
+    private String allowedOriginsRaw;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -69,8 +75,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,   "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/users/**").hasRole("ADMIN")
 
-                // ── Módulo Capacitación (Sprint 10) ──────────────────
+                // ── Módulo Capacitación (Sprint 10 + flujo roles) ────
                 .requestMatchers(HttpMethod.GET,    "/api/v1/trainings/store/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.GET,    "/api/v1/trainings").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/v1/trainings").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/trainings/**").hasRole("ADMIN")
 
@@ -86,9 +93,20 @@ public class SecurityConfig {
 
                 // ── Módulo Contingencias (Sprint 15) ──────────────────
                 .requestMatchers(HttpMethod.POST,  "/api/v1/incidents").authenticated()
+                .requestMatchers(HttpMethod.POST,  "/api/v1/incidents/*/evidence").authenticated()
                 .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/my").authenticated()
                 .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/store/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/incidents/**").hasAnyRole("ADMIN", "GERENTE")
+
+                // ── Calificación de Calidad (Sprint 18) ───────────────
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/*/quality").hasAnyRole("ADMIN", "GERENTE")
+
+                // ── Módulo Trainer / Exámenes (Sprint 19) ─────────────
+                .requestMatchers(HttpMethod.POST,  "/api/v1/exams").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.GET,   "/api/v1/exams/store/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.GET,   "/api/v1/exams/*/submissions").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.GET,   "/api/v1/exams/**").authenticated()
+                .requestMatchers(HttpMethod.POST,  "/api/v1/exams/*/submit").authenticated()
 
                 // ── Todo lo demás requiere autenticación ───────────
                 .anyRequest().authenticated()
@@ -128,10 +146,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:4200",   // Angular dev
-                "http://localhost:8080"    // Backend local
-        ));
+        List<String> origins = Arrays.stream(allowedOriginsRaw.split(","))
+                .map(String::trim)
+                .toList();
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

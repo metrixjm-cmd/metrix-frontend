@@ -168,6 +168,23 @@ export class TaskService {
       );
   }
 
+  // ── PATCH /{id}/quality — Calificar calidad (ADMIN / GERENTE) ───────────
+
+  rateQuality(taskId: string, rating: number, comments?: string): Observable<TaskResponse> {
+    return this.http
+      .patch<TaskResponse>(`${this.apiUrl}/${taskId}/quality`, { rating, comments })
+      .pipe(
+        tap(updated => {
+          this._tasks.update(list =>
+            list.map(t => t.id === updated.id ? updated : t),
+          );
+          if (this._selectedTask()?.id === updated.id) {
+            this._selectedTask.set(updated);
+          }
+        }),
+      );
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   clearTasks(): void {

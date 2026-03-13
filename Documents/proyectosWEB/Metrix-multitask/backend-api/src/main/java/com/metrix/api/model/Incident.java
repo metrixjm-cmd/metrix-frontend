@@ -95,11 +95,30 @@ public class Incident {
     @Field("status")
     private IncidentStatus status = IncidentStatus.ABIERTA;
 
+    // ── Roles y Actores ──────────────────────────────────────────────────────
+
+    /** Lista de nombres/IDs de personas involucradas en el evento. */
+    @Builder.Default
+    @Field("implicados")
+    private List<String> implicados = new ArrayList<>();
+
+    /** Nombre o identificador del responsable asignado para gestionar la solución. */
+    @Field("follow_up_responsible")
+    private String followUpResponsible;
+
     // ── Resolución ───────────────────────────────────────────────────────────
 
     /** numeroUsuario del colaborador que cierra la incidencia. */
     @Field("resolved_by_user_id")
     private String resolvedByUserId;
+
+    /** Nombre completo del usuario que realizó el cierre definitivo (desnormalizado). */
+    @Field("closed_by_name")
+    private String closedByName;
+
+    /** Número de usuario del que realizó el cierre definitivo (desnormalizado). */
+    @Field("closed_by_numero")
+    private String closedByNumero;
 
     /** Obligatorio al mover a CERRADA. Describe la acción correctiva tomada. */
     @Field("resolution_notes")

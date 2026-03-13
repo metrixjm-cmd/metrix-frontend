@@ -30,6 +30,11 @@ public interface TrainingRepository extends MongoRepository<Training, String> {
     List<Training> findByStoreIdAndProgress_StatusAndActivoTrue(
             String storeId, TrainingStatus status);
 
+    // ── Vista global ADMIN ───────────────────────────────────────────────
+
+    /** Todas las capacitaciones activas en todas las sucursales (uso exclusivo ADMIN). */
+    List<Training> findByActivoTrue();
+
     // ── Conteos para KPI de Completación ────────────────────────────────
 
     long countByStoreIdAndActivoTrue(String storeId);

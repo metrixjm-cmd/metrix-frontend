@@ -1,4 +1,4 @@
-<div class="p-6 space-y-6">
+﻿<div class="p-6 space-y-6">
 
   <!-- Header -->
   <div class="flex items-center justify-between">
@@ -7,7 +7,7 @@
       <p class="text-sm text-stone-500 mt-0.5">Desempeño y gamificación de la sucursal</p>
     </div>
     <a routerLink="me"
-       class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+       class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
       <span>Mis Insignias</span>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -20,13 +20,13 @@
   <div class="flex gap-2">
     <button (click)="selectPeriod('weekly')"
             [class]="period() === 'weekly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
+              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-brand-600 text-white'
               : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
       Esta semana
     </button>
     <button (click)="selectPeriod('monthly')"
             [class]="period() === 'monthly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
+              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-brand-600 text-white'
               : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
       Este mes
     </button>
@@ -60,7 +60,7 @@
         @for (entry of podium(); track entry.userId) {
           <div [class]="'flex flex-col items-center gap-2 ' + podiumOrder(entry.rank)">
             <!-- Avatar -->
-            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg font-bold text-orange-600 relative">
+            <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center text-lg font-bold text-brand-600 relative">
               {{ entry.nombre.charAt(0).toUpperCase() }}
               <span class="absolute -top-1 -right-1 text-base">{{ podiumBadge(entry.rank) }}</span>
             </div>
@@ -71,7 +71,7 @@
             <!-- IGEO -->
             <p [class]="igeoClass(entry.igeo) + ' text-sm'">{{ entry.igeo }}%</p>
             <!-- Podio bar -->
-            <div [class]="'w-16 rounded-t-lg bg-orange-500 ' + podiumHeight(entry.rank)"></div>
+            <div [class]="'w-16 rounded-t-lg bg-brand-500 ' + podiumHeight(entry.rank)"></div>
           </div>
         }
       </div>
@@ -97,7 +97,7 @@
               <td class="px-4 py-3 font-bold text-stone-500">{{ entry.rank }}</td>
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600">
+                  <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-sm font-bold text-brand-600">
                     {{ entry.nombre.charAt(0).toUpperCase() }}
                   </div>
                   <div>

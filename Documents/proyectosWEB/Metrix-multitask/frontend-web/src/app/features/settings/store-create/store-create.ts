@@ -58,7 +58,7 @@ export class StoreCreate {
         telefono:  val.telefono  || undefined,
         turnos:    this.selectedTurnos(),
       });
-      this.router.navigate(['/settings']);
+      this.router.navigate(['/rh/sucursales']);
     } catch {
       // error already set in service signal
     }

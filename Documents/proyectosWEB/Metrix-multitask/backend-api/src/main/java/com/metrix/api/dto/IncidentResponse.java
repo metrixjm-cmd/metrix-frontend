@@ -26,8 +26,13 @@ public class IncidentResponse {
     private String storeId;
     private String shift;
 
+    private List<String> implicados;
+    private String followUpResponsible;
+
     private IncidentStatus status;
     private String resolvedByUserId;
+    private String closedByName;
+    private String closedByNumero;
     private String resolutionNotes;
     private Instant resolvedAt;
 

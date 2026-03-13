@@ -28,6 +28,9 @@ public interface TrainingService {
     /** Actualiza el progreso/estado de una capacitación. */
     TrainingResponse updateProgress(String id, UpdateTrainingProgressRequest req, String currentUser);
 
+    /** Retorna TODAS las capacitaciones activas de todas las sucursales (solo ADMIN). */
+    List<TrainingResponse> getAll();
+
     /** Soft-delete: marca activo = false. */
     void deactivate(String id);
 }

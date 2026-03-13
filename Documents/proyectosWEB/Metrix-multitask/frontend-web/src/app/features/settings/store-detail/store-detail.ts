@@ -99,7 +99,7 @@ export class StoreDetail implements OnInit {
     try {
       await this.settingsSvc.deactivate(id);
       this.showDeactivateModal.set(false);
-      this.router.navigate(['/settings']);
+      this.router.navigate(['/rh/sucursales']);
     } catch {
       this.showDeactivateModal.set(false);
     }

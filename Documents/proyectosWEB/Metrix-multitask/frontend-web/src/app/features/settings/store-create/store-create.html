@@ -1,8 +1,8 @@
-<div class="p-6 max-w-2xl mx-auto space-y-6">
+﻿<div class="p-6 max-w-2xl mx-auto space-y-6">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3">
-    <a routerLink="/settings"
+    <a routerLink="/rh/sucursales"
        class="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500 hover:text-stone-700">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -16,7 +16,7 @@
 
   <!-- ── Solo ADMIN puede crear ─────────────────────────────────────────── -->
   @if (!isAdmin()) {
-    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">
+    <div class="p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-700 text-sm">
       Solo los administradores pueden crear sucursales.
     </div>
   } @else {
@@ -38,7 +38,7 @@
         </label>
         <input formControlName="nombre" type="text"
                placeholder="Sucursal Centro"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
         @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
           <p class="text-xs text-red-500 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
         }
@@ -51,7 +51,7 @@
         </label>
         <input formControlName="codigo" type="text"
                placeholder="STORE-CEN-001"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-orange-500"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                (input)="form.get('codigo')!.setValue((form.get('codigo')!.value ?? '').toUpperCase(), { emitEvent: false })">
         <p class="text-xs text-stone-400 mt-1">Se convertirá automáticamente a mayúsculas. No puede modificarse después.</p>
         @if (form.get('codigo')?.invalid && form.get('codigo')?.touched) {
@@ -64,7 +64,7 @@
         <label class="block text-sm font-medium text-stone-700 mb-1">Dirección</label>
         <input formControlName="direccion" type="text"
                placeholder="Av. Insurgentes Sur 1234, Col. Centro"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       </div>
 
       <!-- Teléfono -->
@@ -72,7 +72,7 @@
         <label class="block text-sm font-medium text-stone-700 mb-1">Teléfono</label>
         <input formControlName="telefono" type="tel"
                placeholder="55 1234 5678"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       </div>
 
       <!-- Turnos -->
@@ -84,7 +84,7 @@
               <input type="checkbox"
                      [checked]="isTurnoSelected(turno)"
                      (change)="toggleTurno(turno)"
-                     class="w-4 h-4 accent-orange-600">
+                     class="w-4 h-4 accent-brand-600">
               <span class="text-sm text-stone-700">{{ turno }}</span>
             </label>
           }
@@ -93,13 +93,13 @@
 
       <!-- Acciones -->
       <div class="flex items-center justify-end gap-3 pt-2">
-        <a routerLink="/settings"
+        <a routerLink="/rh/sucursales"
            class="px-4 py-2 text-sm font-medium text-stone-700 hover:text-stone-900 transition-colors">
           Cancelar
         </a>
         <button type="submit"
                 [disabled]="saving()"
-                class="px-5 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-60 transition-colors">
+                class="px-5 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 disabled:opacity-60 transition-colors">
           @if (saving()) {
             Guardando...
           } @else {

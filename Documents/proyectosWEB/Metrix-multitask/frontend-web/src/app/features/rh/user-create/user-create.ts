@@ -72,7 +72,7 @@ export class UserCreate {
 
     try {
       await this.rhSvc.createUser(req);
-      this.router.navigate(['/rh']);
+      this.router.navigate(['/rh/usuarios']);
     } catch {
       // error ya seteado en rhSvc._error
     }

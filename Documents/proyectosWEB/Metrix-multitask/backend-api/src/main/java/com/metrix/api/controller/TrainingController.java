@@ -41,6 +41,14 @@ public class TrainingController {
         return ResponseEntity.ok(trainingService.getMyTrainings(userId));
     }
 
+    // ── Vista global ADMIN (todas las sucursales) ────────────────────────
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<TrainingResponse>> getAll() {
+        return ResponseEntity.ok(trainingService.getAll());
+    }
+
     // ── Por sucursal (gerencial) ─────────────────────────────────────────
 
     @GetMapping("/store/{storeId}")

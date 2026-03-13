@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/services/auth.service';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { IncidentService } from '../services/incident.service';
 import {
   INCIDENT_CATEGORY_LABELS,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-incident-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, AppDatePipe],
   templateUrl: './incident-list.html',
 })
 export class IncidentList implements OnInit {
@@ -62,8 +63,8 @@ export class IncidentList implements OnInit {
   severityBadgeClass(severity: IncidentSeverity): string {
     return ({
       BAJA:    'bg-stone-100 text-stone-600',
-      MEDIA:   'bg-amber-100 text-amber-700',
-      ALTA:    'bg-orange-100 text-orange-700',
+      MEDIA:   'bg-yellow-100 text-yellow-700',
+      ALTA:    'bg-brand-100 text-brand-700',
       CRITICA: 'bg-red-100 text-red-700 font-bold',
     })[severity];
   }
@@ -82,14 +83,9 @@ export class IncidentList implements OnInit {
       INSUMOS:   'bg-teal-100 text-teal-700',
       PERSONAL:  'bg-purple-100 text-purple-700',
       SEGURIDAD: 'bg-red-100 text-red-700',
-      OPERACION: 'bg-orange-100 text-orange-700',
+      OPERACION: 'bg-brand-50 text-brand-700',
       OTRO:      'bg-stone-100 text-stone-600',
     })[category];
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-  }
 }

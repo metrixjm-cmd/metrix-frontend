@@ -84,6 +84,12 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     @Override
+    public List<TrainingResponse> getAll() {
+        return trainingRepository.findByActivoTrue()
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Override
     public List<TrainingResponse> getByStore(String storeId) {
         return trainingRepository.findByStoreIdAndActivoTrue(storeId)
                 .stream().map(this::toResponse).toList();

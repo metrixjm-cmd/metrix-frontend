@@ -8,10 +8,12 @@ import com.metrix.api.service.IncidentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -74,5 +76,14 @@ public class IncidentController {
             @Valid @RequestBody UpdateIncidentStatusRequest request,
             Authentication auth) {
         return incidentService.updateStatus(id, request, auth.getName());
+    }
+
+    /** Subir evidencia multimedia — cualquier usuario autenticado. */
+    @PostMapping(value = "/{id}/evidence", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public IncidentResponse uploadEvidence(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file,
+            Authentication auth) {
+        return incidentService.uploadEvidence(id, file, auth.getName());
     }
 }

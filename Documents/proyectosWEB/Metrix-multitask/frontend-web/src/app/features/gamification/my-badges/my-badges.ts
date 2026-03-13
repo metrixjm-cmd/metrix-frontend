@@ -40,7 +40,7 @@ export class MyBadges implements OnInit {
   readonly igeoClass = computed(() => {
     const igeo = this.summary()?.igeo ?? -1;
     if (igeo >= 80) return 'text-emerald-600';
-    if (igeo >= 60) return 'text-amber-600';
+    if (igeo >= 60) return 'text-yellow-600';
     return 'text-red-600';
   });
 

@@ -1,8 +1,9 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthService } from '../../features/auth/services/auth.service';
+import { AuthService }  from '../../features/auth/services/auth.service';
 import { NotificationService } from '../../features/notifications/notification.service';
 import { AppNotification } from '../../features/notifications/notification.models';
+import { ThemeService } from '../theme.service';
 
 export interface NavItem {
   label:    string;
@@ -24,6 +25,8 @@ export type { AppNotification };
 export class AppLayout implements OnInit, OnDestroy {
   readonly auth      = inject(AuthService);
   readonly notifSvc  = inject(NotificationService);
+  // Inyectar ThemeService aplica el tema guardado en localStorage al iniciar la app
+  private readonly _theme = inject(ThemeService);
 
   // ── Estado sidebar ────────────────────────────────────────────────────
   /** Colapsar sidebar en desktop (solo aplica en lg+) */
@@ -77,10 +80,10 @@ export class AppLayout implements OnInit, OnDestroy {
       iconPath: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     },
     {
-      label: 'RH',
+      label: 'Banco de Info',
       route: '/rh',
       exact: false,
-      iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+      iconPath: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4',
     },
     {
       label: 'Capacitación',
@@ -95,10 +98,16 @@ export class AppLayout implements OnInit, OnDestroy {
       iconPath: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
     },
     {
-      label: 'Configuración',
-      route: '/settings',
+      label: 'Trainer',
+      route: '/trainer',
       exact: false,
-      iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
+      iconPath: 'M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5zm0-7l-9 5 9 5 9-5-9-5z',
+    },
+    {
+      label: 'Ayuda',
+      route: '/help',
+      exact: false,
+      iconPath: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     },
   ];
 
@@ -165,7 +174,7 @@ export class AppLayout implements OnInit, OnDestroy {
 
   notifColorClass(severity: AppNotification['severity']): string {
     if (severity === 'critical') return 'text-red-600 bg-red-100';
-    if (severity === 'warning')  return 'text-amber-600 bg-amber-100';
+    if (severity === 'warning')  return 'text-yellow-600 bg-yellow-100';
     return 'text-blue-600 bg-blue-100';
   }
 }

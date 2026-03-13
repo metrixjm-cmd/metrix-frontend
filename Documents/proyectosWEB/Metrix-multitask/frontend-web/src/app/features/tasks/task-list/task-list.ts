@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../auth/services/auth.service';
 import { TaskService } from '../services/task.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import {
   TaskResponse,
   TaskStatus,
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, StatusBadgeComponent],
+  imports: [RouterLink, FormsModule, StatusBadgeComponent, AppDatePipe],
   templateUrl: './task-list.html',
 })
 export class TaskList implements OnInit {
@@ -92,11 +93,4 @@ export class TaskList implements OnInit {
     return new Date(task.dueAt) < new Date();
   }
 
-  formatDate(iso: string | null): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-  }
 }

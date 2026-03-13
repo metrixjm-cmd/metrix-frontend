@@ -3,6 +3,7 @@ package com.metrix.api.service;
 import com.metrix.api.dto.CreateTaskRequest;
 import com.metrix.api.dto.EvidenceUploadResponse;
 import com.metrix.api.dto.NotificationEvent;
+import com.metrix.api.dto.QualityRatingRequest;
 import com.metrix.api.dto.TaskResponse;
 import com.metrix.api.dto.UpdateStatusRequest;
 import com.metrix.api.exception.ResourceNotFoundException;
@@ -324,6 +325,29 @@ public class TaskServiceImpl implements TaskService {
                 .storeId(task.getStoreId())
                 .timestamp(Instant.now())
                 .build());
+    }
+
+    // ── Calificación de Calidad (Sprint 18) ─────────────────────────────
+
+    @Override
+    public TaskResponse rateQuality(String taskId, QualityRatingRequest request, String currentUser) {
+        Task task = taskRepository.findById(taskId)
+                .filter(Task::isActivo)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada: " + taskId));
+
+        if (task.getExecution().getStatus() != TaskStatus.COMPLETED) {
+            throw new IllegalStateException(
+                    "Solo se puede calificar la calidad de tareas en estado COMPLETED. " +
+                    "Estado actual: " + task.getExecution().getStatus());
+        }
+
+        task.setQualityRating(request.getRating());
+        if (request.getComments() != null && !request.getComments().isBlank()) {
+            task.setComments(request.getComments());
+        }
+
+        Task saved = taskRepository.save(task);
+        return toResponse(saved);
     }
 
     // ── Evidencias ───────────────────────────────────────────────────────

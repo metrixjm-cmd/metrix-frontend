@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { TrainingService } from '../services/training.service';
 import { RhService } from '../../rh/services/rh.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import { CreateTrainingRequest, TRAINING_LEVELS, TRAINING_LEVEL_LABELS } from '../training.models';
 
 @Component({
@@ -18,6 +19,7 @@ export class TrainingCreate implements OnInit {
   private readonly authSvc     = inject(AuthService);
   private readonly trainingSvc = inject(TrainingService);
   private readonly rhSvc       = inject(RhService);
+  private readonly settingsSvc = inject(SettingsService);
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
 
@@ -26,10 +28,12 @@ export class TrainingCreate implements OnInit {
   readonly levels      = TRAINING_LEVELS;
   readonly levelLabels = TRAINING_LEVEL_LABELS;
   readonly users       = this.rhSvc.users;
+  readonly stores      = this.settingsSvc.stores;
 
   readonly turnos = ['MATUTINO', 'VESPERTINO', 'NOCTURNO'];
 
   readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
+  readonly todayMin  = new Date().toISOString().slice(0, 16);
 
   readonly form = this.fb.group({
     title:          ['', [Validators.required, Validators.minLength(3)]],
@@ -43,25 +47,30 @@ export class TrainingCreate implements OnInit {
     dueAt:          ['', Validators.required],
   });
 
-  get storeIdDisabled(): boolean {
-    return !this.authSvc.hasRole('ADMIN');
-  }
-
   ngOnInit(): void {
     const user = this.authSvc.currentUser();
-    if (user?.storeId) {
-      this.rhSvc.loadUsersByStore(user.storeId);
+    if (this.isAdmin()) {
+      // ADMIN: cargar todas las sucursales para el selector
+      this.settingsSvc.loadAll();
+      // Escuchar cambios en storeId para recargar colaboradores
+      this.form.get('storeId')!.valueChanges.subscribe(storeId => {
+        if (storeId) {
+          this.form.get('assignedUserId')!.reset('');
+          this.rhSvc.loadUsersByStore(storeId);
+        }
+      });
+      // Si ya hay storeId inicial, cargar usuarios
+      if (user?.storeId) this.rhSvc.loadUsersByStore(user.storeId);
+    } else {
+      // GERENTE: bloqueado a su sucursal
+      if (user?.storeId) this.rhSvc.loadUsersByStore(user.storeId);
     }
   }
 
   async onSubmit(): Promise<void> {
     if (this.form.invalid || this.saving()) return;
-
     const v = this.form.getRawValue();
-
-    // Convertir la fecha local a ISO Instant
     const dueAtInstant = v.dueAt ? new Date(v.dueAt + ':00').toISOString() : '';
-
     const req: CreateTrainingRequest = {
       title:          v.title!,
       description:    v.description!,
@@ -73,12 +82,9 @@ export class TrainingCreate implements OnInit {
       shift:          v.shift!,
       dueAt:          dueAtInstant,
     };
-
     try {
       await this.trainingSvc.create(req);
       this.router.navigate(['/training']);
-    } catch {
-      // error ya seteado en trainingSvc._error
-    }
+    } catch { /* error seteado en service */ }
   }
 }

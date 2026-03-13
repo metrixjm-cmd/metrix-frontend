@@ -20,8 +20,13 @@ export interface IncidentResponse {
   storeId:          string;
   shift:            string;
 
+  implicados:          string[];
+  followUpResponsible: string | null;
+
   status:           IncidentStatus;
   resolvedByUserId: string | null;
+  closedByName:     string | null;
+  closedByNumero:   string | null;
   resolutionNotes:  string | null;
   resolvedAt:       string | null;
 
@@ -34,19 +39,21 @@ export interface IncidentResponse {
 // ── Requests ──────────────────────────────────────────────────────────────────
 
 export interface CreateIncidentRequest {
-  title:        string;
-  description:  string;
-  category:     IncidentCategory;
-  severity:     IncidentSeverity;
-  taskId?:      string;
-  storeId:      string;
-  shift:        string;
-  evidenceUrls?: string[];
+  title:               string;
+  description:         string;
+  category:            IncidentCategory;
+  severity:            IncidentSeverity;
+  taskId?:             string;
+  storeId:             string;
+  shift:               string;
+  implicados?:         string[];
+  followUpResponsible?: string;
 }
 
 export interface UpdateIncidentStatusRequest {
   newStatus:        IncidentStatus;
   resolutionNotes?: string;
+  closedByName?:    string;
   notes?:           string;
 }
 

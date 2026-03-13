@@ -1,8 +1,8 @@
-<div class="p-5 max-w-4xl">
+﻿<div class="p-5 max-w-4xl">
 
   <!-- ── Breadcrumb ────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-1.5 text-xs text-stone-400 mb-4">
-    <button (click)="goBack()" class="flex items-center gap-1 hover:text-orange-600 transition-colors">
+    <button (click)="goBack()" class="flex items-center gap-1 hover:text-brand-600 transition-colors">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -17,7 +17,7 @@
     <!-- ── Cargando ───────────────────────────────────────────────────────── -->
     @if (taskSvc.loading()) {
       <div class="flex items-center justify-center py-20">
-        <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+        <svg class="w-8 h-8 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -91,7 +91,7 @@
               </div>
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">Vence</dt>
-                <dd class="text-stone-900 text-sm font-medium">{{ formatDate(task()!.dueAt) }}</dd>
+                <dd class="text-stone-900 text-sm font-medium">{{ task()!.dueAt | appDate:'due' }}</dd>
               </div>
             </dl>
           </div>
@@ -102,11 +102,11 @@
             <dl class="space-y-3">
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">Iniciada</dt>
-                <dd class="text-stone-700 text-sm">{{ formatDate(task()!.startedAt) }}</dd>
+                <dd class="text-stone-700 text-sm">{{ task()!.startedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">Finalizada</dt>
-                <dd class="text-stone-700 text-sm">{{ formatDate(task()!.finishedAt) }}</dd>
+                <dd class="text-stone-700 text-sm">{{ task()!.finishedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">En tiempo</dt>
@@ -127,7 +127,7 @@
               @if (task()!.qualityRating !== null) {
                 <div class="flex justify-between">
                   <dt class="text-stone-500 text-sm">Calidad</dt>
-                  <dd class="text-amber-600 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
+                  <dd class="text-brand-600 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
                 </div>
               }
             </dl>
@@ -139,6 +139,131 @@
           <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
             <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-3">Comentarios</h3>
             <p class="text-stone-600 text-sm leading-relaxed">{{ task()!.comments }}</p>
+          </div>
+        }
+
+        <!-- ── Evaluación de Calidad (GERENTE / ADMIN, solo COMPLETED) ─── -->
+        @if (canRateQuality()) {
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
+
+            <!-- Rating ya asignado → solo lectura -->
+            @if (task()!.qualityRating !== null && !showRatingForm()) {
+              <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-1">
+                  @for (s of starsArray; track s) {
+                    <svg
+                      class="w-7 h-7 transition-colors"
+                      [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-stone-200'"
+                      fill="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  }
+                  <span class="ml-2 text-brand-700 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
+                </div>
+                <button
+                  (click)="showRatingForm.set(true)"
+                  class="text-xs text-brand-600 hover:text-brand-700 font-medium underline"
+                >
+                  Cambiar calificación
+                </button>
+              </div>
+            }
+
+            <!-- Sin rating → botón para abrir formulario -->
+            @if (task()!.qualityRating === null && !showRatingForm()) {
+              <div class="flex items-center gap-4">
+                <p class="text-stone-500 text-sm">Esta tarea aún no ha sido evaluada.</p>
+                <button
+                  (click)="showRatingForm.set(true)"
+                  class="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Evaluar Calidad
+                </button>
+              </div>
+            }
+
+            <!-- Formulario inline con estrellas clickeables -->
+            @if (showRatingForm()) {
+              <form [formGroup]="ratingForm" (ngSubmit)="submitRating()" class="space-y-4">
+
+                @if (actionError()) {
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-red-600 text-sm">{{ actionError() }}</p>
+                  </div>
+                }
+
+                <div>
+                  <label class="block text-sm font-medium text-stone-700 mb-2">
+                    Calificación <span class="text-red-500">*</span>
+                  </label>
+                  <div class="flex items-center gap-1">
+                    @for (s of starsArray; track s) {
+                      <button
+                        type="button"
+                        (click)="selectStar(s)"
+                        (mouseenter)="hoverStar.set(s)"
+                        (mouseleave)="hoverStar.set(0)"
+                        class="focus:outline-none"
+                      >
+                        <svg
+                          class="w-8 h-8 transition-colors"
+                          [class]="s <= (hoverStar() || selectedStar()) ? 'text-brand-400' : 'text-stone-200'"
+                          fill="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </button>
+                    }
+                    @if (selectedStar() > 0) {
+                      <span class="ml-2 text-brand-700 font-semibold text-sm">{{ selectedStar() }}/5</span>
+                    }
+                  </div>
+                  @if (ratingForm.get('rating')?.invalid && ratingForm.get('rating')?.touched) {
+                    <p class="text-red-500 text-xs mt-1">Selecciona una calificación.</p>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                    Comentarios <span class="text-stone-400 font-normal">(opcional)</span>
+                  </label>
+                  <textarea
+                    formControlName="comments"
+                    rows="2"
+                    placeholder="Observaciones sobre la ejecución…"
+                    class="input-field resize-none"
+                  ></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                  <button
+                    type="submit"
+                    [disabled]="ratingForm.invalid || submitting()"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                  >
+                    @if (submitting()) {
+                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                    }
+                    Guardar Calificación
+                  </button>
+                  <button
+                    type="button"
+                    (click)="showRatingForm.set(false); selectedStar.set(0); hoverStar.set(0); actionError.set(null)"
+                    class="px-5 py-2.5 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            }
           </div>
         }
 
@@ -176,7 +301,7 @@
                 <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
                   @for (url of task()!.evidenceImages; track url) {
                     <a [href]="url" target="_blank" rel="noopener noreferrer"
-                       class="block aspect-square rounded-lg overflow-hidden border border-stone-200 hover:border-orange-400 transition-colors">
+                       class="block aspect-square rounded-lg overflow-hidden border border-stone-200 hover:border-brand-400 transition-colors">
                       <img [src]="url" [alt]="filenameFromUrl(url)"
                            class="w-full h-full object-cover" />
                     </a>
@@ -218,7 +343,7 @@
 
         <!-- ── Zona de acciones ─────────────────────────────────────────── -->
         @if (canStart() || canComplete() || canFail()) {
-          <div class="bg-white border border-orange-200 rounded-xl p-5 shadow-card">
+          <div class="bg-white border border-brand-200 rounded-xl p-5 shadow-card">
             <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Acciones</h3>
 
             <!-- Error de acción -->

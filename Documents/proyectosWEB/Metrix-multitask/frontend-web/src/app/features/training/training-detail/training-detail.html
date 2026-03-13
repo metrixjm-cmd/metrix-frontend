@@ -1,4 +1,4 @@
-<div class="p-6 max-w-3xl mx-auto space-y-6">
+﻿<div class="p-6 max-w-3xl mx-auto space-y-6">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3">
@@ -66,7 +66,7 @@
         </div>
         <div>
           <p class="text-xs text-stone-400 uppercase font-medium">Vencimiento</p>
-          <p class="text-sm font-semibold text-stone-800 mt-0.5">{{ formatDate(training()!.dueAt) }}</p>
+          <p class="text-sm font-semibold text-stone-800 mt-0.5">{{ training()!.dueAt | appDate:'due' }}</p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@
             <div>
               <p class="text-xs text-stone-400 uppercase font-medium">A tiempo</p>
               <p class="text-sm font-semibold mt-0.5"
-                 [class]="training()!.onTime ? 'text-emerald-600' : 'text-amber-600'">
+                 [class]="training()!.onTime ? 'text-emerald-600' : 'text-brand-600'">
                 {{ training()!.onTime ? 'Sí' : 'No' }}
               </p>
             </div>
@@ -114,7 +114,7 @@
           @if (training()!.completedAt) {
             <div>
               <p class="text-xs text-stone-400 uppercase font-medium">Completado</p>
-              <p class="text-xs font-medium text-stone-700 mt-0.5">{{ formatDate(training()!.completedAt) }}</p>
+              <p class="text-xs font-medium text-stone-700 mt-0.5">{{ training()!.completedAt | appDate:'relative' }}</p>
             </div>
           }
         </div>
@@ -149,11 +149,11 @@
               <input type="range" min="0" max="100"
                      [ngModel]="percentageInput()"
                      (ngModelChange)="percentageInput.set($event)"
-                     class="flex-1 accent-orange-600">
+                     class="flex-1 accent-brand-600">
               <span class="text-sm font-bold text-stone-800 w-10 text-right tabular-nums">{{ percentageInput() }}%</span>
             </div>
             <button (click)="onUpdatePercentage()" [disabled]="saving()"
-                    class="px-4 py-2 text-sm font-medium text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 disabled:opacity-50 transition-colors">
+                    class="px-4 py-2 text-sm font-medium text-brand-600 border border-brand-300 rounded-lg hover:bg-brand-50 disabled:opacity-50 transition-colors">
               Guardar avance
             </button>
           </div>
@@ -188,7 +188,7 @@
           <input type="number" min="0" max="10" step="0.5"
                  [ngModel]="gradeInput()"
                  (ngModelChange)="gradeInput.set($event)"
-                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
         </div>
 
         @if (error()) {
@@ -222,7 +222,7 @@
                     [ngModel]="commentsInput()"
                     (ngModelChange)="commentsInput.set($event)"
                     placeholder="Explica brevemente la causa..."
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
         </div>
 
         @if (error()) {

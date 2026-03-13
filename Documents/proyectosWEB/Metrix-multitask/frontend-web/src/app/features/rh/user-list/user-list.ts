@@ -47,12 +47,12 @@ export class UserList implements OnInit {
   }
 
   goToProfile(user: UserProfile): void {
-    this.router.navigate(['/rh', user.id]);
+    this.router.navigate(['/rh/usuarios', user.id]);
   }
 
   igeoClass(igeo: number): string {
     if (igeo >= 80) return 'bg-emerald-100 text-emerald-700';
-    if (igeo >= 60) return 'bg-amber-100 text-amber-700';
+    if (igeo >= 60) return 'bg-yellow-100 text-yellow-700';
     return 'bg-red-100 text-red-700';
   }
 }

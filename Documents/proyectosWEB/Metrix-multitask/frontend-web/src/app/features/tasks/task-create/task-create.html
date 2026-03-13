@@ -1,8 +1,8 @@
-<div class="p-5 max-w-2xl">
+﻿<div class="p-5 max-w-2xl">
 
   <!-- ── Breadcrumb ────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-1.5 text-xs text-stone-400 mb-4">
-    <button (click)="goToList()" class="flex items-center gap-1 hover:text-orange-600 transition-colors">
+    <button (click)="goToList()" class="flex items-center gap-1 hover:text-brand-600 transition-colors">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
@@ -122,7 +122,7 @@
                 <input
                   type="checkbox"
                   formControlName="isCritical"
-                  class="w-4 h-4 rounded border-stone-300 bg-white text-orange-600 focus:ring-orange-500"
+                  class="w-4 h-4 rounded border-stone-300 bg-white text-brand-600 focus:ring-brand-500"
                 />
                 <span class="text-sm text-stone-700">Tarea Crítica</span>
               </label>
@@ -214,9 +214,11 @@
             <input
               type="datetime-local"
               formControlName="dueAt"
+              [min]="todayMin"
               class="input-field"
               [class.input-error]="hasError('dueAt', 'required')"
             />
+            <p class="text-xs text-stone-400 mt-1">Selecciona el día y la hora en que debe completarse la tarea.</p>
             @if (hasError('dueAt', 'required')) {
               <p class="text-red-500 text-xs mt-1">La fecha límite es obligatoria.</p>
             }

@@ -1,4 +1,4 @@
-<!-- ── Página de Reportes de Cierre Diario ─────────────────────── -->
+﻿<!-- ── Página de Reportes de Cierre Diario ─────────────────────── -->
 <div class="min-h-screen bg-stone-50 p-6">
 
   <!-- Encabezado -->
@@ -40,7 +40,7 @@
       <div class="flex gap-2 pb-0.5">
         <button (click)="loadPreview()"
                 [disabled]="loading()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-medium hover:bg-orange-700 disabled:opacity-50 transition-colors">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors">
           @if (loading()) {
             <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -52,7 +52,7 @@
 
         <button (click)="downloadPdf()"
                 [disabled]="downloading()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-orange-600 text-orange-600 text-sm font-medium hover:bg-orange-50 disabled:opacity-50 transition-colors">
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-brand-600 text-brand-600 text-sm font-medium hover:bg-brand-50 disabled:opacity-50 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -118,7 +118,7 @@
         <p class="text-xs text-stone-500 mt-1">Fallidas</p>
       </div>
       <div class="bg-white border border-stone-200 rounded-xl shadow-card p-4 text-center">
-        <p class="text-2xl font-bold text-amber-600">{{ report.totalPending }}</p>
+        <p class="text-2xl font-bold text-brand-600">{{ report.totalPending }}</p>
         <p class="text-xs text-stone-500 mt-1">Pendientes</p>
       </div>
     </div>
@@ -132,7 +132,7 @@
           <div class="space-y-2">
             <div class="flex justify-between text-sm">
               <span class="text-stone-500">IGEO</span>
-              <span class="font-semibold text-orange-600">{{ fmtKpi(kpi.igeo) }}</span>
+              <span class="font-semibold text-brand-600">{{ fmtKpi(kpi.igeo) }}</span>
             </div>
             <div class="flex justify-between text-sm">
               <span class="text-stone-500">On-Time Rate</span>
@@ -210,7 +210,7 @@
                 <tr class="border-b border-stone-100 hover:bg-stone-50 transition-colors">
                   <td class="py-2 px-3">
                     <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
-                          [class]="u.rank === 1 ? 'bg-orange-100 text-orange-700' :
+                          [class]="u.rank === 1 ? 'bg-brand-100 text-brand-700' :
                                    u.rank === 2 ? 'bg-stone-100 text-stone-600' :
                                    'bg-stone-50 text-stone-400'">
                       {{ u.rank }}
@@ -221,7 +221,7 @@
                   <td class="py-2 px-3 text-right text-stone-700">{{ u.totalTasks }}</td>
                   <td class="py-2 px-3 text-right text-emerald-700">{{ u.completedTasks }}</td>
                   <td class="py-2 px-3 text-right text-stone-700">{{ fmtPct(u.onTimeRate) }}</td>
-                  <td class="py-2 px-3 text-right font-semibold text-orange-600">{{ fmtKpi(u.igeo) }}</td>
+                  <td class="py-2 px-3 text-right font-semibold text-brand-600">{{ fmtKpi(u.igeo) }}</td>
                 </tr>
               }
             </tbody>

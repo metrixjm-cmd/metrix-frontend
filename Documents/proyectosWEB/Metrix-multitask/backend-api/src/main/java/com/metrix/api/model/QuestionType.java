@@ -1,0 +1,6 @@
+package com.metrix.api.model;
+
+public enum QuestionType {
+    MULTIPLE_CHOICE,
+    TRUE_FALSE
+}

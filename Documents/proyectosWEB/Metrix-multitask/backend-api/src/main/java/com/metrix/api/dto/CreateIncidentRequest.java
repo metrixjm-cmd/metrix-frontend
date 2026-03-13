@@ -34,6 +34,9 @@ public class CreateIncidentRequest {
     @NotBlank
     private String shift;
 
-    /** URLs de evidencia ya disponibles. Opcional. */
-    private List<String> evidenceUrls;
+    /** Lista de nombres/IDs de personas involucradas. Opcional. */
+    private List<String> implicados;
+
+    /** Nombre o identificador del responsable de seguimiento. Opcional. */
+    private String followUpResponsible;
 }

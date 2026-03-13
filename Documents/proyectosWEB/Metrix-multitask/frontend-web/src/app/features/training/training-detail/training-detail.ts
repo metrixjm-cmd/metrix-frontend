@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 
 import { AuthService } from '../../auth/services/auth.service';
 import { TrainingService } from '../services/training.service';
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-training-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, AppDatePipe],
   templateUrl: './training-detail.html',
 })
 export class TrainingDetail implements OnInit {
@@ -107,7 +108,7 @@ export class TrainingDetail implements OnInit {
 
   statusBadgeClass(status: TrainingStatus): string {
     const map: Record<TrainingStatus, string> = {
-      PROGRAMADA:    'bg-amber-100 text-amber-700',
+      PROGRAMADA:    'bg-brand-50 text-brand-700',
       EN_CURSO:      'bg-blue-100 text-blue-700',
       COMPLETADA:    'bg-emerald-100 text-emerald-700',
       NO_COMPLETADA: 'bg-red-100 text-red-700',
@@ -127,13 +128,7 @@ export class TrainingDetail implements OnInit {
   progressBarClass(status: TrainingStatus): string {
     if (status === 'COMPLETADA')    return 'bg-emerald-500';
     if (status === 'NO_COMPLETADA') return 'bg-red-400';
-    return 'bg-orange-500';
+    return 'bg-brand-500';
   }
 
-  formatDate(iso: string | null | undefined): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-  }
 }

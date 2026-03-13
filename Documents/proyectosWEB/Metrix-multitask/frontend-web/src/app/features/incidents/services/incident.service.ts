@@ -106,6 +106,28 @@ export class IncidentService {
     });
   }
 
+  uploadEvidence(id: string, file: File): Promise<IncidentResponse> {
+    this._saving.set(true);
+    this._error.set(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    return new Promise((resolve, reject) => {
+      this.http.post<IncidentResponse>(`${this.apiUrl}/${id}/evidence`, formData).subscribe({
+        next: i => {
+          this._selectedIncident.set(i);
+          this._incidents.update(list => list.map(item => item.id === id ? i : item));
+          this._saving.set(false);
+          resolve(i);
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
   updateStatus(id: string, req: UpdateIncidentStatusRequest): Promise<IncidentResponse> {
     this._saving.set(true);
     this._error.set(null);

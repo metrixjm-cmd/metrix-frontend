@@ -23,6 +23,9 @@ export class TaskCreate {
   submitError = signal<string | null>(null);
   submitted   = signal(false);
 
+  /** Valor mínimo para datetime-local: ahora mismo (evita fechas pasadas) */
+  readonly todayMin = new Date().toISOString().slice(0, 16);
+
   readonly form = this.fb.group({
     title:       ['', [Validators.required, Validators.minLength(4), Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.minLength(10)]],

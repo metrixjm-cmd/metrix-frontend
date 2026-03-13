@@ -2,6 +2,7 @@ package com.metrix.api.service;
 
 import com.metrix.api.dto.CreateTaskRequest;
 import com.metrix.api.dto.EvidenceUploadResponse;
+import com.metrix.api.dto.QualityRatingRequest;
 import com.metrix.api.dto.TaskResponse;
 import com.metrix.api.dto.UpdateStatusRequest;
 
@@ -109,4 +110,14 @@ public interface TaskService {
     EvidenceUploadResponse addEvidence(String taskId, String mediaType,
                                        byte[] fileBytes, String contentType,
                                        String extension, String numeroUsuario);
+
+    /**
+     * Permite a GERENTE/ADMIN calificar la calidad de una tarea ya COMPLETADA.
+     * Alimenta el Pilar Calidad del IGEO (Sprint 17/18).
+     *
+     * @param taskId      MongoDB _id de la tarea
+     * @param request     rating (1.0–5.0) y comentarios opcionales
+     * @param currentUser subject del JWT del evaluador
+     */
+    TaskResponse rateQuality(String taskId, QualityRatingRequest request, String currentUser);
 }

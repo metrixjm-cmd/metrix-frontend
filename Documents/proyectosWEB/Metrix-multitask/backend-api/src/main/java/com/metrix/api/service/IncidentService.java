@@ -4,6 +4,7 @@ import com.metrix.api.dto.CreateIncidentRequest;
 import com.metrix.api.dto.IncidentResponse;
 import com.metrix.api.dto.UpdateIncidentStatusRequest;
 import com.metrix.api.model.IncidentStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public interface IncidentService {
 
     IncidentResponse updateStatus(String incidentId, UpdateIncidentStatusRequest request,
                                    String currentNumeroUsuario);
+
+    IncidentResponse uploadEvidence(String incidentId, MultipartFile file,
+                                    String currentNumeroUsuario);
 }

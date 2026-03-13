@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { AuthService } from '../../auth/services/auth.service';
+import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { IncidentService } from '../services/incident.service';
 import {
   INCIDENT_CATEGORY_LABELS,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-incident-detail',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, AppDatePipe],
   templateUrl: './incident-detail.html',
 })
 export class IncidentDetail implements OnInit {
@@ -36,9 +37,15 @@ export class IncidentDetail implements OnInit {
   // ── Estado del modal de cierre ────────────────────────────────────────────
   readonly showCloseModal = signal(false);
   readonly closeForm = this.fb.group({
+    closedByName:    ['', Validators.required],
     resolutionNotes: ['', [Validators.required, Validators.minLength(10)]],
     notes:           [''],
   });
+
+  // ── Estado de carga de evidencias ─────────────────────────────────────────
+  readonly uploadingEvidence = signal(false);
+  readonly dragOver          = signal(false);
+  readonly uploadError       = signal<string | null>(null);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -64,6 +71,7 @@ export class IncidentDetail implements OnInit {
     try {
       await this.incidentSvc.updateStatus(incident.id, {
         newStatus:        'CERRADA',
+        closedByName:     v.closedByName!,
         resolutionNotes:  v.resolutionNotes!,
         notes:            v.notes ?? undefined,
       });
@@ -79,13 +87,61 @@ export class IncidentDetail implements OnInit {
     } catch { /* error en servicio */ }
   }
 
+  // ── Evidencias ────────────────────────────────────────────────────────────
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    this.dragOver.set(true);
+  }
+
+  onDragLeave(): void {
+    this.dragOver.set(false);
+  }
+
+  async onDrop(event: DragEvent): Promise<void> {
+    event.preventDefault();
+    this.dragOver.set(false);
+    const file = event.dataTransfer?.files[0];
+    if (file) await this.uploadEvidence(file);
+  }
+
+  async onFileSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) await this.uploadEvidence(file);
+  }
+
+  async uploadEvidence(file: File): Promise<void> {
+    const incident = this.incident();
+    if (!incident) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'];
+    if (!allowedTypes.includes(file.type)) {
+      this.uploadError.set('Tipo no soportado. Usa JPG, PNG, WebP, MP4 o WebM.');
+      return;
+    }
+
+    this.uploadError.set(null);
+    this.uploadingEvidence.set(true);
+    try {
+      await this.incidentSvc.uploadEvidence(incident.id, file);
+    } catch {
+      this.uploadError.set('Error al subir el archivo. Intenta de nuevo.');
+    } finally {
+      this.uploadingEvidence.set(false);
+    }
+  }
+
+  isImage(url: string): boolean {
+    return /\.(jpg|jpeg|png|webp)(\?|$)/i.test(url);
+  }
+
   // ── Helpers de estilo ─────────────────────────────────────────────────────
 
   severityBadgeClass(severity: IncidentSeverity): string {
     return ({
       BAJA:    'bg-stone-100 text-stone-600',
-      MEDIA:   'bg-amber-100 text-amber-700',
-      ALTA:    'bg-orange-100 text-orange-700',
+      MEDIA:   'bg-yellow-100 text-yellow-700',
+      ALTA:    'bg-brand-100 text-brand-700',
       CRITICA: 'bg-red-100 text-red-700 font-bold',
     })[severity];
   }
@@ -104,15 +160,9 @@ export class IncidentDetail implements OnInit {
       INSUMOS:   'bg-teal-100 text-teal-700',
       PERSONAL:  'bg-purple-100 text-purple-700',
       SEGURIDAD: 'bg-red-100 text-red-700',
-      OPERACION: 'bg-orange-100 text-orange-700',
+      OPERACION: 'bg-brand-50 text-brand-700',
       OTRO:      'bg-stone-100 text-stone-600',
     })[category];
   }
 
-  formatDate(iso: string | null): string {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString('es-MX', {
-      day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-  }
 }
