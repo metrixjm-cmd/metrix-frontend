@@ -80,20 +80,9 @@ export class EvidenceUpload {
 
   // ── Upload ───────────────────────────────────────────────────────────────
 
-  private upload(file: File): void {
-    this.uploading.set(true);
-    this.uploadError.set(null);
-
-    this.taskSvc.uploadEvidence(this.taskId(), file, this.type()).subscribe({
-      next: res => {
-        this.uploading.set(false);
-        this.uploaded.emit(res.url);
-      },
-      error: err => {
-        this.uploading.set(false);
-        this.uploadError.set(this.extractMsg(err));
-      },
-    });
+  private upload(_file: File): void {
+    // Evidencias deshabilitadas — módulo removido
+    this.uploadError.set('Módulo de evidencias deshabilitado.');
   }
 
   private extractMsg(err: unknown): string {

@@ -1,4 +1,4 @@
-<div class="p-6 max-w-3xl mx-auto space-y-6">
+﻿<div class="p-6 max-w-3xl mx-auto space-y-6">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3">
@@ -66,7 +66,7 @@
         </div>
         <div>
           <p class="text-xs text-stone-400 uppercase font-medium">Vencimiento</p>
-          <p class="text-sm font-semibold text-stone-800 mt-0.5">{{ formatDate(training()!.dueAt) }}</p>
+          <p class="text-sm font-semibold text-stone-800 mt-0.5">{{ training()!.dueAt | appDate:'due' }}</p>
         </div>
       </div>
 
@@ -106,7 +106,7 @@
             <div>
               <p class="text-xs text-stone-400 uppercase font-medium">A tiempo</p>
               <p class="text-sm font-semibold mt-0.5"
-                 [class]="training()!.onTime ? 'text-emerald-600' : 'text-amber-600'">
+                 [class]="training()!.onTime ? 'text-emerald-600' : 'text-brand-600'">
                 {{ training()!.onTime ? 'Sí' : 'No' }}
               </p>
             </div>
@@ -114,7 +114,7 @@
           @if (training()!.completedAt) {
             <div>
               <p class="text-xs text-stone-400 uppercase font-medium">Completado</p>
-              <p class="text-xs font-medium text-stone-700 mt-0.5">{{ formatDate(training()!.completedAt) }}</p>
+              <p class="text-xs font-medium text-stone-700 mt-0.5">{{ training()!.completedAt | appDate:'relative' }}</p>
             </div>
           }
         </div>
@@ -126,6 +126,97 @@
         }
       }
     </div>
+
+    <!-- ── Materiales de estudio ──────────────────────────────────────────── -->
+    @if (training()!.materials && training()!.materials.length > 0) {
+      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+          <div>
+            <p class="text-sm font-semibold text-stone-800">Materiales de estudio</p>
+            <p class="text-xs text-stone-400 mt-0.5">
+              {{ training()!.materials.length }} material(es) ·
+              {{ viewedCount() }} vistos
+            </p>
+          </div>
+          <!-- Contador de vistos -->
+          <div class="flex items-center gap-1.5">
+            @for (m of training()!.materials; track m.materialId) {
+              <div class="w-2 h-2 rounded-full"
+                   [class]="m.viewed ? 'bg-emerald-500' : 'bg-stone-200'">
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Lista -->
+        <div class="divide-y divide-stone-100">
+          @for (m of training()!.materials; track m.materialId) {
+            <div class="flex items-center gap-4 px-5 py-3.5">
+
+              <!-- Icono tipo -->
+              <div class="text-xl shrink-0">{{ materialIcons[m.type] }}</div>
+
+              <!-- Info material -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-medium text-stone-900 truncate">{{ m.title }}</p>
+                  <span [class]="'text-xs px-1.5 py-0.5 rounded-full ' + materialColors[m.type]">
+                    {{ m.type }}
+                  </span>
+                  @if (m.required) {
+                    <span class="text-xs text-red-500 font-medium">Obligatorio</span>
+                  }
+                </div>
+                @if (m.notes) {
+                  <p class="text-xs text-stone-500 mt-0.5">{{ m.notes }}</p>
+                }
+              </div>
+
+              <!-- Acciones -->
+              <div class="flex items-center gap-2 shrink-0">
+
+                <!-- Ver material -->
+                <button type="button" (click)="openMaterial(m.url)"
+                        title="Abrir material"
+                        class="p-1.5 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </button>
+
+                <!-- Marcar como visto (solo ejecutador y no visto aún) -->
+                @if (!isGerente() && !m.viewed) {
+                  <button type="button"
+                          (click)="onMarkMaterialViewed(m.materialId)"
+                          [disabled]="saving()"
+                          title="Marcar como visto"
+                          class="p-1.5 rounded-lg text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                }
+
+                <!-- Badge visto -->
+                @if (m.viewed) {
+                  <span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Visto
+                  </span>
+                }
+
+              </div>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
 
     <!-- ── Acciones (solo EJECUTADOR y estado activo) ─────────────────────── -->
     @if (!isGerente()) {
@@ -149,11 +240,11 @@
               <input type="range" min="0" max="100"
                      [ngModel]="percentageInput()"
                      (ngModelChange)="percentageInput.set($event)"
-                     class="flex-1 accent-orange-600">
+                     class="flex-1 accent-brand-600">
               <span class="text-sm font-bold text-stone-800 w-10 text-right tabular-nums">{{ percentageInput() }}%</span>
             </div>
             <button (click)="onUpdatePercentage()" [disabled]="saving()"
-                    class="px-4 py-2 text-sm font-medium text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 disabled:opacity-50 transition-colors">
+                    class="px-4 py-2 text-sm font-medium text-brand-600 border border-brand-300 rounded-lg hover:bg-brand-50 disabled:opacity-50 transition-colors">
               Guardar avance
             </button>
           </div>
@@ -174,6 +265,44 @@
     }
   }
 
+  <!-- ── Exámenes vinculados ────────────────────────────────────────────── -->
+  @if (!loading() && linkedExams().length > 0) {
+    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+      <div class="px-5 py-4 border-b border-stone-100 flex items-center gap-2">
+        <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h2 class="font-semibold text-stone-800">Exámenes vinculados</h2>
+        <span class="ml-auto text-xs text-stone-400">{{ linkedExams().length }}</span>
+      </div>
+      <div class="divide-y divide-stone-100">
+        @for (exam of linkedExams(); track exam.id) {
+          <div class="px-5 py-3 flex items-center justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-stone-800 truncate">{{ exam.title }}</p>
+              <div class="flex gap-3 text-xs text-stone-400 mt-0.5">
+                <span>{{ exam.questions.length }} preguntas</span>
+                <span>·</span>
+                <span>Mín. {{ exam.passingScore }}%</span>
+                @if (exam.maxAttempts > 0) {
+                  <span>· Máx. {{ exam.maxAttempts }} intento{{ exam.maxAttempts === 1 ? '' : 's' }}</span>
+                }
+                @if (exam.submissionCount > 0) {
+                  <span>· {{ exam.submissionCount }} intentos realizados</span>
+                }
+              </div>
+            </div>
+            <a [routerLink]="['/trainer', exam.id, 'take']"
+               class="shrink-0 text-xs font-medium bg-orange-600 text-white rounded-lg px-3 py-1.5 hover:bg-orange-700 transition-colors">
+              Tomar
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   <!-- ── Modal: Completar ────────────────────────────────────────────────── -->
   @if (showCompleteModal()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
@@ -188,7 +317,7 @@
           <input type="number" min="0" max="10" step="0.5"
                  [ngModel]="gradeInput()"
                  (ngModelChange)="gradeInput.set($event)"
-                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
         </div>
 
         @if (error()) {
@@ -222,7 +351,7 @@
                     [ngModel]="commentsInput()"
                     (ngModelChange)="commentsInput.set($event)"
                     placeholder="Explica brevemente la causa..."
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"></textarea>
         </div>
 
         @if (error()) {

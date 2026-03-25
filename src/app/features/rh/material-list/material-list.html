@@ -1,0 +1,316 @@
+<div class="p-4 md:p-6 space-y-5">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <a routerLink="/banco-info"
+         class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-stone-900">Materiales de Capacitación</h1>
+        <p class="text-sm text-stone-500 mt-0.5">
+          Banco de PDFs, videos, imágenes y ligas reutilizables
+          @if (materialSvc.total() > 0) {
+            · <span class="font-medium text-stone-700">{{ materialSvc.total() }}</span> materiales
+          }
+        </p>
+      </div>
+    </div>
+
+    @if (isManager()) {
+      <button type="button" (click)="openModal()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Agregar material
+      </button>
+    }
+  </div>
+
+  <!-- ── Error global ─────────────────────────────────────────────────────── -->
+  @if (materialSvc.error()) {
+    <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ materialSvc.error() }}
+    </div>
+  }
+
+  <!-- ── Filtros ──────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-2 items-center">
+
+    <!-- Tipo -->
+    <div class="flex gap-1.5 bg-stone-100 rounded-lg p-1">
+      <button type="button" (click)="setType('')"
+              [class]="filterType() === '' ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                             'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+        Todos
+      </button>
+      @for (t of allTypes; track t) {
+        <button type="button" (click)="setType(t)"
+                [class]="filterType() === t ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                              'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+          {{ typeIcon(t) }} {{ typeLabels[t] }}
+        </button>
+      }
+    </div>
+
+    <!-- Categoría -->
+    @if (catalogSvc.categorias().length > 0) {
+      <select [value]="filterCategory()"
+              (change)="setCategory($any($event.target).value)"
+              class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+        <option value="">Todas las categorías</option>
+        @for (cat of catalogSvc.categorias(); track cat.id) {
+          <option [value]="cat.value">{{ cat.label || cat.value }}</option>
+        }
+      </select>
+    }
+
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (materialSvc.loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="bg-white border border-stone-200 rounded-xl p-4 space-y-3 animate-pulse">
+          <div class="h-10 bg-stone-100 rounded-lg"></div>
+          <div class="h-4 bg-stone-100 rounded w-3/4"></div>
+          <div class="h-3 bg-stone-100 rounded w-1/2"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Grid de materiales ───────────────────────────────────────────────── -->
+  @if (!materialSvc.loading()) {
+    @if (materialSvc.materials().length === 0) {
+      <div class="bg-white border border-stone-200 rounded-xl py-16 text-center">
+        <div class="text-5xl mb-4">📚</div>
+        <p class="text-stone-500 font-medium">Sin materiales aún</p>
+        <p class="text-stone-400 text-sm mt-1">
+          @if (isManager()) { Agrega el primer material con el botón de arriba. }
+          @else { No hay materiales disponibles con estos filtros. }
+        </p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        @for (m of materialSvc.materials(); track m.id) {
+          <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-card flex flex-col hover:shadow-md transition-shadow">
+
+            <!-- Icono + tipo -->
+            <div class="px-4 pt-4 pb-3 flex items-start gap-3">
+              <div class="text-3xl leading-none select-none">{{ typeIcon(m.type) }}</div>
+              <div class="flex-1 min-w-0">
+                <span [class]="'inline-block px-2 py-0.5 rounded-full text-xs font-medium ' + typeColors[m.type]">
+                  {{ typeLabels[m.type] }}
+                </span>
+                @if (m.category) {
+                  <span class="ml-1.5 inline-block px-2 py-0.5 rounded-full text-xs bg-stone-100 text-stone-600">
+                    {{ m.category }}
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="px-4 pb-3 flex-1 space-y-2">
+              <p class="text-sm font-semibold text-stone-900 line-clamp-2">{{ m.title }}</p>
+              @if (m.description) {
+                <p class="text-xs text-stone-500 line-clamp-2">{{ m.description }}</p>
+              }
+              @if (m.tags.length > 0) {
+                <div class="flex flex-wrap gap-1">
+                  @for (tag of m.tags; track tag) {
+                    <span class="text-xs bg-teal-50 text-teal-700 rounded-full px-2 py-0.5">{{ tag }}</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Footer -->
+            <div class="px-4 pb-4 flex items-center justify-between border-t border-stone-100 pt-3">
+              <div class="text-xs text-stone-400">
+                @if (m.usageCount > 0) {
+                  <span class="text-teal-600 font-medium">Usado {{ m.usageCount }}x</span>
+                } @else {
+                  <span>Sin usos</span>
+                }
+                @if (m.fileSizeBytes) {
+                  · {{ formatSize(m.fileSizeBytes) }}
+                }
+              </div>
+              <div class="flex gap-1.5">
+                <!-- Abrir/Ver -->
+                <button type="button" (click)="openUrl(m.url)"
+                        title="Abrir material"
+                        class="p-1.5 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </button>
+                <!-- Eliminar (solo ADMIN y sin usos) -->
+                @if (isAdmin() && m.usageCount === 0) {
+                  <button type="button" (click)="deleteMaterial(m)"
+                          [disabled]="materialSvc.saving()"
+                          title="Eliminar material"
+                          class="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>
+
+
+<!-- ══ MODAL: Agregar material ═══════════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+
+      <!-- Header modal -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+        <h3 class="text-base font-semibold text-stone-900">Agregar material</h3>
+        <button type="button" (click)="closeModal()"
+                class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-stone-100">
+        <button type="button" (click)="setTab('file')"
+                [class]="activeTab() === 'file'
+                  ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/50'
+                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+          Subir archivo
+        </button>
+        <button type="button" (click)="setTab('link')"
+                [class]="activeTab() === 'link'
+                  ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/50'
+                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+          Agregar liga
+        </button>
+      </div>
+
+      <!-- Cuerpo -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="p-6 space-y-4">
+
+        <!-- Error de servicio -->
+        @if (materialSvc.error()) {
+          <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {{ materialSvc.error() }}
+          </div>
+        }
+
+        <!-- ── Tab: Subir archivo ── -->
+        @if (activeTab() === 'file') {
+
+          <!-- Dropzone -->
+          <label class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors"
+                 [class]="selectedFile() ? 'border-teal-300 bg-teal-50' : 'border-stone-200 hover:border-teal-300 hover:bg-stone-50'">
+            <input type="file" class="sr-only" [accept]="ACCEPTED" (change)="onFileSelected($event)">
+            @if (selectedFile(); as f) {
+              <div class="flex items-center gap-3 w-full">
+                <span class="text-3xl">{{ fileTypeIcon(f) }}</span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-stone-800 truncate">{{ f.name }}</p>
+                  <p class="text-xs text-stone-400">{{ formatSize(f.size) }}</p>
+                </div>
+                <span class="text-xs text-teal-600 font-medium">Cambiar</span>
+              </div>
+            } @else {
+              <svg class="w-10 h-10 text-stone-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+              <p class="text-sm text-stone-500">Arrastra o <span class="text-teal-600 font-medium">selecciona</span></p>
+              <p class="text-xs text-stone-400 mt-1">PDF, JPG, PNG, WebP, MP4, WebM · máx. 20 MB</p>
+            }
+          </label>
+          @if (fileError()) {
+            <p class="text-xs text-red-600">{{ fileError() }}</p>
+          }
+        }
+
+        <!-- ── Tab: Liga ── -->
+        @if (activeTab() === 'link') {
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">URL *</label>
+            <input formControlName="url" type="url" placeholder="https://..."
+                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            @if (form.get('url')?.invalid && form.get('url')?.touched) {
+              <p class="text-xs text-red-600 mt-1">URL requerida.</p>
+            }
+          </div>
+        }
+
+        <!-- Campos comunes -->
+        <div>
+          <label class="block text-xs font-medium text-stone-600 mb-1">Título *</label>
+          <input formControlName="title" type="text" placeholder="Nombre del material"
+                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+          @if (form.get('title')?.invalid && form.get('title')?.touched) {
+            <p class="text-xs text-red-600 mt-1">Título requerido.</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-stone-600 mb-1">Descripción</label>
+          <textarea formControlName="description" rows="2" placeholder="Breve descripción del contenido…"
+                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">Categoría</label>
+            <select formControlName="category"
+                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <option value="">Sin categoría</option>
+              @for (cat of catalogSvc.categorias(); track cat.id) {
+                <option [value]="cat.value">{{ cat.label || cat.value }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-stone-600 mb-1">Tags</label>
+            <input formControlName="tagsRaw" type="text" placeholder="tag1, tag2, tag3"
+                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-stone-400 mt-1">Separados por comas</p>
+          </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" (click)="closeModal()"
+                  class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+            Cancelar
+          </button>
+          <button type="submit"
+                  [disabled]="materialSvc.saving()"
+                  class="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors">
+            @if (materialSvc.saving()) { Guardando… }
+            @else if (activeTab() === 'file') { Subir material }
+            @else { Agregar liga }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

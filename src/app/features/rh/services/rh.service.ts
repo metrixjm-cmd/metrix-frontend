@@ -1,4 +1,5 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -10,8 +11,9 @@ import { CreateUserRequest, UpdateUserRequest, UserProfile } from '../rh.models'
  */
 @Injectable({ providedIn: 'root' })
 export class RhService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/users`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/users`;
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
   private readonly _users        = signal<UserProfile[]>([]);
@@ -28,22 +30,37 @@ export class RhService {
 
   // ── Métodos HTTP ──────────────────────────────────────────────────────────
 
+  loadAll(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<UserProfile[]>(`${this.apiUrl}/all`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  users => { this._users.set(users); this._loading.set(false); },
+        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
   loadUsersByStore(storeId: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<UserProfile[]>(`${this.apiUrl}`, { params: { storeId } }).subscribe({
-      next:  users => { this._users.set(users); this._loading.set(false); },
-      error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<UserProfile[]>(`${this.apiUrl}`, { params: { storeId } })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  users => { this._users.set(users); this._loading.set(false); },
+        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadUserById(id: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<UserProfile>(`${this.apiUrl}/${id}`).subscribe({
-      next:  user => { this._selectedUser.set(user); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<UserProfile>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  user => { this._selectedUser.set(user); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   createUser(req: CreateUserRequest): Promise<UserProfile> {
@@ -109,8 +126,10 @@ export class RhService {
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
-      if (e?.message) return e.message;
+      const body = (err as { error?: { error?: string; message?: string } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Error al procesar la solicitud';
   }

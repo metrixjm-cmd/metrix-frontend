@@ -13,6 +13,7 @@ export interface AuthResponse {
   numeroUsuario: string;
   nombre:        string;
   storeId:       string;
+  storeName:     string;
   turno:         string;
   roles:         string[];
 }
@@ -25,6 +26,7 @@ export interface CurrentUser {
   nombre:        string;
   numeroUsuario: string;
   storeId:       string;
+  storeName:     string;
   turno:         string;
   roles:         string[];
 }

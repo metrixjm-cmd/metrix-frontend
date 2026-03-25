@@ -1,0 +1,418 @@
+<div class="p-4 md:p-6 space-y-5">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <a routerLink="/banco-info"
+         class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-stone-900">Plantillas de Capacitación</h1>
+        <p class="text-sm text-stone-500 mt-0.5">
+          Bases reutilizables para crear capacitaciones
+          @if (templateSvc.total() > 0) {
+            · <span class="font-medium text-stone-700">{{ templateSvc.total() }}</span> plantillas
+          }
+        </p>
+      </div>
+    </div>
+    @if (isManager()) {
+      <button type="button" (click)="openCreate()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva plantilla
+      </button>
+    }
+  </div>
+
+  <!-- ── Error ───────────────────────────────────────────────────────────── -->
+  @if (templateSvc.error()) {
+    <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ templateSvc.error() }}
+    </div>
+  }
+
+  <!-- ── Filtros ──────────────────────────────────────────────────────────── -->
+  <div class="flex flex-wrap gap-2">
+    <select [value]="filterCategory()" (change)="setCategory($any($event.target).value)"
+            class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+      <option value="">Todas las categorías</option>
+      @for (cat of catalogSvc.categorias(); track cat.id) {
+        <option [value]="cat.value">{{ cat.label || cat.value }}</option>
+      }
+    </select>
+
+    <div class="flex gap-1.5 bg-stone-100 rounded-lg p-1">
+      <button type="button" (click)="setLevel('')"
+              [class]="filterLevel() === '' ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                              'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+        Todos
+      </button>
+      @for (l of levels; track l) {
+        <button type="button" (click)="setLevel(l)"
+                [class]="filterLevel() === l ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                               'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+          {{ levelLabels[l] }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (templateSvc.loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="bg-white border border-stone-200 rounded-xl p-5 space-y-3 animate-pulse">
+          <div class="h-5 bg-stone-100 rounded w-3/4"></div>
+          <div class="h-3 bg-stone-100 rounded w-1/2"></div>
+          <div class="h-12 bg-stone-100 rounded"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Grid de plantillas ───────────────────────────────────────────────── -->
+  @if (!templateSvc.loading()) {
+    @if (templateSvc.templates().length === 0) {
+      <div class="bg-white border border-stone-200 rounded-xl py-16 text-center">
+        <div class="text-5xl mb-4">📋</div>
+        <p class="text-stone-500 font-medium">Sin plantillas aún</p>
+        <p class="text-stone-400 text-sm mt-1">
+          @if (isManager()) { Crea la primera plantilla con el botón de arriba. }
+          @else { No hay plantillas disponibles. }
+        </p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (t of templateSvc.templates(); track t.id) {
+          <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+
+            <!-- Header card -->
+            <div class="px-5 pt-5 pb-3 flex-1 space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex flex-wrap gap-1.5">
+                  <span [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + levelBadgeClass(t.level)">
+                    {{ levelLabels[t.level] }}
+                  </span>
+                  @if (t.category) {
+                    <span class="px-2 py-0.5 rounded-full text-xs bg-stone-100 text-stone-600">
+                      {{ t.category }}
+                    </span>
+                  }
+                </div>
+                @if (t.timesUsed > 0) {
+                  <span class="text-xs text-teal-600 font-medium shrink-0">{{ t.timesUsed }}x usada</span>
+                }
+              </div>
+
+              <p class="text-sm font-semibold text-stone-900">{{ t.title }}</p>
+              @if (t.description) {
+                <p class="text-xs text-stone-500 line-clamp-2">{{ t.description }}</p>
+              }
+
+              <!-- Materiales -->
+              <div class="flex flex-wrap gap-1 pt-1">
+                @for (m of t.materials.slice(0,4); track m.materialId) {
+                  <span class="text-xs bg-stone-50 border border-stone-100 rounded px-1.5 py-0.5 text-stone-600 truncate max-w-[100px]">
+                    {{ materialTypeIcon[m.type] }} {{ m.title }}
+                  </span>
+                }
+                @if (t.materials.length > 4) {
+                  <span class="text-xs text-stone-400">+{{ t.materials.length - 4 }} más</span>
+                }
+              </div>
+
+              <!-- Metadata -->
+              <div class="flex gap-4 text-xs text-stone-400 pt-1">
+                <span>{{ t.durationHours }}h</span>
+                <span>Mín. {{ t.minPassGrade }}/10</span>
+                <span>{{ t.materials.length }} material(es)</span>
+              </div>
+            </div>
+
+            <!-- Footer acciones -->
+            @if (isManager()) {
+              <div class="px-5 pb-4 pt-3 border-t border-stone-100 flex gap-2">
+                <button type="button" (click)="openEdit(t)"
+                        class="flex-1 text-center text-xs font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-50 transition-colors">
+                  Editar
+                </button>
+                @if (isAdmin()) {
+                  <button type="button" (click)="deleteTemplate(t)"
+                          [disabled]="templateSvc.saving()"
+                          class="px-3 text-xs font-medium text-red-500 border border-red-100 rounded-lg py-2 hover:bg-red-50 transition-colors disabled:opacity-40">
+                    Eliminar
+                  </button>
+                }
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>
+
+
+<!-- ══ MODAL: Nueva / Editar plantilla ════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+    <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
+
+      <!-- Modal header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100 shrink-0">
+        <h3 class="text-base font-semibold text-stone-900">
+          @if (editingId()) { Editar plantilla } @else { Nueva plantilla }
+        </h3>
+        <button type="button" (click)="closeModal()"
+                class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-stone-100 shrink-0">
+        <button type="button" (click)="modalTab.set('info')"
+                [class]="modalTab() === 'info'
+                  ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/40'
+                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+          1. Datos generales
+        </button>
+        <button type="button" (click)="modalTab.set('materiales')"
+                [class]="modalTab() === 'materiales'
+                  ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/40'
+                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+          2. Materiales
+          @if (pickedMaterials().length > 0) {
+            <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-teal-100 text-teal-700 text-xs font-bold">
+              {{ pickedMaterials().length }}
+            </span>
+          }
+        </button>
+      </div>
+
+      <!-- Error -->
+      @if (templateSvc.error()) {
+        <div class="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm shrink-0">
+          {{ templateSvc.error() }}
+        </div>
+      }
+
+      <!-- Body scrollable -->
+      <div class="flex-1 overflow-y-auto">
+
+        <!-- ── Tab: Datos generales ── -->
+        @if (modalTab() === 'info') {
+          <form [formGroup]="form" class="p-6 space-y-4">
+
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Título *</label>
+              <input formControlName="title" type="text" placeholder="Ej. Prevención de Incendios"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              @if (form.get('title')?.invalid && form.get('title')?.touched) {
+                <p class="text-xs text-red-600 mt-1">Mínimo 3 caracteres.</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Descripción</label>
+              <textarea formControlName="description" rows="2"
+                        placeholder="Objetivos y alcance de la capacitación…"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">Categoría</label>
+                <select formControlName="category"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                  <option value="">Sin categoría</option>
+                  @for (cat of catalogSvc.categorias(); track cat.id) {
+                    <option [value]="cat.value">{{ cat.label || cat.value }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">Nivel *</label>
+                <select formControlName="level"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                  @for (l of levels; track l) {
+                    <option [value]="l">{{ levelLabels[l] }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">Duración (horas) *</label>
+                <input formControlName="durationHours" type="number" min="1" max="40"
+                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">Nota mínima (0-10) *</label>
+                <input formControlName="minPassGrade" type="number" min="0" max="10" step="0.5"
+                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Tags</label>
+              <input formControlName="tagsRaw" type="text" placeholder="seguridad, incendios, normas"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              <p class="text-xs text-stone-400 mt-1">Separados por comas</p>
+            </div>
+
+          </form>
+        }
+
+        <!-- ── Tab: Materiales ── -->
+        @if (modalTab() === 'materiales') {
+          <div class="grid grid-cols-2 h-full divide-x divide-stone-100" style="min-height: 360px;">
+
+            <!-- Panel izquierdo: banco de materiales -->
+            <div class="p-4 flex flex-col space-y-3">
+              <div>
+                <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Banco de materiales</p>
+                <input type="text" placeholder="Buscar…"
+                       [value]="materialSearch()"
+                       (input)="materialSearch.set($any($event.target).value)"
+                       class="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              </div>
+
+              <div class="flex-1 overflow-y-auto space-y-1.5 max-h-72">
+                @if (filteredBankMaterials().length === 0) {
+                  <p class="text-xs text-stone-400 text-center py-8">
+                    @if (materialSearch()) { Sin resultados para "{{ materialSearch() }}" }
+                    @else { Todos los materiales ya fueron agregados }
+                  </p>
+                }
+                @for (m of filteredBankMaterials(); track m.id) {
+                  <button type="button" (click)="addMaterial(m)"
+                          class="w-full flex items-center gap-2 p-2 rounded-lg border border-stone-100 hover:border-teal-300 hover:bg-teal-50 transition-colors text-left">
+                    <span class="text-lg shrink-0">{{ materialTypeIcon[m.type] }}</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-medium text-stone-800 truncate">{{ m.title }}</p>
+                      @if (m.category) {
+                        <p class="text-xs text-stone-400">{{ m.category }}</p>
+                      }
+                    </div>
+                    <svg class="w-4 h-4 text-teal-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Panel derecho: materiales seleccionados -->
+            <div class="p-4 flex flex-col space-y-3">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Incluidos en la plantilla
+                </p>
+                <span class="text-xs text-teal-600 font-medium">{{ pickedMaterials().length }} material(es)</span>
+              </div>
+
+              @if (pickedMaterials().length === 0) {
+                <div class="flex-1 flex flex-col items-center justify-center text-center border-2 border-dashed border-stone-200 rounded-xl py-8">
+                  <p class="text-stone-400 text-xs">Agrega materiales desde el panel izquierdo</p>
+                </div>
+              } @else {
+                <div class="flex-1 overflow-y-auto space-y-2 max-h-72">
+                  @for (p of pickedMaterials(); track p.materialId; let i = $index) {
+                    <div class="border border-stone-200 rounded-lg p-2.5 space-y-2">
+
+                      <!-- Fila superior: orden + título + acciones -->
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-stone-400 w-5 shrink-0">{{ i + 1 }}</span>
+                        <span class="text-base shrink-0">{{ materialTypeIcon[p.type] }}</span>
+                        <p class="text-xs font-medium text-stone-800 flex-1 min-w-0 truncate">{{ p.title }}</p>
+                        <div class="flex gap-0.5 shrink-0">
+                          <button type="button" (click)="moveUp(i)" [disabled]="i === 0"
+                                  class="p-1 rounded text-stone-400 hover:text-stone-600 hover:bg-stone-100 disabled:opacity-30 transition-colors">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+                            </svg>
+                          </button>
+                          <button type="button" (click)="moveDown(i)" [disabled]="i === pickedMaterials().length - 1"
+                                  class="p-1 rounded text-stone-400 hover:text-stone-600 hover:bg-stone-100 disabled:opacity-30 transition-colors">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                          </button>
+                          <button type="button" (click)="removeMaterial(p.materialId)"
+                                  class="p-1 rounded text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Obligatorio + notas -->
+                      <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" [checked]="p.required" (change)="toggleRequired(i)"
+                                 class="rounded border-stone-300 text-teal-600 focus:ring-teal-500 w-3.5 h-3.5">
+                          <span class="text-xs text-stone-500">Obligatorio</span>
+                        </label>
+                        <input type="text" [value]="p.notes"
+                               (input)="updateNotes(i, $any($event.target).value)"
+                               placeholder="Instrucciones…"
+                               class="flex-1 border border-stone-200 rounded px-2 py-1 text-xs text-stone-700 focus:outline-none focus:ring-1 focus:ring-teal-400">
+                      </div>
+
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+
+      </div><!-- /body scrollable -->
+
+      <!-- Modal footer -->
+      <div class="flex items-center justify-between px-6 py-4 border-t border-stone-100 shrink-0">
+        <div class="text-xs text-stone-400">
+          @if (pickedMaterials().length === 0 && modalTab() === 'materiales') {
+            <span class="text-red-500">Agrega al menos un material.</span>
+          } @else {
+            {{ pickedMaterials().length }} material(es) seleccionado(s)
+          }
+        </div>
+        <div class="flex gap-3">
+          <button type="button" (click)="closeModal()"
+                  class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+            Cancelar
+          </button>
+          @if (modalTab() === 'info') {
+            <button type="button" (click)="modalTab.set('materiales')" [disabled]="form.invalid"
+                    class="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors">
+              Siguiente → Materiales
+            </button>
+          } @else {
+            <button type="button" (click)="submit()" [disabled]="templateSvc.saving() || pickedMaterials().length === 0"
+                    class="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors">
+              @if (templateSvc.saving()) { Guardando… }
+              @else if (editingId()) { Guardar cambios }
+              @else { Crear plantilla }
+            </button>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

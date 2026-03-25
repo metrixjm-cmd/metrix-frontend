@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { SlicePipe } from '@angular/common';
+import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { AuthService } from '../auth/services/auth.service';
 import { IgeoAnalyticsResponse } from '../kpi/kpi.models';
 import { TaskService } from '../tasks/services/task.service';
@@ -42,7 +42,7 @@ export interface LiveEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, SlicePipe, StatusBadgeComponent],
+  imports: [RouterLink, StatusBadgeComponent, AppDatePipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -58,34 +58,17 @@ export class Dashboard implements OnInit {
   readonly isEjecutador  = computed(() => !this.auth.hasAnyRole('ADMIN', 'GERENTE'));
 
   readonly dashboardTitle = computed(() => {
-    if (this.isAdmin())       return 'Dashboard Ejecutivo';
-    if (this.isManagerView()) return 'Dashboard Gerencial';
-    return 'Mi Turno';
+    if (this.isAdmin())       return 'Dashboard';
+    if (this.isManagerView()) return 'Dashboard';
+    return 'Mi Jornada';
   });
 
-  // ── KPI cards fallback ────────────────────────────────────────────────────
-  private readonly fallbackKpis: KpiCard[] = [
-    { label: 'IGEO',         value: '—', delta: '', deltaUp: true,  sub: 'Índice Global Ejecución',     data: [50,50,50,50,50,50,50,50,50,50], color: '#ea580c', accentBg: 'orange'  },
-    { label: 'On-Time Rate', value: '—', delta: '', deltaUp: true,  sub: 'Tareas completadas a tiempo', data: [50,50,50,50,50,50,50,50,50,50], color: '#10b981', accentBg: 'emerald' },
-    { label: 'Re-trabajo',   value: '—', delta: '', deltaUp: false, sub: 'Tareas devueltas / total',    data: [1],                             color: '#f59e0b', accentBg: 'amber'   },
-    { label: 'Críticas Pend.',value: '—',delta: '', deltaUp: false, sub: 'Sin ejecutar este turno',     data: [1],                             color: '#ef4444', accentBg: 'red'     },
-    { label: 'Capacitación', value: '—', delta: '', deltaUp: true,  sub: 'Capacitaciones completadas',  data: [1],                             color: '#8b5cf6', accentBg: 'violet'  },
-  ];
+  // ── KPI signals desde servicio (sin fallback hardcodeado) ─────────────────
+  readonly kpis    = computed(() => this.kpiSvc.kpiCards() ?? []);
+  readonly ranking = computed(() => this.kpiSvc.rankingForDisplay());
 
-  private readonly fallbackRanking: StoreRanking[] = [
-    { rank: 1, name: 'Suc. Centro Histórico', igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-    { rank: 2, name: 'Suc. Plaza Mayor',      igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-    { rank: 3, name: 'Suc. Torres Norte',     igeo: 0, onTime: 0, tasks: 0, trend: 'same' },
-  ];
-
-  // ── KPI signals desde servicio ────────────────────────────────────────────
-  readonly kpis = computed(() => this.kpiSvc.kpiCards() ?? this.fallbackKpis);
-
-  readonly ranking = computed(() =>
-    this.kpiSvc.rankingForDisplay().length > 0
-      ? this.kpiSvc.rankingForDisplay()
-      : this.fallbackRanking
-  );
+  readonly kpisLoading  = this.kpiSvc.loading;
+  readonly kpisError    = this.kpiSvc.error;
 
   readonly pipelineSteps = computed(() => {
     const c = this.kpiSvc.pipelineCounts();
@@ -95,6 +78,15 @@ export class Dashboard implements OnInit {
       { label: 'Completada',  color: 'text-emerald-700', bg: 'bg-emerald-100', count: c?.completed  ?? 0 },
       { label: 'Fallida',     color: 'text-red-600',     bg: 'bg-red-100',     count: c?.failed     ?? 0 },
     ];
+  });
+
+  // ── Sparklines pre-calculados (evita recálculo por change detection) ──────
+  readonly kpiSparklines = computed(() => {
+    const cards = this.kpis();
+    return cards.map(kpi => ({
+      path: this.sparklinePath(kpi.data),
+      fill: this.sparklineFill(kpi.data),
+    }));
   });
 
   // ── GERENTE: Tabla de equipo (KPI #7 top-5) ───────────────────────────────
@@ -165,8 +157,9 @@ export class Dashboard implements OnInit {
     const storeId = this.auth.currentUser()?.storeId ?? '';
 
     if (this.isAdmin()) {
+      // ADMIN ve todas las tareas del sistema
+      this.taskSvc.loadAllTasks();
       if (storeId) {
-        this.taskSvc.loadTasksByStore(storeId);
         this.kpiSvc.loadStoreSummary(storeId);
         this.kpiSvc.loadRanking();
         this.kpiSvc.loadUsersResponsibility(storeId);
@@ -174,7 +167,7 @@ export class Dashboard implements OnInit {
         this.incidentSvc.loadByStore(storeId);
       }
     } else if (this.isManagerView()) {
-      // GERENTE
+      // GERENTE ve tareas de su sucursal
       if (storeId) {
         this.taskSvc.loadTasksByStore(storeId);
         this.kpiSvc.loadStoreSummary(storeId);
@@ -222,16 +215,24 @@ export class Dashboard implements OnInit {
   // ── Ranking helpers ───────────────────────────────────────────────────────
 
   rankMedalClass(rank: number): string {
-    if (rank === 1) return 'bg-amber-100 text-amber-700 border border-amber-300 font-bold';
+    if (rank === 1) return 'bg-yellow-100 text-yellow-700 border border-yellow-300 font-bold';
     if (rank === 2) return 'bg-stone-100 text-stone-500 border border-stone-300 font-bold';
-    if (rank === 3) return 'bg-orange-100 text-orange-600 border border-orange-300 font-bold';
+    if (rank === 3) return 'bg-brand-50 text-brand-600 border border-brand-200 font-bold';
     return 'bg-stone-50 text-stone-400 border border-stone-200';
+  }
+
+  rankBadge(rank: number, igeo: number): { text: string; classes: string } | null {
+    if (rank !== 1) return null;
+    if (igeo >= 90) return { text: '🔥 Imparable',       classes: 'bg-orange-100 text-orange-700 border border-orange-200' };
+    if (igeo >= 80) return { text: '⭐ Excelente',        classes: 'bg-amber-100 text-amber-700 border border-amber-200'   };
+    if (igeo >= 70) return { text: '💪 Líder del equipo', classes: 'bg-yellow-100 text-yellow-700 border border-yellow-200' };
+    return           { text: '🏆 #1 del equipo',         classes: 'bg-stone-100 text-stone-600 border border-stone-200'    };
   }
 
   igeoBarClass(igeo: number): string {
     if (igeo >= 90) return 'bg-emerald-500';
-    if (igeo >= 80) return 'bg-indigo-500';
-    if (igeo >= 70) return 'bg-amber-500';
+    if (igeo >= 80) return 'bg-brand-600';
+    if (igeo >= 70) return 'bg-brand-400';
     return 'bg-red-500';
   }
 
@@ -251,13 +252,13 @@ export class Dashboard implements OnInit {
 
   igeoTextClass(igeo: number): string {
     if (igeo >= 80) return 'text-emerald-600 font-bold';
-    if (igeo >= 60) return 'text-amber-600 font-bold';
+    if (igeo >= 60) return 'text-yellow-600 font-bold';
     return 'text-red-600 font-bold';
   }
 
   shiftBarColor(otr: number): string {
     if (otr >= 80) return 'bg-emerald-500';
-    if (otr >= 60) return 'bg-amber-500';
+    if (otr >= 60) return 'bg-brand-400';
     return 'bg-red-500';
   }
 

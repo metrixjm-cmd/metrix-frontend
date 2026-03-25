@@ -1,4 +1,4 @@
-<div class="p-5 space-y-5">
+﻿<div class="p-5 space-y-5">
 
   <!-- ══════════════════════════════════════════════
        PAGE HEADER — título y acciones por rol
@@ -7,43 +7,32 @@
     <div>
       <h1 class="text-lg font-bold text-stone-900 leading-tight">{{ dashboardTitle() }}</h1>
       <p class="text-stone-500 text-xs mt-0.5">
-        Turno activo · <span class="text-orange-600 font-semibold">{{ auth.currentUser()?.turno ?? 'Sin turno' }}</span> ·
-        Sucursal {{ auth.currentUser()?.storeId ?? '—' }}
+        {{ auth.currentUser()?.nombre ?? '' }} ·
+        <span class="text-brand-600 font-semibold">{{ auth.currentUser()?.turno ?? 'Sin turno' }}</span>
       </p>
-    </div>
-    <div class="flex items-center gap-2">
-      @if (isManagerView()) {
-        <a routerLink="/tasks/create"
-           class="flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          Asignar Tarea
-        </a>
-      }
-      <a routerLink="/tasks"
-         class="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 text-xs font-semibold rounded-lg transition-colors shadow-sm">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-        Ver Tareas
-      </a>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════
        KPI CARDS CON SPARKLINES — comunes a todos los roles
   ══════════════════════════════════════════════ -->
-  @if (kpiSvc.loading()) {
+  @if (kpisLoading()) {
     <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
       @for (i of [1,2,3,4,5]; track i) {
         <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card h-28 animate-pulse"></div>
       }
     </div>
+  } @else if (kpisError()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      Error cargando KPIs: {{ kpisError() }}
+    </div>
+  } @else if (kpis().length === 0) {
+    <div class="p-4 bg-stone-50 border border-stone-200 rounded-xl text-stone-500 text-sm">
+      Sin datos de KPIs disponibles. Asigna tareas para generar métricas.
+    </div>
   } @else {
     <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
-      @for (kpi of kpis(); track kpi.label) {
+      @for (kpi of kpis(); track kpi.label; let idx = $index) {
         <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card hover:shadow-card-md transition-shadow">
           <div class="flex items-start justify-between mb-3">
             <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide leading-tight">{{ kpi.label }}</p>
@@ -73,8 +62,8 @@
                   <stop offset="100%" [attr.stop-color]="kpi.color" stop-opacity="0" />
                 </linearGradient>
               </defs>
-              <path [attr.d]="sparklineFill(kpi.data)" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
-              <path [attr.d]="sparklinePath(kpi.data)" [attr.stroke]="kpi.color"
+              <path [attr.d]="kpiSparklines()[idx]?.fill" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
+              <path [attr.d]="kpiSparklines()[idx]?.path" [attr.stroke]="kpi.color"
                     stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
@@ -86,7 +75,7 @@
                   <div class="flex items-center gap-1.5">
                     <span class="text-[9px] text-stone-400 w-10 shrink-0">{{p.n}}</span>
                     <div class="flex-1 h-1 bg-stone-100 rounded-full overflow-hidden">
-                      <div class="h-1 bg-orange-400 rounded-full" [style.width]="p.v + '%'"></div>
+                      <div class="h-1 bg-brand-400 rounded-full" [style.width]="p.v + '%'"></div>
                     </div>
                     <span class="text-[9px] font-semibold text-stone-600 w-6 text-right">{{p.v.toFixed(0)}}</span>
                   </div>
@@ -114,7 +103,7 @@
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
             <span class="text-sm font-semibold text-stone-900">Feed en Vivo</span>
-            <span class="text-xs text-stone-400">· Actividad del turno</span>
+            <span class="text-xs text-stone-400">· Actividad reciente</span>
           </div>
         </div>
         <!-- Pipeline mini -->
@@ -139,7 +128,7 @@
                   <span [class]="'text-xs font-medium ' + actionTextClass(event.action)">{{ actionLabel(event.action) }}</span>
                   <span class="text-xs text-stone-700 truncate">"{{ event.taskName }}"</span>
                 </div>
-                <p class="text-[11px] text-stone-400 mt-0.5">{{ event.store }} · {{ event.shift }}</p>
+                <p class="text-[11px] text-stone-400 mt-0.5">{{ event.shift }}</p>
               </div>
               <span class="text-[11px] text-stone-400 shrink-0 pt-1">{{ event.time }}</span>
             </div>
@@ -149,13 +138,13 @@
 
       <!-- Ranking inter-sucursal -->
       <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-        <div class="px-4 py-3 border-b border-stone-100 bg-gradient-to-r from-orange-50 to-amber-50">
+        <div class="px-4 py-3 border-b border-stone-100 bg-brand-600">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-bold text-stone-900">Ranking Sucursales</p>
-              <p class="text-[11px] text-stone-500 mt-0.5">IGEO · Operaciones</p>
+              <p class="text-sm font-bold text-white">Ranking Sucursales</p>
+              <p class="text-[11px] text-white/80 mt-0.5">IGEO · Operaciones</p>
             </div>
-            <span class="text-[10px] font-bold px-2 py-1 bg-orange-600 text-white rounded-full">HOY</span>
+            <span class="text-[10px] font-bold px-2 py-1 bg-brand-600 text-white rounded-full">HOY</span>
           </div>
         </div>
         <div class="p-3 space-y-1.5">
@@ -170,23 +159,23 @@
                     <svg class="w-3 h-3" [class]="trendClass(store.trend)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="trendIcon(store.trend)" />
                     </svg>
-                    <span class="text-xs font-bold text-stone-900">{{ store.igeo }}</span>
+                    <span class="text-xs font-bold text-stone-900">{{ store.igeo >= 0 ? store.igeo : 'S/D' }}</span>
                   </div>
                 </div>
                 <div class="mt-1.5 h-1.5 bg-stone-100 rounded-full overflow-hidden">
                   <div class="h-full rounded-full transition-all duration-700"
                        [class]="igeoBarClass(store.igeo)"
-                       [style.width.%]="store.igeo"></div>
+                       [style.width.%]="store.igeo >= 0 ? store.igeo : 0"></div>
                 </div>
                 <div class="flex items-center gap-3 mt-1 text-[10px] text-stone-400">
-                  <span>On-Time: <span class="text-stone-600 font-semibold">{{ store.onTime }}%</span></span>
+                  <span>On-Time: <span class="text-stone-600 font-semibold">{{ store.onTime >= 0 ? store.onTime + '%' : 'S/D' }}</span></span>
                   <span>Tareas: <span class="text-stone-600 font-semibold">{{ store.tasks }}</span></span>
                 </div>
               </div>
             </div>
           }
         </div>
-        <div class="px-4 py-2.5 border-t border-stone-100 bg-orange-50/50">
+        <div class="px-4 py-2.5 border-t border-stone-100 bg-brand-50/50">
           <p class="text-[10px] text-stone-500">IGEO integra: Cumplimiento, Tiempo, Calidad y Consistencia.</p>
         </div>
       </div>
@@ -240,7 +229,7 @@
                   </p>
                 </div>
                 <a routerLink="/reports"
-                   class="text-xs text-orange-600 hover:text-orange-700 font-medium shrink-0">Ver reporte</a>
+                   class="text-xs text-brand-600 hover:text-brand-700 font-medium shrink-0">Ver reporte</a>
               </div>
             }
           </div>
@@ -252,36 +241,50 @@
         <p class="text-sm font-semibold text-stone-900 mb-3">Accesos Rápidos</p>
         <div class="grid grid-cols-2 gap-3">
 
+          <a routerLink="/kpi"
+             class="flex items-center gap-3 p-3 rounded-xl border-2 border-brand-300 bg-brand-50 hover:bg-brand-100 transition-all group">
+            <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-brand-700">Métricas KPI</p>
+              <p class="text-[10px] text-stone-400">Drill-down · 8 indicadores</p>
+            </div>
+          </a>
+
           <a routerLink="/reports"
-             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-all group">
-            <div class="w-9 h-9 bg-orange-100 rounded-lg flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-all group">
+            <div class="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
             <div>
-              <p class="text-xs font-semibold text-stone-800 group-hover:text-orange-700">Reportes</p>
+              <p class="text-xs font-semibold text-stone-800 group-hover:text-brand-700">Reportes</p>
               <p class="text-[10px] text-stone-400">PDF · Excel · Daily</p>
             </div>
           </a>
 
           <a routerLink="/gamification"
-             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-all group">
-            <div class="w-9 h-9 bg-amber-100 rounded-lg flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-all group">
+            <div class="w-9 h-9 bg-brand-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             </div>
             <div>
-              <p class="text-xs font-semibold text-stone-800 group-hover:text-orange-700">Gamificación</p>
+              <p class="text-xs font-semibold text-stone-800 group-hover:text-brand-700">Gamificación</p>
               <p class="text-[10px] text-stone-400">Rankings · Insignias</p>
             </div>
           </a>
 
-          <a routerLink="/rh"
-             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-all group">
+          <a routerLink="/banco-info"
+             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-all group">
             <div class="w-9 h-9 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
               <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -289,13 +292,13 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-semibold text-stone-800 group-hover:text-orange-700">RH</p>
+              <p class="text-xs font-semibold text-stone-800 group-hover:text-brand-700">RH</p>
               <p class="text-[10px] text-stone-400">Colaboradores</p>
             </div>
           </a>
 
-          <a routerLink="/settings"
-             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-all group">
+          <a routerLink="/banco-info/sucursales"
+             class="flex items-center gap-3 p-3 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-all group">
             <div class="w-9 h-9 bg-stone-100 rounded-lg flex items-center justify-center shrink-0">
               <svg class="w-4 h-4 text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -303,7 +306,7 @@
               </svg>
             </div>
             <div>
-              <p class="text-xs font-semibold text-stone-800 group-hover:text-orange-700">Configuración</p>
+              <p class="text-xs font-semibold text-stone-800 group-hover:text-brand-700">Configuración</p>
               <p class="text-[10px] text-stone-400">Sucursales</p>
             </div>
           </a>
@@ -343,7 +346,7 @@
       <div class="xl:col-span-2 bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
         <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
           <p class="text-sm font-semibold text-stone-900">Rendimiento del Equipo</p>
-          <a routerLink="/rh" class="text-xs text-orange-600 hover:text-orange-700 font-medium">Ver todos</a>
+          <a routerLink="/banco-info/usuarios" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Ver todos</a>
         </div>
         @if (teamRanking().length === 0) {
           <div class="py-10 text-center">
@@ -369,11 +372,18 @@
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-2.5">
-                      <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs font-bold text-orange-600">
+                      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-xs font-bold text-brand-600">
                         {{ member.nombre.charAt(0).toUpperCase() }}
                       </div>
                       <div>
-                        <p class="text-sm font-medium text-stone-800">{{ member.nombre }}</p>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <p class="text-sm font-medium text-stone-800">{{ member.nombre }}</p>
+                          @if (rankBadge(member.rank, member.igeo); as badge) {
+                            <span [class]="'rank-badge-animate text-xs font-semibold px-2 py-0.5 rounded-full ' + badge.classes">
+                              {{ badge.text }}
+                            </span>
+                          }
+                        </div>
                         <p class="text-[10px] text-stone-400">{{ member.turno }}</p>
                       </div>
                     </div>
@@ -431,7 +441,7 @@
         <div class="bg-white border border-stone-200 rounded-xl shadow-card p-4">
           <div class="flex items-center justify-between mb-3">
             <p class="text-sm font-semibold text-stone-900">Capacitación</p>
-            <a routerLink="/training" class="text-xs text-orange-600 hover:text-orange-700 font-medium">Ver todas</a>
+            <a routerLink="/training" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Ver todas</a>
           </div>
           <p class="text-3xl font-bold text-stone-900">{{ trainingRate().toFixed(1) }}<span class="text-base text-stone-400 font-normal">%</span></p>
           <p class="text-xs text-stone-400 mb-3">Capacitaciones completadas</p>
@@ -460,14 +470,14 @@
 
       <!-- Card de gamificación personal -->
       <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-        <div class="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-4">
+        <div class="bg-brand-600 px-4 py-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold text-orange-100 uppercase tracking-wide">Mi Posición</p>
+              <p class="text-xs font-semibold text-brand-100 uppercase tracking-wide">Mi Posición</p>
               @if (gamifSummary()) {
                 <p class="text-2xl font-bold text-white mt-0.5">
                   #{{ gamifSummary()!.rank }}
-                  <span class="text-sm font-normal text-orange-100"> de {{ gamifSummary()!.totalInStore }}</span>
+                  <span class="text-sm font-normal text-brand-100"> de {{ gamifSummary()!.totalInStore }}</span>
                 </p>
               } @else {
                 <p class="text-2xl font-bold text-white mt-0.5">—</p>
@@ -511,7 +521,7 @@
             <p class="text-xs text-stone-400 text-center py-4 animate-pulse">Cargando...</p>
           }
           <a routerLink="/gamification/me"
-             class="mt-3 flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-orange-600 hover:text-orange-700 border border-orange-200 hover:bg-orange-50 rounded-lg transition-colors">
+             class="mt-3 flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-brand-600 hover:text-brand-700 border border-brand-200 hover:bg-brand-50 rounded-lg transition-colors">
             Ver mis insignias
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -526,16 +536,16 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
           <a routerLink="/tasks"
-             class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-orange-200 bg-orange-50 hover:bg-orange-100 transition-colors">
-            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-brand-200 bg-brand-50 hover:bg-brand-100 transition-colors">
+            <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
-            <span class="text-xs font-semibold text-orange-700">Mis Tareas</span>
+            <span class="text-xs font-semibold text-brand-700">Mis Tareas</span>
           </a>
 
           <a routerLink="/training"
-             class="flex flex-col items-center gap-2 p-4 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-colors">
+             class="flex flex-col items-center gap-2 p-4 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-colors">
             <svg class="w-6 h-6 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -544,7 +554,7 @@
           </a>
 
           <a routerLink="/gamification"
-             class="flex flex-col items-center gap-2 p-4 rounded-xl border border-stone-200 hover:border-orange-300 hover:bg-orange-50 transition-colors">
+             class="flex flex-col items-center gap-2 p-4 rounded-xl border border-stone-200 hover:border-brand-300 hover:bg-brand-50 transition-colors">
             <svg class="w-6 h-6 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
@@ -575,9 +585,9 @@
     <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
       <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
         <p class="text-sm font-semibold text-stone-900">
-          Mis Tareas · <span class="text-orange-600">{{ auth.currentUser()?.turno ?? 'Turno' }}</span>
+          Mis Tareas · <span class="text-brand-600">{{ auth.currentUser()?.turno ?? 'Turno' }}</span>
         </p>
-        <a routerLink="/tasks" class="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
+        <a routerLink="/tasks" class="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1">
           Ver todas
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -586,7 +596,7 @@
       </div>
       @if (taskSvc.loading()) {
         <div class="flex items-center justify-center py-10">
-          <svg class="w-6 h-6 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+          <svg class="w-6 h-6 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -602,15 +612,15 @@
                class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors group">
               <app-status-badge [status]="task.status" />
               <div class="flex-1 min-w-0">
-                <p class="text-sm text-stone-800 font-medium truncate group-hover:text-orange-600 transition-colors">
+                <p class="text-sm text-stone-800 font-medium truncate group-hover:text-brand-600 transition-colors">
                   {{ task.title }}
                 </p>
-                <p class="text-[11px] text-stone-400 mt-0.5">{{ task.category }} · Vence {{ task.dueAt | slice:11:16 }}</p>
+                <p class="text-[11px] text-stone-400 mt-0.5">{{ task.category }} · Vence {{ task.dueAt | appDate:'due' }}</p>
               </div>
               @if (task.isCritical) {
                 <span class="text-[10px] font-bold px-2 py-0.5 bg-red-100 text-red-700 rounded-full shrink-0 border border-red-200">CRÍTICA</span>
               }
-              <svg class="w-4 h-4 text-stone-300 group-hover:text-orange-500 transition-colors shrink-0"
+              <svg class="w-4 h-4 text-stone-300 group-hover:text-brand-500 transition-colors shrink-0"
                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -636,13 +646,13 @@
           @if (incidentSvc.criticalOpenCount() > 0) {
             <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
           } @else {
-            <span class="w-2 h-2 bg-amber-400 rounded-full"></span>
+            <span class="w-2 h-2 bg-brand-400 rounded-full"></span>
           }
           <span class="text-sm font-semibold text-stone-900">Incidencias Activas</span>
         </div>
         <div class="flex items-center gap-2">
           @if (openIncidentsCount() > 0) {
-            <span class="text-xs font-bold px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full">
+            <span class="text-xs font-bold px-2 py-0.5 bg-brand-100 text-brand-700 rounded-full">
               {{ openIncidentsCount() }} abierta{{ openIncidentsCount() > 1 ? 's' : '' }}
             </span>
           }
@@ -651,13 +661,13 @@
               {{ incidentSvc.criticalOpenCount() }} crítica{{ incidentSvc.criticalOpenCount() > 1 ? 's' : '' }}
             </span>
           }
-          <a routerLink="/incidents" class="text-xs text-orange-600 hover:text-orange-700 font-medium">Ver todas</a>
+          <a routerLink="/incidents" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Ver todas</a>
         </div>
       </div>
 
       @if (incidentSvc.loading()) {
         <div class="flex items-center justify-center py-6">
-          <svg class="w-5 h-5 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -676,7 +686,7 @@
         <!-- Contadores de estado -->
         <div class="grid grid-cols-3 border-b border-stone-100 text-center text-[11px] bg-stone-50">
           <div class="py-3 border-r border-stone-100">
-            <p class="text-lg font-bold text-amber-600">{{ openIncidentsCount() }}</p>
+            <p class="text-lg font-bold text-brand-600">{{ openIncidentsCount() }}</p>
             <p class="text-stone-500 font-medium">Abiertas</p>
           </div>
           <div class="py-3 border-r border-stone-100">
@@ -702,13 +712,13 @@
                   </svg>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-stone-800 truncate group-hover:text-orange-600 transition-colors">
+                  <p class="text-sm font-medium text-stone-800 truncate group-hover:text-brand-600 transition-colors">
                     {{ inc.title }}
                   </p>
                   <p class="text-[11px] text-stone-400 mt-0.5">{{ inc.reporterName }} · {{ inc.shift }}</p>
                 </div>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      [class]="inc.status === 'ABIERTA' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'">
+                      [class]="inc.status === 'ABIERTA' ? 'bg-brand-100 text-brand-700' : 'bg-blue-100 text-blue-700'">
                   {{ inc.status === 'ABIERTA' ? 'Abierta' : 'En resolución' }}
                 </span>
               </a>
@@ -727,9 +737,13 @@
     <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
       <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100">
         <p class="text-sm font-semibold text-stone-900">
-          Tareas de la Sucursal · <span class="text-orange-600">{{ auth.currentUser()?.turno ?? 'Turno' }}</span>
+          @if (isAdmin()) {
+            Todas las Tareas · <span class="text-brand-600">Sistema</span>
+          } @else {
+            Tareas de la Sucursal · <span class="text-brand-600">{{ auth.currentUser()?.turno ?? 'Turno' }}</span>
+          }
         </p>
-        <a routerLink="/tasks" class="text-xs text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1">
+        <a routerLink="/tasks" class="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1">
           Ver todas
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -738,7 +752,7 @@
       </div>
       @if (taskSvc.loading()) {
         <div class="flex items-center justify-center py-10">
-          <svg class="w-6 h-6 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+          <svg class="w-6 h-6 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -754,15 +768,22 @@
                class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors group">
               <app-status-badge [status]="task.status" />
               <div class="flex-1 min-w-0">
-                <p class="text-sm text-stone-800 font-medium truncate group-hover:text-orange-600 transition-colors">
+                <p class="text-sm text-stone-800 font-medium truncate group-hover:text-brand-600 transition-colors">
                   {{ task.title }}
                 </p>
-                <p class="text-[11px] text-stone-400 mt-0.5">{{ task.category }} · Vence {{ task.dueAt | slice:11:16 }}</p>
+                <p class="text-[11px] text-stone-400 mt-0.5">
+                  {{ task.assignedToName }} · {{ task.category }}
+                  @if (!task.isRecurring) { · Vence {{ task.dueAt | appDate:'due' }} }
+                  @else { · Repetitiva {{ task.recurrenceStartTime }}-{{ task.recurrenceEndTime }} }
+                </p>
               </div>
               @if (task.isCritical) {
-                <span class="text-[10px] font-bold px-2 py-0.5 bg-red-100 text-red-700 rounded-full shrink-0 border border-red-200">CRÍTICA</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 bg-red-100 text-red-700 rounded-full shrink-0 border border-red-200">CRITICA</span>
               }
-              <svg class="w-4 h-4 text-stone-300 group-hover:text-orange-500 transition-colors shrink-0"
+              @if (task.isRecurring) {
+                <span class="text-[10px] font-medium px-2 py-0.5 bg-violet-100 text-violet-700 rounded-full shrink-0">REP</span>
+              }
+              <svg class="w-4 h-4 text-stone-300 group-hover:text-brand-500 transition-colors shrink-0"
                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>

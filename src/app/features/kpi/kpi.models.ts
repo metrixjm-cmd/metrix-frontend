@@ -28,6 +28,7 @@ export interface KpiSummary {
 export interface StoreRankingEntry {
   rank: number;
   storeId: string;
+  storeName: string;
   igeo: number;
   onTimeRate: number;
   reworkRate: number;

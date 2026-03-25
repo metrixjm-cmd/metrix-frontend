@@ -10,6 +10,11 @@ import { AuthService } from '../../features/auth/services/auth.service';
  * Esto cubre automáticamente todos los endpoints protegidos del backend METRIX.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // No adjuntar token a rutas de autenticación (evita 403 por token expirado)
+  if (req.url.includes('/auth/')) {
+    return next(req);
+  }
+
   const token = inject(AuthService).getToken();
 
   if (!token) {

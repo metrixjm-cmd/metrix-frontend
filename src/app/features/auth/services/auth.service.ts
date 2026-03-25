@@ -50,6 +50,7 @@ export class AuthService {
             nombre:        response.nombre,
             numeroUsuario: response.numeroUsuario,
             storeId:       response.storeId,
+            storeName:     response.storeName,
             turno:         response.turno,
             roles:         response.roles,
           });
@@ -94,6 +95,7 @@ export class AuthService {
       nombre:        response.nombre,
       numeroUsuario: response.numeroUsuario,
       storeId:       response.storeId,
+      storeName:     response.storeName,
       turno:         response.turno,
       roles:         response.roles,
     };

@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -14,8 +15,9 @@ import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
  */
 @Injectable({ providedIn: 'root' })
 export class KpiService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/kpis`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/kpis`;
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
   private readonly _summary             = signal<KpiSummary | null>(null);
@@ -50,8 +52,8 @@ export class KpiService {
         deltaUp:  true,
         sub:      igeoSource,
         data:     s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [50],
-        color:    '#ea580c',
-        accentBg: 'orange',
+        color:    '#005a9c',
+        accentBg: 'brand',
       },
       {
         label:    'On-Time Rate',
@@ -70,8 +72,8 @@ export class KpiService {
         deltaUp:  false,
         sub:      'Tareas devueltas / total',
         data:     [Math.max(s.reworkRate, 1)],
-        color:    '#f59e0b',
-        accentBg: 'amber',
+        color:    '#e31717',
+        accentBg: 'red',
       },
       {
         label:    'Críticas Pend.',
@@ -110,7 +112,7 @@ export class KpiService {
   readonly rankingForDisplay = computed((): StoreRanking[] =>
     this._ranking().map(r => ({
       rank:   r.rank,
-      name:   r.storeId,
+      name:   r.storeName || r.storeId,
       igeo:   r.igeo,
       onTime: r.onTimeRate,
       tasks:  r.totalTasks,
@@ -123,42 +125,52 @@ export class KpiService {
   loadStoreSummary(storeId: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<KpiSummary>(`${this.apiUrl}/store/${storeId}`).subscribe({
-      next:  s   => { this._summary.set(s); this._loading.set(false); },
-      error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<KpiSummary>(`${this.apiUrl}/store/${storeId}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  s   => { this._summary.set(s); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadMySummary(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<KpiSummary>(`${this.apiUrl}/me`).subscribe({
-      next:  s   => { this._summary.set(s); this._loading.set(false); },
-      error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<KpiSummary>(`${this.apiUrl}/me`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  s   => { this._summary.set(s); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadRanking(): void {
-    this.http.get<StoreRankingEntry[]>(`${this.apiUrl}/ranking`).subscribe({
-      next:  r   => this._ranking.set(r),
-      error: err => this._error.set(this.extractMessage(err)),
-    });
+    this.http.get<StoreRankingEntry[]>(`${this.apiUrl}/ranking`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._ranking.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
   }
 
   /** KPI #7: carga ranking de colaboradores de una sucursal. */
   loadUsersResponsibility(storeId: string): void {
-    this.http.get<UserResponsibilityEntry[]>(`${this.apiUrl}/store/${storeId}/users`).subscribe({
-      next:  r   => this._usersResponsibility.set(r),
-      error: err => this._error.set(this.extractMessage(err)),
-    });
+    this.http.get<UserResponsibilityEntry[]>(`${this.apiUrl}/store/${storeId}/users`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._usersResponsibility.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
   }
 
   /** KPI #9: carga velocidad de corrección de una sucursal. */
   loadCorrectionSpeed(storeId: string): void {
-    this.http.get<CorrectionSpeedData>(`${this.apiUrl}/store/${storeId}/correction-speed`).subscribe({
-      next:  r   => this._correctionSpeed.set(r),
-      error: err => this._error.set(this.extractMessage(err)),
-    });
+    this.http.get<CorrectionSpeedData>(`${this.apiUrl}/store/${storeId}/correction-speed`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._correctionSpeed.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
   }
 
   /**
@@ -168,18 +180,22 @@ export class KpiService {
    * silenciosamente — el dashboard seguirá mostrando el IGEO calculado en memoria.
    */
   loadAnalyticsIgeo(): void {
-    this.http.get<IgeoAnalyticsResponse>(`${this.apiUrl}/analytics/igeo`).subscribe({
-      next:  r   => this._igeoAnalytics.set(r),
-      error: ()  => { /* analytics-service offline — fallback al IGEO local */ },
-    });
+    this.http.get<IgeoAnalyticsResponse>(`${this.apiUrl}/analytics/igeo`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._igeoAnalytics.set(r),
+        error: ()  => { /* analytics-service offline — fallback al IGEO local */ },
+      });
   }
 
   // ── Helper ───────────────────────────────────────────────────────────────
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
-      if (e?.message) return e.message;
+      const body = (err as { error?: { error?: string; message?: string } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Error al cargar KPIs';
   }

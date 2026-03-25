@@ -1,11 +1,11 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import {
   CreateTaskRequest,
-  EvidenceUploadResponse,
   TaskResponse,
   TaskShift,
   UpdateStatusRequest,
@@ -20,8 +20,9 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/tasks`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/tasks`;
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
   private readonly _tasks        = signal<TaskResponse[]>([]);
@@ -40,6 +41,21 @@ export class TaskService {
   readonly completedCount  = computed(() => this._tasks().filter(t => t.status === 'COMPLETED').length);
   readonly failedCount     = computed(() => this._tasks().filter(t => t.status === 'FAILED').length);
 
+  // ── GET /admin/all — Todas las tareas del sistema (solo ADMIN) ────────────
+
+  loadAllTasks(): void {
+    this._loading.set(true);
+    this._error.set(null);
+
+    this.http
+      .get<TaskResponse[]>(`${this.apiUrl}/admin/all`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
+        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
   // ── GET /my — Tareas del usuario autenticado ─────────────────────────────
 
   loadMyTasks(shift?: TaskShift): void {
@@ -51,6 +67,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/my`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -68,6 +85,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/store/${storeId}`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -85,6 +103,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/user/${userId}`, { params })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -100,6 +119,7 @@ export class TaskService {
 
     this.http
       .get<TaskResponse>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  task => { this._selectedTask.set(task); this._loading.set(false); },
         error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
@@ -134,36 +154,82 @@ export class TaskService {
       );
   }
 
-  // ── POST /{id}/evidence — Subir evidencia (EJECUTADOR) ──────────────────
+  // ── PATCH /{id}/quality — Calificar calidad (creador de la tarea) ─────
 
-  /**
-   * Sube un archivo de evidencia al backend, que lo almacena en GCS.
-   * Actualiza el signal `selectedTask` con la nueva URL para reflejar
-   * la galería de inmediato sin recargar la tarea completa.
-   */
-  uploadEvidence(taskId: string, file: File, type: 'IMAGE' | 'VIDEO'): Observable<EvidenceUploadResponse> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
+  rateQuality(taskId: string, rating: number, comments?: string): Observable<TaskResponse> {
     return this.http
-      .post<EvidenceUploadResponse>(`${this.apiUrl}/${taskId}/evidence`, formData)
+      .patch<TaskResponse>(`${this.apiUrl}/${taskId}/quality`, { rating, comments })
       .pipe(
-        tap(res => {
-          const current = this._selectedTask();
-          if (!current || current.id !== taskId) return;
-
-          if (type === 'IMAGE') {
-            this._selectedTask.set({
-              ...current,
-              evidenceImages: [...current.evidenceImages, res.url],
-            });
-          } else {
-            this._selectedTask.set({
-              ...current,
-              evidenceVideos: [...current.evidenceVideos, res.url],
-            });
+        tap(updated => {
+          this._tasks.update(list =>
+            list.map(t => t.id === updated.id ? updated : t),
+          );
+          if (this._selectedTask()?.id === updated.id) {
+            this._selectedTask.set(updated);
           }
+        }),
+      );
+  }
+
+  // ── PATCH /{id}/process/{stepId} — Actualizar paso de checklist ─────────
+
+  updateProcessStep(taskId: string, stepId: string, completed: boolean, notes?: string): Observable<TaskResponse> {
+    return this.http
+      .patch<TaskResponse>(`${this.apiUrl}/${taskId}/process/${stepId}`, { completed, notes })
+      .pipe(
+        tap(updated => {
+          this._tasks.update(list =>
+            list.map(t => t.id === updated.id ? updated : t),
+          );
+          if (this._selectedTask()?.id === updated.id) {
+            this._selectedTask.set(updated);
+          }
+        }),
+      );
+  }
+
+  // ── PUT /{id}/process/{stepId} — Editar paso de proceso (ADMIN) ─────────
+
+  editProcessStep(taskId: string, stepId: string, title: string, description?: string): Observable<TaskResponse> {
+    return this.http
+      .put<TaskResponse>(`${this.apiUrl}/${taskId}/process/${stepId}`, { title, description })
+      .pipe(
+        tap(updated => {
+          this._tasks.update(list =>
+            list.map(t => t.id === updated.id ? updated : t),
+          );
+          if (this._selectedTask()?.id === updated.id) {
+            this._selectedTask.set(updated);
+          }
+        }),
+      );
+  }
+
+  // ── DELETE /{id}/process/{stepId} — Editar paso de proceso (ADMIN) ────
+
+  deleteProcessStep(taskId: string, stepId: string): Observable<TaskResponse> {
+    return this.http
+      .delete<TaskResponse>(`${this.apiUrl}/${taskId}/process/${stepId}`)
+      .pipe(
+        tap(updated => {
+          this._tasks.update(list =>
+            list.map(t => t.id === updated.id ? updated : t),
+          );
+          if (this._selectedTask()?.id === updated.id) {
+            this._selectedTask.set(updated);
+          }
+        }),
+      );
+  }
+
+  // ── PATCH /{id}/deactivate — Soft-delete tarea (ADMIN) ──────────────────
+
+  deactivateTask(taskId: string): Observable<void> {
+    return this.http
+      .patch<void>(`${this.apiUrl}/${taskId}/deactivate`, {})
+      .pipe(
+        tap(() => {
+          this._tasks.update(list => list.filter(t => t.id !== taskId));
         }),
       );
   }
@@ -177,8 +243,10 @@ export class TaskService {
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
-      if (e?.message) return e.message;
+      const body = (err as { error?: { error?: string; message?: string } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Ocurrió un error inesperado. Intenta de nuevo.';
   }

@@ -6,9 +6,4 @@ export const GAMIFICATION_ROUTES: Routes = [
     loadComponent: () =>
       import('./leaderboard/leaderboard').then(m => m.Leaderboard),
   },
-  {
-    path: 'me',
-    loadComponent: () =>
-      import('./my-badges/my-badges').then(m => m.MyBadges),
-  },
 ];

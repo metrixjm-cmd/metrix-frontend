@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
@@ -10,13 +11,14 @@ import {
 } from '../incident.models';
 
 /**
- * Servicio del módulo de Contingencias — Sprint 15.
+ * Servicio del módulo de Incidencias — Sprint 15.
  * Patrón idéntico a training.service.ts: signals + Promise para mutaciones.
  */
 @Injectable({ providedIn: 'root' })
 export class IncidentService {
-  private readonly http   = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/incidents`;
+  private readonly http       = inject(HttpClient);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl     = `${environment.apiUrl}/incidents`;
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
   private readonly _incidents        = signal<IncidentResponse[]>([]);
@@ -30,6 +32,8 @@ export class IncidentService {
   readonly loading          = this._loading.asReadonly();
   readonly saving           = this._saving.asReadonly();
   readonly error            = this._error.asReadonly();
+
+  clearError(): void { this._error.set(null); }
 
   // ── Computed ──────────────────────────────────────────────────────────────
 
@@ -57,32 +61,49 @@ export class IncidentService {
 
   // ── Métodos de carga ──────────────────────────────────────────────────────
 
+  loadVisible(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<IncidentResponse[]>(`${this.apiUrl}/visible`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._incidents.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
   loadMyIncidents(): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<IncidentResponse[]>(`${this.apiUrl}/my`).subscribe({
-      next:  list => { this._incidents.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse[]>(`${this.apiUrl}/my`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._incidents.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadByStore(storeId: string, status?: IncidentStatus): void {
     this._loading.set(true);
     this._error.set(null);
     const params = status ? { params: { status } } : {};
-    this.http.get<IncidentResponse[]>(`${this.apiUrl}/store/${storeId}`, params).subscribe({
-      next:  list => { this._incidents.set(list); this._loading.set(false); },
-      error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse[]>(`${this.apiUrl}/store/${storeId}`, params)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  list => { this._incidents.set(list); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   loadById(id: string): void {
     this._loading.set(true);
     this._error.set(null);
-    this.http.get<IncidentResponse>(`${this.apiUrl}/${id}`).subscribe({
-      next:  i   => { this._selectedIncident.set(i); this._loading.set(false); },
-      error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
-    });
+    this.http.get<IncidentResponse>(`${this.apiUrl}/${id}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  i   => { this._selectedIncident.set(i); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
   }
 
   // ── Mutaciones ────────────────────────────────────────────────────────────
@@ -94,6 +115,28 @@ export class IncidentService {
       this.http.post<IncidentResponse>(this.apiUrl, req).subscribe({
         next: i => {
           this._incidents.update(list => [i, ...list]);
+          this._saving.set(false);
+          resolve(i);
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
+  uploadEvidence(id: string, file: File): Promise<IncidentResponse> {
+    this._saving.set(true);
+    this._error.set(null);
+    const formData = new FormData();
+    formData.append('file', file);
+    return new Promise((resolve, reject) => {
+      this.http.post<IncidentResponse>(`${this.apiUrl}/${id}/evidence`, formData).subscribe({
+        next: i => {
+          this._selectedIncident.set(i);
+          this._incidents.update(list => list.map(item => item.id === id ? i : item));
           this._saving.set(false);
           resolve(i);
         },
@@ -130,8 +173,10 @@ export class IncidentService {
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
-      if (e?.message) return e.message;
+      const body = (err as { error?: { error?: string; message?: string } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Error al procesar la solicitud';
   }

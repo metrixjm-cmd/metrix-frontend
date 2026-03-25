@@ -1,0 +1,319 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <a routerLink="/trainer" class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-xl font-bold text-stone-900">Resultados del examen</h1>
+      @if (stats(); as s) {
+        <p class="text-sm text-stone-500">{{ s.examTitle }}</p>
+      }
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+    </div>
+  } @else {
+
+    <!-- ── Métricas rápidas ──────────────────────────────────────────────── -->
+    @if (summaryStats(); as s) {
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-500 uppercase tracking-wide">Intentos</p>
+          <p class="text-3xl font-bold text-stone-900 mt-1">{{ s.total }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-500 uppercase tracking-wide">Aprobados</p>
+          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ s.passed }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-500 uppercase tracking-wide">Tasa aprobación</p>
+          <p class="text-3xl font-bold mt-1" [class]="scoreClass(s.passRate)">{{ s.passRate }}%</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-500 uppercase tracking-wide">Promedio</p>
+          <p class="text-3xl font-bold mt-1" [class]="scoreClass(s.avgScore)">{{ s.avgScore | number:'1.0-1' }}%</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card"
+             [class.border-amber-300]="s.pending > 0">
+          <p class="text-xs uppercase tracking-wide" [class]="s.pending > 0 ? 'text-amber-600' : 'text-stone-500'">Pend. revisión</p>
+          <p class="text-3xl font-bold mt-1" [class]="s.pending > 0 ? 'text-amber-600' : 'text-stone-400'">{{ s.pending }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- ── Estadísticas avanzadas ────────────────────────────────────────── -->
+    @if (stats(); as s) {
+      @if (s.totalSubmissions > 0) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+          <!-- Distribución de puntajes -->
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card space-y-3">
+            <h2 class="font-semibold text-stone-800 text-sm">Distribución de puntajes</h2>
+            <div class="space-y-2">
+              @for (range of [s.range0_49, s.range50_69, s.range70_89, s.range90_100]; track range.label) {
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-stone-500 w-16 shrink-0">{{ range.label }}</span>
+                  <div class="flex-1 h-5 bg-stone-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all"
+                         [class]="range.label === '0–49' ? 'bg-red-400' : range.label === '50–69' ? 'bg-amber-400' : range.label === '70–89' ? 'bg-blue-400' : 'bg-emerald-500'"
+                         [style.width.%]="range.percentage"></div>
+                  </div>
+                  <span class="text-xs font-medium text-stone-600 w-8 text-right">{{ range.count }}</span>
+                </div>
+              }
+            </div>
+            <div class="pt-2 border-t border-stone-100 flex gap-4 text-xs text-stone-500">
+              <span>Mín: <strong class="text-stone-700">{{ s.minScore | number:'1.0-1' }}%</strong></span>
+              <span>Máx: <strong class="text-stone-700">{{ s.maxScore | number:'1.0-1' }}%</strong></span>
+              @if (s.avgTimeSecs > 0) {
+                <span class="ml-auto">⏱ prom {{ formatTime(s.avgTimeSecs) }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Preguntas más difíciles -->
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card space-y-3">
+            <h2 class="font-semibold text-stone-800 text-sm">Preguntas más difíciles</h2>
+            @if (s.questionFailRates.length === 0) {
+              <p class="text-xs text-stone-400">Sin datos suficientes.</p>
+            } @else {
+              <div class="space-y-2">
+                @for (qfr of s.questionFailRates.slice(0, 5); track qfr.questionIndex) {
+                  <div class="flex items-start gap-2">
+                    <span class="text-xs font-bold text-stone-300 mt-0.5 w-5 shrink-0">{{ qfr.questionIndex + 1 }}</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-stone-700 line-clamp-1">{{ qfr.questionText }}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <div class="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full bg-red-400 transition-all"
+                               [style.width.%]="qfr.failRate"></div>
+                        </div>
+                        <span class="text-xs text-red-600 font-medium shrink-0">{{ qfr.failRate }}% fallaron</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+    }
+
+    <!-- ── Sin intentos ──────────────────────────────────────────────────── -->
+    @if (submissions().length === 0) {
+      <div class="bg-white border border-stone-200 rounded-xl p-12 text-center shadow-card">
+        <p class="text-stone-400 text-sm">Aún no hay intentos en este examen.</p>
+      </div>
+    } @else {
+
+      <!-- ── Tabla de submissions ──────────────────────────────────────────── -->
+      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-xs text-stone-500 uppercase tracking-wide bg-stone-50 border-b border-stone-200">
+                <th class="px-5 py-3 font-medium">Colaborador</th>
+                <th class="px-5 py-3 font-medium">Puntaje</th>
+                <th class="px-5 py-3 font-medium">Resultado</th>
+                <th class="px-5 py-3 font-medium">Tiempo</th>
+                <th class="px-5 py-3 font-medium">Fecha</th>
+                <th class="px-5 py-3 font-medium">Flags</th>
+                <th class="px-5 py-3 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-100">
+              @for (sub of submissions(); track sub.id) {
+                <tr [class]="(sub.fraudFlags ?? []).length > 0 ? 'bg-amber-50/30 hover:bg-amber-50/60' : 'hover:bg-stone-50'" class="transition-colors">
+
+                  <td class="px-5 py-3">
+                    <p class="font-medium text-stone-800">{{ sub.userName }}</p>
+                    <p class="text-xs text-stone-400">{{ sub.userNumero }}</p>
+                  </td>
+
+                  <td class="px-5 py-3">
+                    <span class="text-lg font-bold" [class]="scoreClass(sub.score)">
+                      {{ sub.score | number:'1.0-1' }}%
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-3">
+                    <div class="flex flex-col gap-1">
+                      @if (sub.passed) {
+                        <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full w-fit">Aprobado</span>
+                      } @else {
+                        <span class="text-xs font-medium bg-red-100 text-red-700 px-2 py-0.5 rounded-full w-fit">Reprobado</span>
+                      }
+                      @if (sub.hasPendingReview && !sub.reviewed) {
+                        <span class="text-xs font-medium bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full w-fit">Pend. revisión</span>
+                      }
+                      @if (sub.reviewed) {
+                        <span class="text-xs font-medium bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full w-fit">Revisado</span>
+                      }
+                    </div>
+                  </td>
+
+                  <td class="px-5 py-3 text-stone-600 text-xs">{{ formatTime(sub.timeTakenSeconds) }}</td>
+
+                  <td class="px-5 py-3 text-stone-400 text-xs">{{ sub.submittedAt | appDate:'relative' }}</td>
+
+                  <td class="px-5 py-3">
+                    <div class="flex flex-wrap gap-1">
+                      @for (flag of sub.fraudFlags; track flag) {
+                        <span class="text-xs bg-amber-100 text-amber-800 border border-amber-200 rounded px-1.5 py-0.5"
+                              [title]="fraudLabel(flag)">
+                          ⚠ {{ fraudLabel(flag) }}
+                        </span>
+                      }
+                    </div>
+                  </td>
+
+                  <td class="px-5 py-3">
+                    <div class="flex gap-2">
+                      @if (sub.hasPendingReview && !sub.reviewed && reviewState() !== sub.id) {
+                        <button (click)="startReview(sub)"
+                                class="text-xs text-amber-600 hover:text-amber-800 font-medium">
+                          Revisar
+                        </button>
+                      }
+                      <button (click)="toggleExpand(sub.id)"
+                              class="text-xs text-orange-600 hover:text-orange-800 font-medium">
+                        {{ expanded() === sub.id ? 'Ocultar' : 'Detalle' }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Expandible: desglose + review UI -->
+                @if (expanded() === sub.id && sub.questionResults && sub.questionResults.length > 0) {
+                  <tr>
+                    <td colspan="7" class="px-5 pb-4 pt-0">
+                      <div class="bg-stone-50 rounded-xl p-4 space-y-3">
+
+                        @if (reviewState() === sub.id) {
+                          <!-- ── Modo revisión ── -->
+                          <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-amber-700">Modo revisión — aprueba o rechaza cada respuesta abierta</p>
+                          </div>
+                        }
+
+                        @for (qr of sub.questionResults; track $index) {
+                          <div class="flex gap-3 text-xs">
+                            <!-- Indicador correcto/incorrecto -->
+                            <span class="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                  [class]="qr.correct ? 'bg-emerald-100 text-emerald-600' : (qr.pendingReview ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-500')">
+                              @if (qr.correct) { ✓ } @else if (qr.pendingReview) { ? } @else { ✗ }
+                            </span>
+
+                            <div class="flex-1">
+                              <p class="font-medium text-stone-700 mb-1">{{ qr.questionText }}</p>
+
+                              <!-- MULTIPLE_CHOICE / TRUE_FALSE -->
+                              @if (qr.type === 'MULTIPLE_CHOICE' || qr.type === 'TRUE_FALSE') {
+                                <div class="flex gap-4 text-stone-500">
+                                  <span>Respondió: <strong class="text-stone-700">{{ qr.selectedIndex >= 0 && qr.options ? qr.options[qr.selectedIndex] : '—' }}</strong></span>
+                                  @if (!qr.correct && qr.options) {
+                                    <span>Correcta: <strong class="text-emerald-700">{{ qr.options[qr.correctIndex] }}</strong></span>
+                                  }
+                                  <span class="ml-auto">{{ qr.pointsEarned }}/{{ qr.pointsMax }} pts</span>
+                                </div>
+                              }
+
+                              <!-- MULTI_SELECT -->
+                              @if (qr.type === 'MULTI_SELECT') {
+                                <div class="flex gap-4 text-stone-500">
+                                  <span>Marcó: <strong class="text-stone-700">{{ (qr.selectedIndexes ?? []).join(', ') || '—' }}</strong></span>
+                                  <span>Correctas: <strong class="text-emerald-700">{{ (qr.correctIndexes ?? []).join(', ') }}</strong></span>
+                                  <span class="ml-auto">{{ qr.pointsEarned }}/{{ qr.pointsMax }} pts</span>
+                                </div>
+                              }
+
+                              <!-- OPEN_TEXT -->
+                              @if (qr.type === 'OPEN_TEXT') {
+                                <div class="space-y-1">
+                                  <p class="text-stone-600">Respuesta: <em class="text-stone-800">"{{ qr.textAnswer || '—' }}"</em></p>
+                                  @if (qr.acceptedKeywords && qr.acceptedKeywords.length > 0) {
+                                    <p class="text-stone-400">Keywords: {{ qr.acceptedKeywords.join(', ') }}</p>
+                                  }
+
+                                  @if (reviewState() === sub.id && qr.pendingReview) {
+                                    <!-- Botones aprobar/rechazar -->
+                                    <div class="flex gap-2 mt-2">
+                                      <button type="button" (click)="setReviewApproval($index, true)"
+                                              [class]="isApproved($index)
+                                                ? 'px-3 py-1 text-xs font-medium rounded-lg bg-emerald-600 text-white'
+                                                : 'px-3 py-1 text-xs font-medium rounded-lg bg-stone-100 text-stone-600 hover:bg-emerald-50 hover:text-emerald-700 border border-stone-200'">
+                                        ✓ Aprobar
+                                      </button>
+                                      <button type="button" (click)="setReviewApproval($index, false)"
+                                              [class]="!isApproved($index)
+                                                ? 'px-3 py-1 text-xs font-medium rounded-lg bg-red-600 text-white'
+                                                : 'px-3 py-1 text-xs font-medium rounded-lg bg-stone-100 text-stone-600 hover:bg-red-50 hover:text-red-700 border border-stone-200'">
+                                        ✗ Rechazar
+                                      </button>
+                                    </div>
+                                  } @else if (qr.pendingReview) {
+                                    <span class="text-amber-600">Pendiente de revisión manual</span>
+                                  }
+
+                                  <span class="float-right text-stone-500">{{ qr.pointsEarned }}/{{ qr.pointsMax }} pts</span>
+                                </div>
+                              }
+
+                              @if (qr.explanation) {
+                                <p class="mt-1 text-stone-400 italic">{{ qr.explanation }}</p>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <!-- Botón guardar revisión -->
+                        @if (reviewState() === sub.id) {
+                          @if (reviewError()) {
+                            <p class="text-xs text-red-600">{{ reviewError() }}</p>
+                          }
+                          <div class="flex gap-2 pt-2 border-t border-stone-200">
+                            <button type="button" (click)="cancelReview()"
+                                    class="px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                              Cancelar
+                            </button>
+                            <button type="button" (click)="submitReview(sub)" [disabled]="reviewing()"
+                                    class="px-4 py-1.5 text-xs font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+                              @if (reviewing()) {
+                                <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                Guardando…
+                              } @else {
+                                Guardar revisión
+                              }
+                            </button>
+                          </div>
+                        }
+
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+</div>

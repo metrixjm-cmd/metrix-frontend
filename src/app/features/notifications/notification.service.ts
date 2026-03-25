@@ -107,10 +107,11 @@ export class NotificationService {
 
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
-      if (this.currentToken && this.eventSource?.readyState === EventSource.CLOSED) {
+      // Solo reconectar si EventSource está cerrado o no existe
+      if (this.currentToken && (!this.eventSource || this.eventSource.readyState === EventSource.CLOSED)) {
         this.connect(this.currentToken);
       }
-    }, 5000);
+    }, 15_000); // 15s entre reconexiones para evitar loops
   }
 
   private toTimeAgo(iso: string): string {

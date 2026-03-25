@@ -2,7 +2,7 @@
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3 mb-6">
-    <a routerLink="/rh"
+    <a routerLink="/banco-info/usuarios"
        class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -30,73 +30,39 @@
       <label class="block text-sm font-medium text-stone-700 mb-1">Nombre completo *</label>
       <input formControlName="nombre" type="text"
              placeholder="Ej. Ana López García"
-             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
         <p class="text-xs text-red-600 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
       }
     </div>
 
-    <!-- Puesto -->
-    <div>
-      <label class="block text-sm font-medium text-stone-700 mb-1">Puesto *</label>
-      <input formControlName="puesto" type="text"
-             placeholder="Ej. Cajera, Cocinero, Supervisor"
-             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
-      @if (form.get('puesto')?.invalid && form.get('puesto')?.touched) {
-        <p class="text-xs text-red-600 mt-1">El puesto es obligatorio</p>
-      }
-    </div>
-
-    <!-- StoreId + Turno en fila -->
+    <!-- Email y Fecha de Nacimiento en fila -->
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
-        <input formControlName="storeId" type="text"
-               [attr.readonly]="storeIdDisabled ? true : null"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-stone-50 read-only:bg-stone-50 read-only:text-stone-400">
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
-        <select formControlName="turno"
-                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
-          @for (t of turnos; track t) {
-            <option [value]="t">{{ t }}</option>
-          }
-        </select>
-      </div>
-    </div>
-
-    <!-- Número de usuario + Password en fila -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Número de usuario *</label>
-        <input formControlName="numeroUsuario" type="text"
-               placeholder="Ej. EJE003"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        @if (form.get('numeroUsuario')?.invalid && form.get('numeroUsuario')?.touched) {
-          <p class="text-xs text-red-600 mt-1">El número de usuario es obligatorio</p>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Correo electrónico</label>
+        <input formControlName="email" type="email"
+               placeholder="ejemplo@correo.com"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        @if (form.get('email')?.invalid && form.get('email')?.touched) {
+          <p class="text-xs text-red-600 mt-1">El formato del correo no es válido</p>
         }
       </div>
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Contraseña *</label>
-        <input formControlName="password" type="password"
-               placeholder="Mínimo 8 caracteres"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
-        @if (form.get('password')?.invalid && form.get('password')?.touched) {
-          <p class="text-xs text-red-600 mt-1">La contraseña debe tener al menos 8 caracteres</p>
-        }
+        <label class="block text-sm font-medium text-stone-700 mb-1">Fecha de nacimiento</label>
+        <input formControlName="fechaNacimiento" type="date"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
       </div>
     </div>
 
-    <!-- Roles (solo ADMIN puede cambiarlos) -->
+    <!-- Roles (primero — define el prefijo del ID) -->
     <div>
-      <label class="block text-sm font-medium text-stone-700 mb-2">Roles *</label>
+      <label class="block text-sm font-medium text-stone-700 mb-2">Rol *</label>
       <div class="flex flex-wrap gap-2">
         @for (rol of roles; track rol) {
           <button type="button"
                   [class]="isRolSelected(rol)
-                    ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-orange-600 text-white border border-orange-600 transition-colors'
-                    : 'px-3 py-1.5 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:border-orange-300 transition-colors'"
+                    ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-600 text-white border border-brand-600 transition-colors'
+                    : 'px-3 py-1.5 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:border-brand-300 transition-colors'"
                   [disabled]="!isAdmin()"
                   (click)="toggleRol(rol)">
             {{ rolLabels[rol] }}
@@ -108,15 +74,163 @@
       }
     </div>
 
+    <!-- Puesto (segundo — complementa el prefijo para EJECUTADOR) -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Puesto *</label>
+      <div class="flex gap-2">
+        <select formControlName="puesto"
+                class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          <option value="" disabled>Seleccionar puesto</option>
+          @for (p of catalogSvc.puestos(); track p.id) {
+            <option [value]="p.value">{{ p.label }}</option>
+          }
+        </select>
+        <button type="button"
+                (click)="puestoDialogOpen.set(true)"
+                class="px-3 py-2 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors"
+                title="Agregar nuevo puesto">
+          +
+        </button>
+      </div>
+      @if (form.get('puesto')?.invalid && form.get('puesto')?.touched) {
+        <p class="text-xs text-red-600 mt-1">El puesto es obligatorio</p>
+      }
+    </div>
+
+    <!-- StoreId + Turno en fila -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
+
+        <!-- ADMIN: dropdown con todas las sucursales -->
+        @if (isAdmin()) {
+          <select formControlName="storeId"
+                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <option value="" disabled>Seleccionar sucursal</option>
+            @for (s of settingsSvc.stores(); track s.id) {
+              <option [value]="s.id">{{ s.nombre }} · {{ s.codigo }}</option>
+            }
+          </select>
+          @if (settingsSvc.stores().length === 0) {
+            <p class="text-xs text-amber-600 mt-1">Cargando sucursales...</p>
+          }
+        } @else {
+          <!-- GERENTE: bloqueado en su propia sucursal -->
+          <div class="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+            <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span class="text-sm text-stone-700">{{ form.get('storeId')?.value }}</span>
+            <span class="ml-auto text-xs text-stone-400 bg-stone-100 px-2 py-0.5 rounded">Tu sucursal</span>
+          </div>
+        }
+
+        @if (form.get('storeId')?.invalid && form.get('storeId')?.touched) {
+          <p class="text-xs text-red-600 mt-1">La sucursal es obligatoria</p>
+        }
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
+        <select formControlName="turno"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          @for (t of turnos; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- ID Usuario (auto-generado según rol + puesto) -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">ID Usuario</label>
+      <div class="flex items-center gap-2">
+        <div class="flex-1 flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+          <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          <span class="font-mono text-sm font-semibold tracking-wider"
+                [class]="nextFolio() === 'Selecciona un puesto...' ? 'text-stone-400' : 'text-stone-900'">
+            {{ nextFolio() }}
+          </span>
+        </div>
+        <span class="text-xs text-stone-400 bg-stone-100 px-2 py-1 rounded-md whitespace-nowrap">Auto-generado</span>
+      </div>
+      <p class="text-xs text-stone-400 mt-1">Se genera automáticamente: prefijo por rol (ADM/GER) o por puesto (CAJ/MES…) + folio consecutivo.</p>
+    </div>
+
+    <!-- Contraseña -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Contraseña *</label>
+      <div class="relative">
+        <input formControlName="password"
+               [type]="showPassword() ? 'text' : 'password'"
+               placeholder="Mínimo 8 caracteres"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 pr-10 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <button type="button" (click)="togglePassword()"
+                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors">
+          @if (showPassword()) {
+            <!-- Ojo abierto -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          } @else {
+            <!-- Ojo cerrado -->
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3m3.11 3.11l4.242 4.242"/>
+            </svg>
+          }
+        </button>
+      </div>
+      @if (form.get('password')?.invalid && form.get('password')?.touched) {
+        <p class="text-xs text-red-600 mt-1">La contraseña debe tener al menos 8 caracteres</p>
+      }
+    </div>
+
+    <!-- Confirmar contraseña -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Confirmar contraseña *</label>
+      <div class="relative">
+        <input formControlName="confirmPassword"
+               [type]="showConfirmPassword() ? 'text' : 'password'"
+               placeholder="Repetir contraseña"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 pr-10 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <button type="button" (click)="toggleConfirmPassword()"
+                class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors">
+          @if (showConfirmPassword()) {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          } @else {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3m3.11 3.11l4.242 4.242"/>
+            </svg>
+          }
+        </button>
+      </div>
+      @if (form.get('confirmPassword')?.touched && form.hasError('passwordMismatch')) {
+        <p class="text-xs text-red-600 mt-1">Las contraseñas no coinciden</p>
+      }
+    </div>
+
     <!-- Acciones -->
     <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
-      <a routerLink="/rh"
+      <a routerLink="/banco-info/usuarios"
          class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
         Cancelar
       </a>
       <button type="submit"
               [disabled]="form.invalid || saving()"
-              class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
         @if (saving()) {
           <span class="inline-flex items-center gap-2">
             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -133,3 +247,10 @@
 
   </form>
 </div>
+
+<!-- ── Dialog para agregar puesto ──────────────────────────────────────── -->
+<app-add-catalog-dialog
+  [catalogType]="'PUESTO'"
+  [isOpen]="puestoDialogOpen()"
+  (saved)="onPuestoAdded($event)"
+  (closed)="puestoDialogOpen.set(false)"/>

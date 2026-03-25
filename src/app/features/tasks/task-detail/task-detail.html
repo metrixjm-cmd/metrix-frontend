@@ -1,12 +1,12 @@
-<div class="p-5 max-w-4xl">
+﻿<div class="p-5 max-w-4xl">
 
   <!-- ── Breadcrumb ────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-1.5 text-xs text-stone-400 mb-4">
-    <button (click)="goBack()" class="flex items-center gap-1 hover:text-orange-600 transition-colors">
+    <button (click)="goBack()" class="flex items-center gap-1 hover:text-brand-600 transition-colors">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
-      Delegación de Tareas
+      Tareas
     </button>
     <span>/</span>
     <span class="text-stone-600 font-medium">Detalle</span>
@@ -17,7 +17,7 @@
     <!-- ── Cargando ───────────────────────────────────────────────────────── -->
     @if (taskSvc.loading()) {
       <div class="flex items-center justify-center py-20">
-        <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+        <svg class="w-8 h-8 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
@@ -56,8 +56,18 @@
                 }
 
                 <span class="text-stone-500 text-xs px-2 py-0.5 bg-stone-100 rounded-full">
-                  {{ categoryLabels[task()!.category] }}
+                  {{ categoryLabels[task()!.category] || task()!.category }}
                 </span>
+
+                @if (task()!.isRecurring) {
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 border border-violet-200 rounded-full text-xs font-medium">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Repetitiva
+                  </span>
+                }
               </div>
 
               <h1 class="text-xl font-bold text-stone-900 mb-2">{{ task()!.title }}</h1>
@@ -89,10 +99,25 @@
                 <dt class="text-stone-500 text-sm">Turno</dt>
                 <dd class="text-stone-700 text-sm">{{ shiftLabels[task()!.shift] }}</dd>
               </div>
-              <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Vence</dt>
-                <dd class="text-stone-900 text-sm font-medium">{{ formatDate(task()!.dueAt) }}</dd>
-              </div>
+              @if (!task()!.isRecurring) {
+                <div class="flex justify-between">
+                  <dt class="text-stone-500 text-sm">Vence</dt>
+                  <dd class="text-stone-900 text-sm font-medium">{{ task()!.dueAt | appDate:'due' }}</dd>
+                </div>
+              } @else {
+                <div class="flex justify-between">
+                  <dt class="text-stone-500 text-sm">Horario</dt>
+                  <dd class="text-violet-600 text-sm font-medium">{{ task()!.recurrenceStartTime }} - {{ task()!.recurrenceEndTime }}</dd>
+                </div>
+                <div class="flex justify-between">
+                  <dt class="text-stone-500 text-sm">Dias</dt>
+                  <dd class="text-stone-700 text-sm">
+                    @for (day of task()!.recurrenceDays; track day; let last = $last) {
+                      {{ day }}{{ last ? '' : ', ' }}
+                    }
+                  </dd>
+                </div>
+              }
             </dl>
           </div>
 
@@ -102,11 +127,11 @@
             <dl class="space-y-3">
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">Iniciada</dt>
-                <dd class="text-stone-700 text-sm">{{ formatDate(task()!.startedAt) }}</dd>
+                <dd class="text-stone-700 text-sm">{{ task()!.startedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">Finalizada</dt>
-                <dd class="text-stone-700 text-sm">{{ formatDate(task()!.finishedAt) }}</dd>
+                <dd class="text-stone-700 text-sm">{{ task()!.finishedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
                 <dt class="text-stone-500 text-sm">En tiempo</dt>
@@ -127,12 +152,155 @@
               @if (task()!.qualityRating !== null) {
                 <div class="flex justify-between">
                   <dt class="text-stone-500 text-sm">Calidad</dt>
-                  <dd class="text-amber-600 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
+                  <dd class="text-brand-600 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
                 </div>
               }
             </dl>
           </div>
         </div>
+
+        <!-- ── Procesos ──────────────────────────────────────────────────── -->
+        @if (visibleProcesses().length > 0) {
+          <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+                <h3 class="text-sm font-semibold text-stone-900">Procesos</h3>
+              </div>
+              @if (processProgress(); as prog) {
+                <div class="flex items-center gap-2">
+                  <div class="w-24 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500"
+                      [class]="prog.percent === 100 ? 'bg-emerald-500' : 'bg-orange-500'"
+                      [style.width.%]="prog.percent"></div>
+                  </div>
+                  <span class="text-xs font-medium text-stone-500">{{ prog.done }}/{{ prog.total }}</span>
+                </div>
+              }
+            </div>
+            <div class="divide-y divide-stone-50">
+              @for (step of visibleProcesses(); track step.stepId) {
+
+                <!-- ADMIN: Formulario de edicion inline -->
+                @if (isAdmin() && editingProcessId() === step.stepId) {
+                  <div class="px-5 py-3 bg-orange-50 space-y-2">
+                    <input type="text" [value]="editProcessTitle()" (input)="editProcessTitle.set($any($event.target).value)"
+                      placeholder="Titulo *"
+                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                    <input type="text" [value]="editProcessDesc()" (input)="editProcessDesc.set($any($event.target).value)"
+                      placeholder="Descripcion (opcional)"
+                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                    <div class="flex justify-end gap-2">
+                      <button type="button" (click)="cancelEditProcess()"
+                        class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50">Cancelar</button>
+                      <button type="button" (click)="saveEditProcess()" [disabled]="!editProcessTitle().trim() || savingProcess()"
+                        class="px-3 py-1 text-xs font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-40">
+                        @if (savingProcess()) { Guardando... } @else { Guardar }
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+
+                <!-- Vista normal del paso -->
+                <div class="px-5 py-3 flex items-start gap-3 hover:bg-stone-50 transition-colors"
+                     [class.bg-emerald-50]="step.completed">
+
+                  @if (canCheckProcesses()) {
+                    <!-- GERENTE / EJECUTADOR: Checkbox interactivo -->
+                    <button
+                      type="button"
+                      (click)="toggleProcessStep(step.stepId, step.completed)"
+                      [disabled]="togglingStep() === step.stepId"
+                      class="mt-0.5 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                      [class]="step.completed
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'border-stone-300 hover:border-orange-400'"
+                    >
+                      @if (togglingStep() === step.stepId) {
+                        <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                      } @else if (step.completed) {
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      }
+                    </button>
+                  } @else {
+                    <!-- ADMIN: Indicador readonly -->
+                    <div class="mt-0.5 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
+                      [class]="step.completed
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'border-stone-300 bg-stone-100'">
+                      @if (step.completed) {
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      }
+                    </div>
+                  }
+
+                  <!-- Contenido -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm font-medium" [class]="step.completed ? 'text-stone-400 line-through' : 'text-stone-800'">
+                        {{ step.title }}
+                      </p>
+                      @if (step.completed && step.completedAt) {
+                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium shrink-0">
+                          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
+                          {{ getStepDuration(step.completedAt) }}
+                        </span>
+                      }
+                    </div>
+                    @if (step.description) {
+                      <p class="text-xs text-stone-400 mt-0.5">{{ step.description }}</p>
+                    }
+                    @if (step.notes) {
+                      <p class="text-xs text-stone-500 mt-1 italic">{{ step.notes }}</p>
+                    }
+                  </div>
+
+                  <!-- ADMIN: Acciones editar/eliminar -->
+                  @if (isAdmin()) {
+                    <div class="flex items-center gap-0.5 shrink-0">
+                      <button type="button" (click)="startEditProcess(step)"
+                        class="p-1.5 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Editar proceso">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      </button>
+                      <button type="button" (click)="deleteProcessStep(step.stepId)"
+                        [disabled]="deletingStepId() === step.stepId"
+                        class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar proceso">
+                        @if (deletingStepId() === step.stepId) {
+                          <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                          </svg>
+                        } @else {
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+                }
+              }
+            </div>
+          </div>
+        }
 
         <!-- Comentarios (si existen) -->
         @if (task()!.comments) {
@@ -142,83 +310,153 @@
           </div>
         }
 
-        <!-- ── Evidencias ──────────────────────────────────────────────── -->
-        @if (hasEvidence() || (isEjecutador() && task()!.status === 'IN_PROGRESS')) {
+        <!-- ── Evaluación de Calidad (solo lectura para el ejecutor) ───── -->
+        @if (!canRateQuality() && task()!.status === 'COMPLETED' && task()!.qualityRating !== null) {
           <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evidencias</h3>
+            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
+            <div class="flex items-center gap-1">
+              @for (s of starsArray; track s) {
+                <svg
+                  class="w-7 h-7 transition-colors"
+                  [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-stone-200'"
+                  fill="currentColor" viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              }
+              <span class="ml-2 text-brand-700 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
+            </div>
+          </div>
+        }
 
-            <!-- Zonas de upload (solo EJECUTADOR en IN_PROGRESS) -->
-            @if (isEjecutador() && task()!.status === 'IN_PROGRESS') {
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                <div>
-                  <p class="text-xs font-medium text-stone-500 mb-2">Imágenes</p>
-                  <app-evidence-upload
-                    [taskId]="task()!.id"
-                    type="IMAGE"
-                  />
-                </div>
-                <div>
-                  <p class="text-xs font-medium text-stone-500 mb-2">Videos</p>
-                  <app-evidence-upload
-                    [taskId]="task()!.id"
-                    type="VIDEO"
-                  />
-                </div>
-              </div>
-            }
+        <!-- ── Evaluación de Calidad (editable por el creador de la tarea) ── -->
+        @if (canRateQuality()) {
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
 
-            <!-- Galería de imágenes -->
-            @if (task()!.evidenceImages.length > 0) {
-              <div class="mb-4">
-                <p class="text-xs font-medium text-stone-500 mb-2">
-                  Imágenes subidas ({{ task()!.evidenceImages.length }})
-                </p>
-                <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  @for (url of task()!.evidenceImages; track url) {
-                    <a [href]="url" target="_blank" rel="noopener noreferrer"
-                       class="block aspect-square rounded-lg overflow-hidden border border-stone-200 hover:border-orange-400 transition-colors">
-                      <img [src]="url" [alt]="filenameFromUrl(url)"
-                           class="w-full h-full object-cover" />
-                    </a>
+            <!-- Rating ya asignado → solo lectura -->
+            @if (task()!.qualityRating !== null && !showRatingForm()) {
+              <div class="flex items-center justify-between flex-wrap gap-3">
+                <div class="flex items-center gap-1">
+                  @for (s of starsArray; track s) {
+                    <svg
+                      class="w-7 h-7 transition-colors"
+                      [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-stone-200'"
+                      fill="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
                   }
+                  <span class="ml-2 text-brand-700 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
                 </div>
+                <button
+                  (click)="showRatingForm.set(true)"
+                  class="text-xs text-brand-600 hover:text-brand-700 font-medium underline"
+                >
+                  Cambiar calificación
+                </button>
               </div>
             }
 
-            <!-- Lista de videos -->
-            @if (task()!.evidenceVideos.length > 0) {
-              <div>
-                <p class="text-xs font-medium text-stone-500 mb-2">
-                  Videos subidos ({{ task()!.evidenceVideos.length }})
-                </p>
-                <div class="space-y-2">
-                  @for (url of task()!.evidenceVideos; track url; let i = $index) {
-                    <a [href]="url" target="_blank" rel="noopener noreferrer"
-                       class="flex items-center gap-3 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors group">
-                      <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <!-- Sin rating → botón para abrir formulario -->
+            @if (task()!.qualityRating === null && !showRatingForm()) {
+              <div class="flex items-center gap-4">
+                <p class="text-stone-500 text-sm">Esta tarea aún no ha sido evaluada.</p>
+                <button
+                  (click)="showRatingForm.set(true)"
+                  class="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  Evaluar Calidad
+                </button>
+              </div>
+            }
+
+            <!-- Formulario inline con estrellas clickeables -->
+            @if (showRatingForm()) {
+              <form [formGroup]="ratingForm" (ngSubmit)="submitRating()" class="space-y-4">
+
+                @if (actionError()) {
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-red-600 text-sm">{{ actionError() }}</p>
+                  </div>
+                }
+
+                <div>
+                  <label class="block text-sm font-medium text-stone-700 mb-2">
+                    Calificación <span class="text-red-500">*</span>
+                  </label>
+                  <div class="flex items-center gap-1">
+                    @for (s of starsArray; track s) {
+                      <button
+                        type="button"
+                        (click)="selectStar(s)"
+                        (mouseenter)="hoverStar.set(s)"
+                        (mouseleave)="hoverStar.set(0)"
+                        class="focus:outline-none"
+                      >
+                        <svg
+                          class="w-8 h-8 transition-colors"
+                          [class]="s <= (hoverStar() || selectedStar()) ? 'text-brand-400' : 'text-stone-200'"
+                          fill="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
-                      </div>
-                      <span class="text-stone-700 text-sm group-hover:text-blue-700 truncate">
-                        Video {{ i + 1 }} — {{ filenameFromUrl(url) }}
-                      </span>
-                      <svg class="w-4 h-4 text-stone-400 group-hover:text-blue-500 ml-auto flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </a>
+                      </button>
+                    }
+                    @if (selectedStar() > 0) {
+                      <span class="ml-2 text-brand-700 font-semibold text-sm">{{ selectedStar() }}/5</span>
+                    }
+                  </div>
+                  @if (ratingForm.get('rating')?.invalid && ratingForm.get('rating')?.touched) {
+                    <p class="text-red-500 text-xs mt-1">Selecciona una calificación.</p>
                   }
                 </div>
-              </div>
-            }
 
+                <div>
+                  <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                    Comentarios <span class="text-stone-400 font-normal">(opcional)</span>
+                  </label>
+                  <textarea
+                    formControlName="comments"
+                    rows="2"
+                    placeholder="Observaciones sobre la ejecución…"
+                    class="input-field resize-none"
+                  ></textarea>
+                </div>
+
+                <div class="flex gap-3">
+                  <button
+                    type="submit"
+                    [disabled]="ratingForm.invalid || submitting()"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                  >
+                    @if (submitting()) {
+                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                    }
+                    Guardar Calificación
+                  </button>
+                  <button
+                    type="button"
+                    (click)="showRatingForm.set(false); selectedStar.set(0); hoverStar.set(0); actionError.set(null)"
+                    class="px-5 py-2.5 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            }
           </div>
         }
 
         <!-- ── Zona de acciones ─────────────────────────────────────────── -->
         @if (canStart() || canComplete() || canFail()) {
-          <div class="bg-white border border-orange-200 rounded-xl p-5 shadow-card">
+          <div class="bg-white border border-brand-200 rounded-xl p-5 shadow-card">
             <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Acciones</h3>
 
             <!-- Error de acción -->
@@ -249,14 +487,22 @@
             <!-- COMPLETAR / FALLAR (IN_PROGRESS) -->
             @if (canComplete() || canFail()) {
               <div class="flex flex-wrap gap-3">
-                @if (!showCompleteForm() && !showFailForm()) {
+                @if (!showFailForm()) {
                   <button
-                    (click)="showCompleteForm.set(true)"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    (click)="completeTask()"
+                    [disabled]="submitting()"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
                   >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+                    @if (submitting()) {
+                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                    } @else {
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    }
                     Completar
                   </button>
                   <button
@@ -270,35 +516,6 @@
                   </button>
                 }
               </div>
-
-              <!-- Formulario: Completar -->
-              @if (showCompleteForm()) {
-                <form [formGroup]="completeForm" (ngSubmit)="completeTask()" class="space-y-4 mt-2">
-                  <div>
-                    <label class="block text-sm text-stone-700 font-medium mb-1.5">
-                      Calificación de calidad <span class="text-stone-400 font-normal">(opcional, 1–5)</span>
-                    </label>
-                    <input
-                      type="number"
-                      formControlName="qualityRating"
-                      min="1" max="5" step="0.5"
-                      placeholder="Ej: 4.5"
-                      class="input-field w-48"
-                    />
-                  </div>
-                  <div class="flex gap-3">
-                    <app-button type="submit" variant="primary" [loading]="submitting()">
-                      Confirmar Completado
-                    </app-button>
-                    <app-button
-                      variant="ghost"
-                      (click)="showCompleteForm.set(false); actionError.set(null)"
-                    >
-                      Cancelar
-                    </app-button>
-                  </div>
-                </form>
-              }
 
               <!-- Formulario: Fallar -->
               @if (showFailForm()) {

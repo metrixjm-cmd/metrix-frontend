@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: '/api/v1',  // Ruta relativa en producción (mismo dominio o reverse-proxy)
+  // URL del backend Cloud Run — se reemplaza automáticamente en deploy.sh
+  // Formato: https://metrix-backend-HASH-uc.a.run.app/api/v1
+  apiUrl: 'REPLACE_WITH_BACKEND_URL/api/v1',
 };

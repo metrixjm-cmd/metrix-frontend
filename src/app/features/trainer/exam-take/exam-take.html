@@ -1,0 +1,312 @@
+<div class="p-6 max-w-2xl mx-auto">
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+    </div>
+  }
+
+  @if (error() && !loading()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">{{ error() }}</div>
+  }
+
+  <!-- ══ BLOQUEADO: sin intentos restantes ════════════════════════════ -->
+  @if (!loading() && blocked()) {
+    <div class="bg-white border border-stone-200 rounded-2xl p-10 shadow-card text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-lg font-bold text-stone-900">Límite de intentos alcanzado</p>
+        <p class="text-sm text-stone-500 mt-1">
+          Usaste los {{ attemptInfo()?.maxAttempts }} intento(s) disponibles para este examen.
+        </p>
+      </div>
+      <a routerLink="/trainer"
+         class="inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+        Volver a Trainer
+      </a>
+    </div>
+  }
+
+  <!-- ══ RESULTADO ════════════════════════════════════════════════════ -->
+  @if (result(); as r) {
+    <div class="space-y-6">
+
+      <!-- Tarjeta de resultado -->
+      <div class="bg-white border border-stone-200 rounded-2xl p-8 shadow-card text-center">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+             [class]="r.passed ? 'bg-emerald-100' : 'bg-red-100'">
+          @if (r.passed) {
+            <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+          } @else {
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          }
+        </div>
+        <p class="text-5xl font-bold mb-2" [class]="scoreClass(r.score)">{{ r.score | number:'1.0-1' }}%</p>
+        <p class="text-lg font-semibold text-stone-800 mb-1">
+          {{ r.passed ? '¡Examen aprobado!' : 'Examen no aprobado' }}
+        </p>
+        <p class="text-sm text-stone-500 mb-2">
+          Mínimo requerido: {{ r.passingScore }}% · Tiempo: {{ formatTime(r.timeTakenSeconds) }}
+        </p>
+        @if (r.hasPendingReview) {
+          <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+            ⚠ Una o más respuestas abiertas están pendientes de revisión manual por el gerente.
+          </p>
+        }
+        <button (click)="goBack()"
+                class="inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+          Volver a Trainer
+        </button>
+      </div>
+
+      <!-- Desglose por pregunta -->
+      @if (r.questionResults && r.questionResults.length > 0) {
+        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-100">
+            <h2 class="font-semibold text-stone-800">Desglose por pregunta</h2>
+          </div>
+          <div class="divide-y divide-stone-100">
+            @for (qr of r.questionResults; track $index) {
+              <div class="p-5 flex gap-4">
+                <!-- Badge correcto/incorrecto -->
+                <div class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center mt-0.5"
+                     [class]="qr.correct ? 'bg-emerald-100 text-emerald-600' :
+                              qr.pendingReview ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-500'">
+                  @if (qr.correct) {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  } @else if (qr.pendingReview) {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  }
+                </div>
+
+                <div class="flex-1 space-y-2">
+                  <p class="text-sm font-medium text-stone-800">{{ qr.questionText }}</p>
+
+                  <!-- MULTIPLE_CHOICE / TRUE_FALSE -->
+                  @if (qr.type === 'MULTIPLE_CHOICE' || qr.type === 'TRUE_FALSE') {
+                    <div class="space-y-1">
+                      @for (opt of qr.options; track $index) {
+                        <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
+                             [class]="$index === qr.correctIndex ? 'bg-emerald-50 text-emerald-700 font-medium' :
+                                      $index === qr.selectedIndex && !qr.correct ? 'bg-red-50 text-red-600' : 'text-stone-500'">
+                          @if ($index === qr.selectedIndex && $index !== qr.correctIndex) { <span class="text-red-400">✗</span> }
+                          @else if ($index === qr.correctIndex) { <span class="text-emerald-500">✓</span> }
+                          @else { <span class="w-4 inline-block"></span> }
+                          {{ opt }}
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <!-- MULTI_SELECT -->
+                  @if (qr.type === 'MULTI_SELECT') {
+                    <div class="space-y-1">
+                      @for (opt of qr.options; track $index) {
+                        @let isUserSel = (qr.selectedIndexes ?? []).includes($index);
+                        @let isCorrectOpt = (qr.correctIndexes ?? []).includes($index);
+                        <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
+                             [class]="isCorrectOpt ? 'bg-emerald-50 text-emerald-700 font-medium' :
+                                      isUserSel ? 'bg-red-50 text-red-600' : 'text-stone-500'">
+                          @if (isCorrectOpt && isUserSel) { <span class="text-emerald-500">✓</span> }
+                          @else if (isCorrectOpt && !isUserSel) { <span class="text-emerald-300">○</span> }
+                          @else if (!isCorrectOpt && isUserSel) { <span class="text-red-400">✗</span> }
+                          @else { <span class="w-4 inline-block"></span> }
+                          {{ opt }}
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <!-- OPEN_TEXT -->
+                  @if (qr.type === 'OPEN_TEXT') {
+                    <div class="space-y-1.5 text-xs">
+                      <div class="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+                        <p class="text-stone-400 mb-0.5">Tu respuesta:</p>
+                        <p class="text-stone-700">{{ qr.textAnswer || '(sin respuesta)' }}</p>
+                      </div>
+                      @if (qr.pendingReview) {
+                        <p class="text-amber-600">⏳ Pendiente de revisión manual</p>
+                      }
+                    </div>
+                  }
+
+                  <!-- Puntos y explicación -->
+                  <div class="flex items-center justify-between">
+                    <p class="text-xs text-stone-400">{{ qr.pointsEarned }} / {{ qr.pointsMax }} pts</p>
+                  </div>
+                  @if (qr.explanation) {
+                    <div class="flex items-start gap-1.5 text-xs text-stone-500 bg-stone-50 rounded-lg px-3 py-2">
+                      <span class="text-blue-400 shrink-0">💡</span>
+                      <p>{{ qr.explanation }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- ══ TOMAR EXAMEN ════════════════════════════════════════════════ -->
+  @if (!loading() && !result()) {
+    @if (exam(); as exam) {
+      <div class="space-y-6">
+
+        <!-- Header + timer -->
+        <div class="bg-white border border-stone-200 rounded-xl px-5 py-4 shadow-card flex items-center justify-between gap-4">
+          <div>
+            <h1 class="text-lg font-bold text-stone-900">{{ exam.title }}</h1>
+            @if (exam.description) {
+              <p class="text-sm text-stone-500 mt-0.5">{{ exam.description }}</p>
+            }
+            <p class="text-xs text-stone-400 mt-1">{{ answeredCount() }} / {{ exam.questions.length }} respondidas</p>
+          </div>
+          @if (exam.timeLimitMinutes) {
+            <div class="text-center shrink-0">
+              <p class="text-xs text-stone-400 mb-0.5">Tiempo restante</p>
+              <p class="text-2xl font-mono font-bold"
+                 [class]="timerWarning() ? 'text-red-600 animate-pulse' : 'text-stone-800'">
+                {{ timeLeftStr() }}
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+          <div class="h-full bg-orange-500 rounded-full transition-all"
+               [style.width.%]="exam.questions.length > 0 ? (answeredCount() / exam.questions.length) * 100 : 0">
+          </div>
+        </div>
+
+        <!-- Preguntas -->
+        @for (q of exam.questions; track q.id; let qIdx = $index) {
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+
+            <div class="flex items-start gap-3 mb-4">
+              <span class="shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-bold flex items-center justify-center">
+                {{ qIdx + 1 }}
+              </span>
+              <div class="flex-1">
+                <p class="text-sm font-medium text-stone-800 leading-relaxed">{{ q.questionText }}</p>
+                @if (q.type === 'MULTI_SELECT') {
+                  <p class="text-xs text-indigo-600 mt-1">Selecciona todas las opciones correctas</p>
+                }
+                @if (q.type === 'OPEN_TEXT') {
+                  <p class="text-xs text-teal-600 mt-1">Escribe tu respuesta con tus propias palabras</p>
+                }
+              </div>
+            </div>
+
+            <!-- ── MULTIPLE_CHOICE / TRUE_FALSE — radio ── -->
+            @if (q.type === 'MULTIPLE_CHOICE' || q.type === 'TRUE_FALSE') {
+              <div class="space-y-2 pl-9">
+                @for (opt of q.options; track $index; let optIdx = $index) {
+                  <button type="button" (click)="selectAnswer(qIdx, optIdx)"
+                          class="w-full text-left px-4 py-3 rounded-lg border text-sm transition-all"
+                          [class]="isSelected(qIdx, optIdx)
+                            ? 'border-orange-400 bg-orange-50 text-orange-800 font-medium'
+                            : 'border-stone-200 hover:border-orange-300 hover:bg-orange-50/50 text-stone-700'">
+                    <span class="inline-flex items-center gap-2">
+                      <span class="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center"
+                            [class]="isSelected(qIdx, optIdx) ? 'border-orange-500 bg-orange-500' : 'border-stone-300'">
+                        @if (isSelected(qIdx, optIdx)) {
+                          <span class="w-2 h-2 bg-white rounded-full"></span>
+                        }
+                      </span>
+                      {{ opt }}
+                    </span>
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- ── MULTI_SELECT — checkboxes ── -->
+            @if (q.type === 'MULTI_SELECT') {
+              <div class="space-y-2 pl-9">
+                @for (opt of q.options; track $index; let optIdx = $index) {
+                  <button type="button" (click)="toggleMulti(qIdx, optIdx)"
+                          class="w-full text-left px-4 py-3 rounded-lg border text-sm transition-all"
+                          [class]="isMultiSelected(qIdx, optIdx)
+                            ? 'border-indigo-400 bg-indigo-50 text-indigo-800 font-medium'
+                            : 'border-stone-200 hover:border-indigo-300 hover:bg-indigo-50/50 text-stone-700'">
+                    <span class="inline-flex items-center gap-2">
+                      <span class="w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center"
+                            [class]="isMultiSelected(qIdx, optIdx) ? 'border-indigo-500 bg-indigo-500' : 'border-stone-300'">
+                        @if (isMultiSelected(qIdx, optIdx)) {
+                          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                          </svg>
+                        }
+                      </span>
+                      {{ opt }}
+                    </span>
+                  </button>
+                }
+              </div>
+            }
+
+            <!-- ── OPEN_TEXT — textarea ── -->
+            @if (q.type === 'OPEN_TEXT') {
+              <div class="pl-9">
+                <textarea rows="4"
+                          [value]="getTextAnswer(qIdx)"
+                          (input)="setTextAnswer(qIdx, $any($event.target).value)"
+                          placeholder="Escribe tu respuesta aquí…"
+                          class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none">
+                </textarea>
+              </div>
+            }
+
+          </div>
+        }
+
+        @if (error()) {
+          <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
+        }
+
+        <div class="flex justify-between items-center">
+          <a routerLink="/trainer" class="text-sm text-stone-500 hover:text-stone-700">← Volver</a>
+          <button (click)="submit()" [disabled]="!allAnswered() || submitting()"
+                  class="px-6 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+            @if (submitting()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              Enviando…
+            } @else {
+              Enviar respuestas
+            }
+          </button>
+        </div>
+
+      </div>
+    }
+  }
+
+</div>

@@ -1,5 +1,40 @@
 export type TrainingStatus = 'PROGRAMADA' | 'EN_CURSO' | 'COMPLETADA' | 'NO_COMPLETADA';
 export type TrainingLevel  = 'BASICO' | 'INTERMEDIO' | 'AVANZADO';
+export type MaterialType   = 'PDF' | 'VIDEO' | 'IMAGE' | 'LINK';
+
+// ── Material resuelto dentro de una Training ──────────────────────────────────
+export interface TrainingMaterialRef {
+  materialId:       string;
+  order:            number;
+  required:         boolean;
+  notes:            string | null;
+  viewed:           boolean;
+  viewedAt:         string | null;
+  // datos del banco
+  title:            string;
+  description:      string | null;
+  type:             MaterialType;
+  url:              string;
+  originalFileName: string | null;
+  fileSizeBytes:    number | null;
+  mimeType:         string | null;
+  category:         string | null;
+  tags:             string[];
+}
+
+// ── Resumen de plantilla para selector ───────────────────────────────────────
+export interface TrainingTemplateSummary {
+  id:           string;
+  title:        string;
+  description:  string | null;
+  category:     string | null;
+  level:        TrainingLevel;
+  timesUsed:    number;
+  durationHours?: number;
+  minPassGrade?:  number;
+  materials?:   { materialId: string; order: number; required: boolean; notes: string | null }[];
+  tags?:        string[];
+}
 
 export interface TrainingResponse {
   id: string;
@@ -13,6 +48,11 @@ export interface TrainingResponse {
   storeId: string;
   shift: string;
   dueAt: string;
+  // plantilla y materiales
+  templateId: string | null;
+  materials:  TrainingMaterialRef[];
+  category:   string | null;
+  tags:       string[];
   // progreso aplanado
   status: TrainingStatus;
   startedAt: string | null;
@@ -38,6 +78,18 @@ export interface CreateTrainingRequest {
   storeId: string;
   shift: string;
   dueAt: string;
+  // opcionales
+  templateId?:  string;
+  materialIds?: string[];
+  category?:    string;
+  tags?:        string[];
+}
+
+export interface CreateFromTemplateRequest {
+  assignedUserId: string;
+  storeId:        string;
+  shift:          string;
+  dueAt:          string;
 }
 
 export interface UpdateTrainingProgressRequest {
@@ -61,3 +113,17 @@ export const TRAINING_LEVEL_LABELS: Record<TrainingLevel, string> = {
 };
 
 export const TRAINING_LEVELS: TrainingLevel[] = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
+
+export const MATERIAL_TYPE_ICONS: Record<MaterialType, string> = {
+  PDF:   '📄',
+  VIDEO: '🎬',
+  IMAGE: '🖼',
+  LINK:  '🔗',
+};
+
+export const MATERIAL_TYPE_COLORS: Record<MaterialType, string> = {
+  PDF:   'bg-red-100 text-red-700',
+  VIDEO: 'bg-purple-100 text-purple-700',
+  IMAGE: 'bg-blue-100 text-blue-700',
+  LINK:  'bg-teal-100 text-teal-700',
+};

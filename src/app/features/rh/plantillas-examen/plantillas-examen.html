@@ -1,0 +1,239 @@
+<div class="p-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <a routerLink="/banco-info" class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="text-xl font-bold text-stone-900">Plantillas de Examen</h1>
+        <p class="text-sm text-stone-500">{{ templateSvc.summaries().length }} plantillas disponibles</p>
+      </div>
+    </div>
+    @if (isManager()) {
+      <button type="button" (click)="toggleForm()"
+              [class]="showForm()
+                ? 'px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors'
+                : 'px-4 py-2 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors'">
+        {{ showForm() ? 'Cancelar' : '+ Nueva plantilla' }}
+      </button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
+  }
+
+  <!-- ── Formulario nueva plantilla ──────────────────────────────────────── -->
+  @if (showForm()) {
+    <div class="bg-white border border-violet-200 rounded-xl shadow-card overflow-hidden">
+      <div class="px-5 py-4 border-b border-violet-100 bg-violet-50">
+        <h2 class="font-semibold text-violet-800 text-sm">Nueva plantilla de examen</h2>
+      </div>
+
+      <div class="p-5 space-y-5">
+
+        <!-- Metadatos -->
+        <div [formGroup]="form" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Título *</label>
+              <input formControlName="title" type="text" placeholder="Ej. Evaluación Protocolo"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Categoría <span class="text-stone-400">(opcional)</span></label>
+              <input formControlName="category" type="text" placeholder="Ej. Atención al Cliente"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-stone-700 mb-1">Descripción</label>
+            <textarea formControlName="description" rows="2" placeholder="Instrucciones o contexto…"
+                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Puntaje mínimo (%)</label>
+              <input formControlName="passingScore" type="number" min="1" max="100"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Tiempo (min)</label>
+              <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Máx. intentos</label>
+              <input formControlName="maxAttempts" type="number" min="0" placeholder="0 = ilimitado"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-700 mb-1">Tags <span class="text-stone-400">(comas)</span></label>
+              <input formControlName="tags" type="text" placeholder="protocolo, bienvenida"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+            </div>
+          </div>
+
+          <div class="flex gap-6">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input formControlName="shuffleQuestions" type="checkbox" class="rounded accent-violet-600"/>
+              <span class="text-xs text-stone-600">Barajar preguntas</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input formControlName="shuffleOptions" type="checkbox" class="rounded accent-violet-600"/>
+              <span class="text-xs text-stone-600">Barajar opciones</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Picker de preguntas 2 paneles -->
+        <div>
+          <p class="text-xs font-semibold text-stone-700 mb-2">Preguntas <span class="text-stone-400 font-normal">({{ selectedBankQs().length }} seleccionadas)</span></p>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+
+            <!-- Banco izq -->
+            <div class="border border-stone-200 rounded-xl overflow-hidden flex flex-col" style="max-height: 380px">
+              <div class="px-3 py-2 border-b border-stone-100 bg-stone-50">
+                <input type="text" [value]="bankSearch()" (input)="bankSearch.set($any($event.target).value)"
+                       placeholder="Buscar en banco…"
+                       class="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-500"/>
+              </div>
+              <div class="overflow-y-auto flex-1">
+                @if (bankSvc.loading()) {
+                  <p class="p-4 text-center text-xs text-stone-400">Cargando…</p>
+                } @else if (filteredBank().length === 0) {
+                  <p class="p-6 text-center text-xs text-stone-400">Sin resultados</p>
+                } @else {
+                  <div class="divide-y divide-stone-100">
+                    @for (bq of filteredBank(); track bq.id) {
+                      <div class="px-3 py-2.5 flex items-start gap-2 hover:bg-stone-50 transition-colors">
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs text-stone-800 line-clamp-2 leading-snug">{{ bq.questionText }}</p>
+                          <p class="text-xs text-stone-400 mt-0.5">{{ typeLabels[bq.type] }} · {{ bq.points }} pts</p>
+                        </div>
+                        <button type="button" (click)="addFromBank(bq)"
+                                class="shrink-0 w-6 h-6 rounded bg-violet-50 text-violet-700 hover:bg-violet-100 flex items-center justify-center font-bold text-sm transition-colors">
+                          +
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Seleccionadas der -->
+            <div class="border border-stone-200 rounded-xl overflow-hidden flex flex-col" style="max-height: 380px">
+              <div class="px-3 py-2 border-b border-stone-100 bg-violet-50">
+                <p class="text-xs font-semibold text-violet-700">Seleccionadas ({{ selectedBankQs().length }})</p>
+              </div>
+              <div class="overflow-y-auto flex-1">
+                @if (selectedBankQs().length === 0) {
+                  <p class="p-6 text-center text-xs text-stone-400">Agrega preguntas del banco con el botón <strong>+</strong></p>
+                } @else {
+                  <div class="divide-y divide-stone-100">
+                    @for (bq of selectedBankQs(); track bq.id) {
+                      <div class="px-3 py-2.5 flex items-start gap-2">
+                        <span class="text-xs font-bold text-violet-300 mt-0.5 w-4 shrink-0">{{ $index + 1 }}</span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs text-stone-800 line-clamp-2 leading-snug">{{ bq.questionText }}</p>
+                          <p class="text-xs text-stone-400 mt-0.5">{{ typeLabels[bq.type] }} · {{ bq.points }} pts</p>
+                        </div>
+                        <button type="button" (click)="removeFromBank(bq.id)"
+                                class="shrink-0 text-red-400 hover:text-red-600 font-bold text-xs transition-colors">
+                          ✕
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button type="button" (click)="onSubmit()" [disabled]="!canSubmit() || saving()"
+                  class="px-5 py-2 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors disabled:opacity-50 flex items-center gap-2">
+            @if (saving()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              Guardando…
+            } @else {
+              Guardar plantilla ({{ selectedBankQs().length }} preguntas)
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ── Lista de plantillas ────────────────────────────────────────────── -->
+  @if (templateSvc.loading()) {
+    <div class="text-center py-12 text-stone-400 text-sm">Cargando plantillas…</div>
+  } @else if (templateSvc.summaries().length === 0) {
+    <div class="bg-white border border-stone-200 rounded-xl p-10 text-center text-stone-400 text-sm">
+      No hay plantillas. Crea la primera usando el botón superior.
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (tmpl of templateSvc.summaries(); track tmpl.id) {
+        <div class="bg-white border border-stone-200 rounded-xl shadow-card p-5 flex flex-col gap-3">
+          <div class="flex-1">
+            <div class="flex items-start justify-between gap-2">
+              <p class="font-semibold text-stone-900 leading-snug">{{ tmpl.title }}</p>
+              @if (tmpl.timesUsed > 0) {
+                <span class="shrink-0 text-xs bg-violet-50 text-violet-600 rounded-full px-2 py-0.5 mt-0.5">
+                  {{ tmpl.timesUsed }}x usado
+                </span>
+              }
+            </div>
+            @if (tmpl.description) {
+              <p class="text-xs text-stone-500 mt-1 line-clamp-2">{{ tmpl.description }}</p>
+            }
+            <div class="flex flex-wrap gap-2 mt-2">
+              <span class="text-xs bg-stone-100 text-stone-600 rounded-full px-2 py-0.5">
+                {{ tmpl.questionCount }} preguntas
+              </span>
+              <span class="text-xs bg-violet-50 text-violet-700 rounded-full px-2 py-0.5">
+                Pasa ≥{{ tmpl.passingScore }}%
+              </span>
+              @if (tmpl.timeLimitMinutes) {
+                <span class="text-xs bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
+                  {{ tmpl.timeLimitMinutes }} min
+                </span>
+              }
+            </div>
+            @if (tmpl.tags.length > 0) {
+              <div class="flex flex-wrap gap-1 mt-2">
+                @for (tag of tmpl.tags; track tag) {
+                  <span class="text-xs text-stone-400 border border-stone-200 rounded px-1.5 py-0.5">#{{ tag }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          @if (isManager()) {
+            <div class="pt-2 border-t border-stone-100 flex justify-end">
+              <button type="button" (click)="onDelete(tmpl)" [disabled]="deleting() === tmpl.id"
+                      class="text-xs text-red-400 hover:text-red-600 font-medium transition-colors disabled:opacity-50">
+                @if (deleting() === tmpl.id) { Eliminando… } @else { Eliminar }
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>

@@ -1,151 +1,240 @@
-<div class="p-6 space-y-6">
+<div class="w-full max-w-5xl mx-auto p-6">
 
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-stone-900">Ranking de Equipo</h1>
-      <p class="text-sm text-stone-500 mt-0.5">Desempeño y gamificación de la sucursal</p>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3">
+      <div class="p-2 rounded-lg bg-orange-100">
+        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900">
+          @if (isAdmin()) { Mis Gerentes }
+          @else { Ranking del Equipo }
+        </h2>
+        <p class="text-sm text-stone-500">
+          @if (isAdmin()) { Gerentes y su informaci&oacute;n de sucursal }
+          @else if (isGerente()) { Desempe&ntilde;o de tus ejecutadores }
+          @else { Desempe&ntilde;o del personal }
+        </p>
+      </div>
     </div>
-    <a routerLink="me"
-       class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-      <span>Mis Insignias</span>
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-      </svg>
-    </a>
+    <!-- Period tabs -->
+    @if (!isAdmin()) {
+      <div class="flex gap-2">
+        <button (click)="selectPeriod('weekly')"
+                [class]="period() === 'weekly'
+                  ? 'px-4 py-2 text-sm font-medium rounded-lg bg-brand-600 text-white'
+                  : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
+          Esta semana
+        </button>
+        <button (click)="selectPeriod('monthly')"
+                [class]="period() === 'monthly'
+                  ? 'px-4 py-2 text-sm font-medium rounded-lg bg-brand-600 text-white'
+                  : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
+          Este mes
+        </button>
+      </div>
+    }
   </div>
 
-  <!-- Period tabs -->
-  <div class="flex gap-2">
-    <button (click)="selectPeriod('weekly')"
-            [class]="period() === 'weekly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
-              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
-      Esta semana
-    </button>
-    <button (click)="selectPeriod('monthly')"
-            [class]="period() === 'monthly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-orange-600 text-white'
-              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
-      Este mes
-    </button>
-  </div>
-
-  <!-- Loading -->
-  @if (loading()) {
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      @for (i of [1,2,3]; track i) {
-        <div class="bg-white border border-stone-200 rounded-xl p-6 animate-pulse">
-          <div class="h-4 bg-stone-200 rounded w-1/2 mb-3"></div>
-          <div class="h-8 bg-stone-200 rounded w-3/4"></div>
-        </div>
-      }
-    </div>
-  }
-
-  <!-- Error -->
-  @if (error() && !loading()) {
-    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
-      {{ error() }}
-    </div>
-  }
-
-  @if (!loading() && leaderboard().length > 0) {
-
-    <!-- Podio top-3 -->
-    <div class="bg-white border border-stone-200 rounded-xl p-6">
-      <h2 class="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-6">Top 3</h2>
-      <div class="flex items-end justify-center gap-4">
-        @for (entry of podium(); track entry.userId) {
-          <div [class]="'flex flex-col items-center gap-2 ' + podiumOrder(entry.rank)">
-            <!-- Avatar -->
-            <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-lg font-bold text-orange-600 relative">
-              {{ entry.nombre.charAt(0).toUpperCase() }}
-              <span class="absolute -top-1 -right-1 text-base">{{ podiumBadge(entry.rank) }}</span>
+  <!-- ═══════════════════════════════════════════════════════════════════
+       VISTA ADMIN — gerentes con info de sucursal
+  ═══════════════════════════════════════════════════════════════════ -->
+  @if (isAdmin()) {
+    @if (rhSvc.loading()) {
+      <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+        @for (i of [1,2,3]; track i) {
+          <div class="flex items-center gap-4 px-5 py-4 border-b border-stone-100 last:border-0 animate-pulse">
+            <div class="w-10 h-10 rounded-full bg-stone-200"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3.5 bg-stone-200 rounded w-1/3"></div>
+              <div class="h-2.5 bg-stone-200 rounded w-1/4"></div>
             </div>
-            <!-- Nombre -->
-            <p class="text-xs font-medium text-stone-700 text-center max-w-[80px] truncate">
-              {{ entry.nombre }}
-            </p>
-            <!-- IGEO -->
-            <p [class]="igeoClass(entry.igeo) + ' text-sm'">{{ entry.igeo }}%</p>
-            <!-- Podio bar -->
-            <div [class]="'w-16 rounded-t-lg bg-orange-500 ' + podiumHeight(entry.rank)"></div>
+            <div class="w-20 h-6 bg-stone-200 rounded-full"></div>
           </div>
         }
       </div>
-    </div>
-
-    <!-- Tabla completa -->
-    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-stone-50 border-b border-stone-200">
-          <tr>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">#</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Colaborador</th>
-            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide">IGEO</th>
-            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide hidden sm:table-cell">On-Time</th>
-            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide hidden md:table-cell">Completadas</th>
-            <th class="px-4 py-3 text-center text-xs font-semibold text-stone-500 uppercase tracking-wide hidden lg:table-cell">Insignias</th>
-            <th class="px-4 py-3 text-right text-xs font-semibold text-stone-500 uppercase tracking-wide">Delta</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-stone-100">
-          @for (entry of leaderboard(); track entry.userId) {
-            <tr class="hover:bg-stone-50 transition-colors">
-              <td class="px-4 py-3 font-bold text-stone-500">{{ entry.rank }}</td>
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600">
-                    {{ entry.nombre.charAt(0).toUpperCase() }}
-                  </div>
-                  <div>
-                    <p class="font-medium text-stone-900">{{ entry.nombre }}</p>
-                    <p class="text-xs text-stone-400">{{ entry.turno }}</p>
-                  </div>
+    } @else if (adminRows().length === 0) {
+      <div class="bg-white border border-stone-200 rounded-xl p-12 text-center">
+        <div class="text-4xl mb-3">👥</div>
+        <p class="text-stone-500">No se encontraron gerentes registrados.</p>
+      </div>
+    } @else {
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="grid gap-4 px-5 py-3 bg-stone-50/50 border-b border-stone-200"
+             style="grid-template-columns: 1fr 140px 100px 80px">
+          <div class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Gerente</div>
+          <div class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Sucursal</div>
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">Colaboradores</div>
+          <div class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Turno</div>
+        </div>
+        <div class="divide-y divide-stone-100">
+          @for (g of adminRows(); track g.id) {
+            <div class="grid gap-4 px-5 py-4 items-center hover:bg-stone-50/30 transition-colors duration-200"
+                 style="grid-template-columns: 1fr 140px 100px 80px">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-sm font-semibold text-white flex-shrink-0 ring-2 ring-white shadow-sm">
+                  {{ initials(g.nombre) }}
                 </div>
-              </td>
-              <td class="px-4 py-3 text-right">
-                <span [class]="igeoClass(entry.igeo)">{{ entry.igeo }}%</span>
-              </td>
-              <td class="px-4 py-3 text-right text-stone-600 hidden sm:table-cell">
-                {{ entry.onTimeRate >= 0 ? entry.onTimeRate.toFixed(1) + '%' : 'S/D' }}
-              </td>
-              <td class="px-4 py-3 text-right text-stone-600 hidden md:table-cell">
-                {{ entry.completedTasks }} / {{ entry.totalTasks }}
-              </td>
-              <td class="px-4 py-3 text-center hidden lg:table-cell">
-                <div class="flex justify-center gap-1">
-                  @for (badge of entry.badges; track badge.type) {
-                    <span [title]="badge.title" class="text-base">{{ badge.icon }}</span>
-                  }
-                  @if (entry.badges.length === 0) {
-                    <span class="text-stone-300 text-xs">—</span>
-                  }
+                <div>
+                  <p class="font-semibold text-stone-900 text-sm">{{ g.nombre }}</p>
+                  <p class="text-xs text-stone-500">{{ g.puesto }}</p>
                 </div>
-              </td>
-              <td class="px-4 py-3 text-right">
-                <span [class]="deltaClass(entry.igeoChange)" class="text-xs font-medium">
-                  {{ deltaIcon(entry.igeoChange) }}
-                  @if (entry.igeoChange !== 0) {
-                    {{ entry.igeoChange > 0 ? '+' : '' }}{{ entry.igeoChange.toFixed(1) }}
-                  }
+              </div>
+              <div>
+                <p class="text-sm font-medium text-stone-700">{{ g.storeName }}</p>
+                <p class="text-xs text-stone-400">{{ g.storeCodigo }}</p>
+              </div>
+              <div class="flex justify-center">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  {{ g.colaboradorCount }}
                 </span>
-              </td>
-            </tr>
+              </div>
+              <p class="text-xs text-stone-500 uppercase tracking-wide">{{ g.turno }}</p>
+            </div>
           }
-        </tbody>
-      </table>
-    </div>
+        </div>
+      </div>
+    }
   }
 
-  <!-- Empty state -->
-  @if (!loading() && leaderboard().length === 0 && !error()) {
-    <div class="bg-white border border-stone-200 rounded-xl p-12 text-center">
-      <div class="text-4xl mb-3">🏆</div>
-      <p class="text-stone-500">Sin datos de colaboradores para este período.</p>
-    </div>
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TABLA V0 — GERENTE y EJECUTADOR
+  ═══════════════════════════════════════════════════════════════════ -->
+  @if (!isAdmin()) {
+    @if (loading()) {
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div class="grid gap-4 px-5 py-3 bg-stone-50/50 border-b border-stone-200"
+             style="grid-template-columns: 70px 1fr 80px 80px 100px 60px">
+          <div class="text-center text-xs font-semibold text-stone-400 uppercase tracking-wider">#</div>
+          <div class="text-xs font-semibold text-stone-400 uppercase tracking-wider">Colaborador</div>
+          <div class="text-center text-xs font-semibold text-stone-400 uppercase tracking-wider">IGEO</div>
+          <div class="text-center text-xs font-semibold text-stone-400 uppercase tracking-wider">On-Time</div>
+          <div class="text-center text-xs font-semibold text-stone-400 uppercase tracking-wider">Tareas</div>
+          <div class="text-center text-xs font-semibold text-stone-400 uppercase tracking-wider">Delta</div>
+        </div>
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="flex items-center gap-4 px-5 py-4 border-b border-stone-100 last:border-0 animate-pulse">
+            <div class="w-8 h-8 rounded-full bg-stone-200 flex-shrink-0"></div>
+            <div class="w-10 h-10 rounded-full bg-stone-200 flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3.5 bg-stone-200 rounded w-1/3"></div>
+              <div class="h-2.5 bg-stone-200 rounded w-1/5"></div>
+            </div>
+            <div class="w-14 h-7 bg-stone-200 rounded-full"></div>
+            <div class="w-14 h-7 bg-stone-200 rounded-full"></div>
+          </div>
+        }
+      </div>
+    } @else if (tableRows().length === 0) {
+      <div class="bg-white border border-stone-200 rounded-xl p-12 text-center">
+        <div class="text-4xl mb-3">🏆</div>
+        <p class="text-stone-500">Sin datos para este per&iacute;odo.</p>
+      </div>
+    } @else {
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <!-- Table Header -->
+        <div class="grid gap-4 px-5 py-3 bg-stone-50/50 border-b border-stone-200"
+             style="grid-template-columns: 70px 1fr 80px 80px 100px 60px">
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">#</div>
+          <div class="text-xs font-semibold text-stone-500 uppercase tracking-wider">Colaborador</div>
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">IGEO</div>
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">On-Time</div>
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">Tareas</div>
+          <div class="text-center text-xs font-semibold text-stone-500 uppercase tracking-wider">Delta</div>
+        </div>
+
+        <!-- Table Rows -->
+        <div class="divide-y divide-stone-100">
+          @for (entry of tableRows(); track entry.userId; let idx = $index) {
+            <div [class]="'grid gap-4 px-5 py-4 items-center transition-colors duration-200 hover:bg-stone-50/30'
+                          + (idx === 0 ? ' bg-emerald-50/50' : '')"
+                 style="grid-template-columns: 70px 1fr 80px 80px 100px 60px">
+
+              <!-- Rank Badge -->
+              <div class="flex justify-center">
+                @if (entry.rank <= 3) {
+                  <div [class]="'flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold text-white ' + rankBadgeClass(entry.rank)">
+                    {{ entry.rank }}
+                  </div>
+                } @else {
+                  <div class="flex items-center justify-center w-8 h-8">
+                    <span class="text-base font-medium text-stone-400">{{ entry.rank }}</span>
+                  </div>
+                }
+              </div>
+
+              <!-- Collaborator Info with Celebration Emojis -->
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 ring-2 ring-white shadow-sm bg-orange-500">
+                  {{ initials(entry.nombre) }}
+                </div>
+                <div class="flex flex-col min-w-0 gap-0.5">
+                  <div class="flex items-center">
+                    <span class="font-semibold text-stone-900 text-sm truncate">{{ entry.nombre }}</span>
+                    @if (entry.rank <= 3) {
+                      <div class="flex items-center gap-1 ml-2">
+                        @for (e of celebrationEmojis(entry.rank); track e.emoji) {
+                          <span [class]="'text-base ' + e.cls" [style.animation-delay]="e.delay">{{ e.emoji }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <span class="text-xs text-stone-500 uppercase tracking-wide">{{ entry.turno }}</span>
+                </div>
+              </div>
+
+              <!-- IGEO -->
+              <div class="flex justify-center">
+                <span [class]="'inline-flex items-center justify-center min-w-[52px] px-2.5 py-1 rounded-full text-xs font-semibold ' + progressPillClass(entry.igeo)">
+                  {{ entry.igeo }}%
+                </span>
+              </div>
+
+              <!-- On-Time -->
+              <div class="flex justify-center">
+                <span [class]="'inline-flex items-center justify-center min-w-[52px] px-2.5 py-1 rounded-full text-xs font-semibold ' + progressPillClass(entry.onTimeRate)">
+                  {{ entry.onTimeRate >= 0 ? entry.onTimeRate.toFixed(1) + '%' : 'S/D' }}
+                </span>
+              </div>
+
+              <!-- Completed -->
+              <div class="text-center">
+                <span class="text-sm font-semibold text-stone-900">{{ entry.completedTasks }}</span>
+                <span class="text-sm text-stone-500"> / {{ entry.totalTasks }}</span>
+              </div>
+
+              <!-- Delta -->
+              <div class="flex justify-center">
+                @if (entry.igeoChange > 0) {
+                  <div class="flex items-center gap-1 text-emerald-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                  </div>
+                } @else if (entry.igeoChange < 0) {
+                  <div class="flex items-center gap-1 text-red-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"/>
+                    </svg>
+                  </div>
+                } @else {
+                  <span class="text-stone-400 text-sm">—</span>
+                }
+              </div>
+
+            </div>
+          }
+        </div>
+      </div>
+    }
   }
 
 </div>

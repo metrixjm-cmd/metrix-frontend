@@ -8,6 +8,8 @@ export interface UserProfile {
   numeroUsuario: string;
   roles: string[];
   activo: boolean;
+  email?: string;
+  fechaNacimiento?: string;  // ISO date: yyyy-MM-dd
   createdAt: string;
   updatedAt: string;
 }
@@ -18,9 +20,11 @@ export interface CreateUserRequest {
   puesto: string;
   storeId: string;
   turno: string;
-  numeroUsuario: string;
+  numeroUsuario?: string;  // opcional — el backend auto-genera según el puesto
   password: string;
   roles: string[];
+  email?: string;
+  fechaNacimiento?: string;  // ISO date: yyyy-MM-dd
 }
 
 /** Payload para editar un colaborador (PUT /api/v1/users/{id}) */

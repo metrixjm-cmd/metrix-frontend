@@ -18,7 +18,7 @@ export interface StoreResponse {
 /** Payload para crear una sucursal (POST /api/v1/stores) */
 export interface CreateStoreRequest {
   nombre: string;
-  codigo: string;
+  codigo?: string;   // opcional — el backend auto-genera SUC001, SUC002...
   direccion?: string;
   telefono?: string;
   turnos?: string[];

@@ -1,3 +1,19 @@
+// ── Implicados ────────────────────────────────────────────────────────────────
+
+export type ImplicadoTipo = 'GERENTE' | 'EJECUTADOR' | 'EXTERNO';
+
+export interface ImplicadoEntry {
+  nombre:          string;
+  tipo:            ImplicadoTipo;
+  responsabilidad?: string; // solo para EXTERNO
+}
+
+export const IMPLICADO_TIPO_LABELS: Record<ImplicadoTipo, string> = {
+  GERENTE:    'Gerente',
+  EJECUTADOR: 'Ejecutador',
+  EXTERNO:    'Externo',
+};
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export type IncidentStatus   = 'ABIERTA' | 'EN_RESOLUCION' | 'CERRADA';
@@ -8,6 +24,7 @@ export type IncidentSeverity = 'BAJA' | 'MEDIA' | 'ALTA' | 'CRITICA';
 
 export interface IncidentResponse {
   id:          string;
+  version:     number;
   title:       string;
   description: string;
   category:    IncidentCategory;
@@ -17,11 +34,17 @@ export interface IncidentResponse {
   reporterUserId:   string;
   reporterName:     string;
   reporterPosition: string;
+  reporterRole:     string;
   storeId:          string;
   shift:            string;
 
+  implicados:          ImplicadoEntry[];
+  followUpResponsible: string | null;
+
   status:           IncidentStatus;
   resolvedByUserId: string | null;
+  closedByName:     string | null;
+  closedByNumero:   string | null;
   resolutionNotes:  string | null;
   resolvedAt:       string | null;
 
@@ -34,19 +57,21 @@ export interface IncidentResponse {
 // ── Requests ──────────────────────────────────────────────────────────────────
 
 export interface CreateIncidentRequest {
-  title:        string;
-  description:  string;
-  category:     IncidentCategory;
-  severity:     IncidentSeverity;
-  taskId?:      string;
-  storeId:      string;
-  shift:        string;
-  evidenceUrls?: string[];
+  title:               string;
+  description:         string;
+  category:            IncidentCategory;
+  severity:            IncidentSeverity;
+  taskId?:             string;
+  storeId:             string;
+  shift:               string;
+  implicados?:         ImplicadoEntry[];
+  followUpResponsible?: string;
 }
 
 export interface UpdateIncidentStatusRequest {
   newStatus:        IncidentStatus;
   resolutionNotes?: string;
+  closedByName?:    string;
   notes?:           string;
 }
 

@@ -7,18 +7,9 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { AuthService } from '../services/auth.service';
+import { AuthService }  from '../services/auth.service';
+import { ThemeService } from '../../../core/theme.service';
 
-/**
- * Pantalla de Login de METRIX.
- *
- * Diseño: split-screen (branding izq / formulario der) responsivo.
- * - Uso de Signals para estado local (loading, error, showPassword).
- * - Nuevo Control Flow Angular (@if) en el template.
- * - ReactiveFormsModule para validación de campos.
- * - Post-login redirect: si el router mandó al usuario aquí con ?returnUrl,
- *   lo devuelve a esa URL tras autenticar exitosamente.
- */
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -31,6 +22,7 @@ export class Login {
   private readonly auth    = inject(AuthService);
   private readonly router  = inject(Router);
   private readonly route   = inject(ActivatedRoute);
+  readonly themeSvc        = inject(ThemeService);
 
   readonly form: FormGroup = this.fb.group({
     numeroUsuario: ['', [Validators.required]],
@@ -70,7 +62,6 @@ export class Login {
     });
   }
 
-  // Helpers para validación en template
   isFieldInvalid(field: string): boolean {
     const ctrl = this.form.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
