@@ -1,5 +1,14 @@
 {
   "projects": {
-    "default": "REPLACE_WITH_GCP_PROJECT_ID"
+    "default": "project-c0ecce2b-41ee-48b7-8b3"
+  },
+  "targets": {
+    "project-c0ecce2b-41ee-48b7-8b3": {
+      "hosting": {
+        "metrix-app": [
+          "metrix-app"
+        ]
+      }
+    }
   }
 }
