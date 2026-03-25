@@ -21,26 +21,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug environment files
-        run: |
-          echo "=== environment.ts ==="
-          cat src/environments/environment.ts
-          echo "=== environment.prod.ts ==="
-          cat src/environments/environment.prod.ts
-
       - name: Build production
         run: npx ng build --configuration=production
 
-      - name: Debug build output
+      - name: Verify build contains correct URL
         run: |
-          echo "=== dist output ==="
-          ls dist/metrix-app/browser/*.js | head -5
-          grep -r "metrix-backend\|localhost" dist/metrix-app/browser/*.js | head -5 || echo "No URL found in js files"
+          echo "Checking built files for backend URL..."
+          grep -r "metrix-backend\|localhost" dist/metrix-app/browser/chunk-*.js | head -5 || echo "No explicit URL found in chunks"
+          ls dist/metrix-app/browser/chunk-*.js | wc -l
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
       - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.GCP_SA_KEY }}
-          projectId: ${{ secrets.GCP_PROJECT_ID }}
-          channelId: live
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GCP_SA_KEY }}
+          FIREBASE_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          echo $GOOGLE_APPLICATION_CREDENTIALS_JSON > /tmp/sa-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
+          npx firebase-tools deploy --only hosting --project $FIREBASE_PROJECT --force --non-interactive
