@@ -65,9 +65,11 @@ export class TaskCreate implements OnInit {
   readonly targetRole = computed(() => this.isAdmin() ? 'GERENTE' : 'EJECUTADOR');
   readonly targetRoleLabel = computed(() => this.isAdmin() ? 'Gerente' : 'Ejecutador');
 
-  /** Usuarios disponibles en la sucursal seleccionada */
+  /** Usuarios disponibles en la sucursal seleccionada, filtrados por rol destino:
+   *  ADMIN → solo GERENTE | GERENTE → solo EJECUTADOR */
   filteredUsers = computed(() => {
-    return this.rhSvc.users().filter(u => u.activo);
+    const role = this.targetRole();
+    return this.rhSvc.users().filter(u => u.activo && u.roles.includes(role));
   });
 
   /** Sucursales activas */
