@@ -58,7 +58,7 @@ export const ALL_BADGES: Omit<Badge, 'earnedAt'>[] = [
   {
     type: 'COLABORADOR_MES',
     title: 'Colaborador del Mes',
-    description: 'Top IGEO de la sucursal este mes',
+    description: 'Top Over-all de la sucursal este mes',
     icon: '🥇',
   },
   {

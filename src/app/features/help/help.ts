@@ -51,7 +51,7 @@ export class Help {
         {
           id: 't4',
           question: '¿Qué pasa si una tarea falla?',
-          answer:   'El colaborador puede marcarla como FALLIDA con un motivo. Un GERENTE puede reabrirla (FALLIDA → PENDIENTE) para re-trabajo. Cada ciclo de re-trabajo se contabiliza en el KPI #3 (Re-trabajo) y afecta el IGEO.',
+          answer:   'El colaborador puede marcarla como FALLIDA con un motivo. Un GERENTE puede reabrirla (FALLIDA → PENDIENTE) para re-trabajo. Cada ciclo de re-trabajo se contabiliza en el KPI #3 (Re-trabajo) y afecta el Over-all.',
         },
         {
           id: 't5',
@@ -67,8 +67,8 @@ export class Help {
       items: [
         {
           id: 'k1',
-          question: '¿Qué es el IGEO?',
-          answer:   'El Índice Global de Ejecución Operativa mide el desempeño general de una sucursal en una escala de 0 a 100. Se calcula con 4 pilares: Cumplimiento (40%), Tiempo (25%), Calidad (20%) y Consistencia (15%). Un IGEO ≥ 80 es excelente; entre 60-79 es aceptable; menor a 60 requiere atención inmediata.',
+          question: '¿Qué es el Over-all?',
+          answer:   'El Índice Global de Ejecución Operativa mide el desempeño general de una sucursal en una escala de 0 a 100. Se calcula con 4 pilares: Cumplimiento (40%), Tiempo (25%), Calidad (20%) y Consistencia (15%). Un Over-all ≥ 80 es excelente; entre 60-79 es aceptable; menor a 60 requiere atención inmediata.',
         },
         {
           id: 'k2',

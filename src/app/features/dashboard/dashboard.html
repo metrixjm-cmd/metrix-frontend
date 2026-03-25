@@ -67,9 +67,9 @@
                     stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </div>
-          @if (kpi.label === 'IGEO') {
+          @if (kpi.label === 'Over-all') {
             @if (kpiSvc.igeoAnalytics(); as igeo) {
-              <!-- Desglose por pilar del IGEO analítico (Sprint 17) -->
+              <!-- Desglose por pilar del Over-all analítico (Sprint 17) -->
               <div class="mt-2 pt-2 border-t border-stone-100 space-y-1.5">
                 @for (p of igeoPillarArray(igeo); track p.n) {
                   <div class="flex items-center gap-1.5">
@@ -142,7 +142,7 @@
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-bold text-white">Ranking Sucursales</p>
-              <p class="text-[11px] text-white/80 mt-0.5">IGEO · Operaciones</p>
+              <p class="text-[11px] text-white/80 mt-0.5">Over-all · Operaciones</p>
             </div>
             <span class="text-[10px] font-bold px-2 py-1 bg-brand-600 text-white rounded-full">HOY</span>
           </div>
@@ -176,7 +176,7 @@
           }
         </div>
         <div class="px-4 py-2.5 border-t border-stone-100 bg-brand-50/50">
-          <p class="text-[10px] text-stone-500">IGEO integra: Cumplimiento, Tiempo, Calidad y Consistencia.</p>
+          <p class="text-[10px] text-stone-500">Over-all integra: Cumplimiento, Tiempo, Calidad y Consistencia.</p>
         </div>
       </div>
     </div>
@@ -209,7 +209,7 @@
               </svg>
             </div>
             <p class="text-sm font-medium text-stone-700">Todas las sucursales operan normalmente</p>
-            <p class="text-xs text-stone-400 mt-0.5">IGEO ≥ 70% en todas las unidades</p>
+            <p class="text-xs text-stone-400 mt-0.5">Over-all ≥ 70% en todas las unidades</p>
           </div>
         } @else {
           <div class="divide-y divide-stone-100">
@@ -224,7 +224,7 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-stone-800 truncate">{{ store.name }}</p>
                   <p class="text-xs text-stone-400 mt-0.5">
-                    IGEO: <span class="text-red-600 font-semibold">{{ store.igeo }}%</span> ·
+                    Over-all: <span class="text-red-600 font-semibold">{{ store.igeo }}%</span> ·
                     On-Time: {{ store.onTime }}%
                   </p>
                 </div>
@@ -358,7 +358,7 @@
               <tr>
                 <th class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wide">#</th>
                 <th class="px-4 py-2.5 text-left text-[11px] font-semibold text-stone-500 uppercase tracking-wide">Colaborador</th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wide">IGEO</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wide">Over-all</th>
                 <th class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wide hidden sm:table-cell">On-Time</th>
                 <th class="px-4 py-2.5 text-right text-[11px] font-semibold text-stone-500 uppercase tracking-wide hidden md:table-cell">Tasks</th>
               </tr>
@@ -492,9 +492,9 @@
         </div>
         <div class="px-4 py-3">
           @if (gamifSummary()) {
-            <!-- IGEO personal -->
+            <!-- Over-all personal -->
             <div class="flex items-center justify-between mb-3">
-              <span class="text-xs text-stone-500">IGEO Personal</span>
+              <span class="text-xs text-stone-500">Over-all Personal</span>
               <span [class]="igeoTextClass(gamifSummary()!.igeo) + ' text-sm'">
                 {{ gamifSummary()!.igeo.toFixed(1) }}%
               </span>

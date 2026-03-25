@@ -76,9 +76,9 @@ export interface DailyReportResponse {
   totalPending: number;
 }
 
-// ── Sprint 17 — IGEO Analítico (microservicio Python analytics-service) ──────
+// ── Sprint 17 — Over-all Analítico (microservicio Python analytics-service) ──────
 
-/** Scores de los 4 pilares que componen el IGEO. */
+/** Scores de los 4 pilares que componen el Over-all. */
 export interface IgeoPillarScores {
   cumplimiento: number;
   tiempo:       number;
@@ -86,7 +86,7 @@ export interface IgeoPillarScores {
   consistencia: number;
 }
 
-/** Resultado global del IGEO analítico. */
+/** Resultado global del Over-all analítico. */
 export interface IgeoGlobalResult {
   total_tasks:   number;
   completed:     number;
@@ -94,7 +94,7 @@ export interface IgeoGlobalResult {
   igeo:          number;
 }
 
-/** Resultado por sucursal del IGEO analítico. */
+/** Resultado por sucursal del Over-all analítico. */
 export interface IgeoStoreResult extends IgeoGlobalResult {
   store_id: string;
 }

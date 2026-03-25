@@ -314,11 +314,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
                 <p class="text-sm text-amber-800">
-                  @if (isAdmin()) {
-                    Como <strong>Administrador</strong>, selecciona la sucursal y asigna la tarea a un <strong>Gerente</strong>.
-                  } @else {
-                    Como <strong>Gerente</strong>, asignas tareas a los <strong>Ejecutadores</strong> de tu sucursal.
-                  }
+                  Selecciona la sucursal y puedes asignar la tarea a <strong>uno o varios colaboradores</strong> de cualquier perfil.
                 </p>
               </div>
 
@@ -346,11 +342,16 @@
 
               <!-- Colaborador -->
               <div>
-                <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center gap-1.5">
-                  <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
-                  {{ targetRoleLabel() }} a asignar <span class="text-red-500">*</span>
+                <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center justify-between">
+                  <span class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Colaboradores a asignar <span class="text-red-500">*</span>
+                  </span>
+                  @if (filteredUsers().length > 0) {
+                    <button type="button" (click)="selectAllUsers()" class="text-xs text-brand-600 hover:text-brand-700 font-medium">Seleccionar todos</button>
+                  }
                 </label>
                 @if (rhSvc.loading()) {
                   <div class="input-field h-11 flex items-center bg-stone-50 text-stone-400 text-sm gap-2">
@@ -360,17 +361,19 @@
                 } @else if (!form.get('storeId')?.value && isAdmin()) {
                   <div class="input-field h-11 flex items-center bg-stone-50 text-stone-400 text-sm">Primero selecciona una sucursal</div>
                 } @else {
-                  <select formControlName="assignedToId" class="input-field h-11" [class.input-error]="hasError('assignedToId', 'required')">
-                    <option value="">@if (isAdmin()) { Selecciona un gerente } @else { Seleccionar {{ targetRoleLabel() | lowercase }}... }</option>
+                  <div class="space-y-2 mt-2 max-h-48 overflow-y-auto p-2 border border-stone-200 rounded-lg">
                     @for (user of filteredUsers(); track user.id) {
-                      <option [value]="user.id">{{ user.nombre }} — {{ user.puesto }} ({{ user.numeroUsuario }})</option>
+                      <label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded cursor-pointer">
+                        <input type="checkbox" [value]="user.id" (change)="toggleUser(user.id)" [checked]="isUserSelected(user.id)" class="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500" />
+                        <span class="text-sm text-stone-700">{{ user.nombre }} — {{ user.puesto }} ({{ user.numeroUsuario }})</span>
+                      </label>
                     }
-                  </select>
-                  @if (filteredUsers().length === 0 && !rhSvc.loading() && form.get('storeId')?.value) {
-                    <p class="text-amber-600 text-xs mt-1">No hay {{ targetRoleLabel() | lowercase }}s activos en esta sucursal.</p>
-                  }
+                    @if (filteredUsers().length === 0) {
+                      <p class="text-stone-500 text-sm text-center py-2">No hay colaboradores activos en esta sucursal.</p>
+                    }
+                  </div>
                 }
-                @if (hasError('assignedToId', 'required')) { <p class="text-red-500 text-xs mt-1">Debes seleccionar un colaborador.</p> }
+                @if (hasError('assignedToIds', 'required')) { <p class="text-red-500 text-xs mt-1">Debes seleccionar al menos un colaborador.</p> }
               </div>
 
               <!-- Turno -->

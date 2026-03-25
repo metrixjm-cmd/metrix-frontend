@@ -46,7 +46,7 @@ export class KpiService {
     const igeoSource = analytics != null ? 'Analítico (4 pilares)' : 'Índice Global Ejecución';
     return [
       {
-        label:    'IGEO',
+        label:    'Over-all',
         value:    igeoValue >= 0 ? igeoValue.toFixed(1) : 'S/D',
         delta:    '',
         deltaUp:  true,
@@ -174,17 +174,17 @@ export class KpiService {
   }
 
   /**
-   * KPI #10 — IGEO Analítico (Sprint 17).
+   * KPI #10 — Over-all Analítico (Sprint 17).
    * Consume el endpoint de Spring Boot que delega al analytics-service Python.
    * Si el analytics-service no está disponible, Spring devuelve 503 y se ignora
-   * silenciosamente — el dashboard seguirá mostrando el IGEO calculado en memoria.
+   * silenciosamente — el dashboard seguirá mostrando el Over-all calculado en memoria.
    */
   loadAnalyticsIgeo(): void {
     this.http.get<IgeoAnalyticsResponse>(`${this.apiUrl}/analytics/igeo`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  r   => this._igeoAnalytics.set(r),
-        error: ()  => { /* analytics-service offline — fallback al IGEO local */ },
+        error: ()  => { /* analytics-service offline — fallback al Over-all local */ },
       });
   }
 

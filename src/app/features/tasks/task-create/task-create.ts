@@ -43,7 +43,7 @@ export class TaskCreate implements OnInit {
   /** Progreso del formulario */
   readonly step1Done = computed(() => !!this.form.get('title')?.value && !!this.form.get('description')?.value);
   readonly step2Done = computed(() => this.isRecurring() || !!this.form.get('shift')?.value);
-  readonly step3Done = computed(() => !!this.form.get('assignedToId')?.value);
+  readonly step3Done = computed(() => (this.form.get('assignedToIds')?.value?.length || 0) > 0);
 
   /** Input inline para agregar proceso rápido */
   newProcessTitle = signal('');
@@ -65,10 +65,9 @@ export class TaskCreate implements OnInit {
   readonly targetRole = computed(() => this.isAdmin() ? 'GERENTE' : 'EJECUTADOR');
   readonly targetRoleLabel = computed(() => this.isAdmin() ? 'Gerente' : 'Ejecutador');
 
-  /** Usuarios filtrados por el rol destino automático */
+  /** Usuarios disponibles en la sucursal seleccionada */
   filteredUsers = computed(() => {
-    const role = this.targetRole();
-    return this.rhSvc.users().filter(u => u.activo && u.roles.includes(role));
+    return this.rhSvc.users().filter(u => u.activo);
   });
 
   /** Sucursales activas */
@@ -85,7 +84,7 @@ export class TaskCreate implements OnInit {
   /** Al cambiar sucursal, recargar usuarios y limpiar selección de colaborador */
   onStoreChange(storeId: string): void {
     this.form.get('storeId')?.setValue(storeId);
-    this.form.get('assignedToId')?.setValue('');
+    this.form.get('assignedToIds')?.setValue([]);
     if (storeId) {
       this.rhSvc.loadUsersByStore(storeId);
     }
@@ -201,7 +200,7 @@ export class TaskCreate implements OnInit {
     isRecurring: [false],
     recurrenceStartTime: [''],
     recurrenceEndTime:   [''],
-    assignedToId:['', Validators.required],
+    assignedToIds:[[] as string[], [Validators.required, Validators.minLength(1)]],
     storeId:     [this.auth.currentUser()?.storeId ?? '', Validators.required],
     shift:       ['' as TaskShift | '', Validators.required],
     startDay:    ['' as string | number, Validators.required],
@@ -211,6 +210,29 @@ export class TaskCreate implements OnInit {
     dueMonth:    ['' as string | number, Validators.required],
     dueTime:     ['', Validators.required],
   });
+
+  toggleUser(userId: string): void {
+    const current = this.form.get('assignedToIds')?.value || [];
+    const index = current.indexOf(userId);
+    if (index >= 0) {
+      this.form.get('assignedToIds')?.setValue(current.filter((id: string) => id !== userId));
+    } else {
+      this.form.get('assignedToIds')?.setValue([...current, userId]);
+    }
+  }
+
+  isUserSelected(userId: string): boolean {
+    return (this.form.get('assignedToIds')?.value || []).includes(userId);
+  }
+
+  selectAllUsers(): void {
+    const allIds = this.filteredUsers().map(u => u.id);
+    this.form.get('assignedToIds')?.setValue(allIds);
+  }
+
+  clearUsers(): void {
+    this.form.get('assignedToIds')?.setValue([]);
+  }
 
   /** Signal: si el toggle de recurrencia está activo */
   isRecurring = signal(false);
@@ -347,7 +369,7 @@ export class TaskCreate implements OnInit {
       description:  v.description!,
       category:     v.category as TaskCategory,
       isCritical:   v.isCritical ?? false,
-      assignedToId: v.assignedToId!,
+      assignedToIds: v.assignedToIds as string[],
       storeId:      v.storeId!,
       shift:        v.shift as TaskShift,
       dueAt,

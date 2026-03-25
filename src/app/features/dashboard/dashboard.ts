@@ -104,7 +104,7 @@ export class Dashboard implements OnInit {
     this.kpiSvc.summary()?.trainingCompletionRate ?? 0
   );
 
-  // ── ADMIN: Sucursales en alerta (IGEO < 70) ───────────────────────────────
+  // ── ADMIN: Sucursales en alerta (Over-all < 70) ───────────────────────────────
   readonly storesInAlert = computed(() =>
     this.kpiSvc.rankingForDisplay().filter(s => s.igeo > 0 && s.igeo < 70)
   );
@@ -266,7 +266,7 @@ export class Dashboard implements OnInit {
     return otr < 0 ? 'S/D' : `${otr.toFixed(1)}%`;
   }
 
-  // ── IGEO analítico helpers ─────────────────────────────────────────────────
+  // ── Over-all analítico helpers ─────────────────────────────────────────────────
 
   igeoPillarArray(igeo: IgeoAnalyticsResponse): { n: string; v: number }[] {
     const p = igeo.data.global.pillar_scores;
