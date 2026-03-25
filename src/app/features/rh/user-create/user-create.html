@@ -1,0 +1,135 @@
+﻿<div class="p-6 max-w-2xl mx-auto">
+
+  <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
+  <div class="flex items-center gap-3 mb-6">
+    <a routerLink="/rh/usuarios"
+       class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900">Nuevo colaborador</h1>
+      <p class="text-sm text-stone-500">Registra un nuevo miembro del equipo</p>
+    </div>
+  </div>
+
+  <!-- ── Error ──────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── Formulario ─────────────────────────────────────────────────────── -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()"
+        class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-5">
+
+    <!-- Nombre -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Nombre completo *</label>
+      <input formControlName="nombre" type="text"
+             placeholder="Ej. Ana López García"
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
+        <p class="text-xs text-red-600 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
+      }
+    </div>
+
+    <!-- Puesto -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-1">Puesto *</label>
+      <input formControlName="puesto" type="text"
+             placeholder="Ej. Cajera, Cocinero, Supervisor"
+             class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      @if (form.get('puesto')?.invalid && form.get('puesto')?.touched) {
+        <p class="text-xs text-red-600 mt-1">El puesto es obligatorio</p>
+      }
+    </div>
+
+    <!-- StoreId + Turno en fila -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
+        <input formControlName="storeId" type="text"
+               [attr.readonly]="storeIdDisabled ? true : null"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-stone-50 read-only:bg-stone-50 read-only:text-stone-400">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
+        <select formControlName="turno"
+                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          @for (t of turnos; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Número de usuario + Password en fila -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Número de usuario *</label>
+        <input formControlName="numeroUsuario" type="text"
+               placeholder="Ej. EJE003"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        @if (form.get('numeroUsuario')?.invalid && form.get('numeroUsuario')?.touched) {
+          <p class="text-xs text-red-600 mt-1">El número de usuario es obligatorio</p>
+        }
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-1">Contraseña *</label>
+        <input formControlName="password" type="password"
+               placeholder="Mínimo 8 caracteres"
+               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        @if (form.get('password')?.invalid && form.get('password')?.touched) {
+          <p class="text-xs text-red-600 mt-1">La contraseña debe tener al menos 8 caracteres</p>
+        }
+      </div>
+    </div>
+
+    <!-- Roles (solo ADMIN puede cambiarlos) -->
+    <div>
+      <label class="block text-sm font-medium text-stone-700 mb-2">Roles *</label>
+      <div class="flex flex-wrap gap-2">
+        @for (rol of roles; track rol) {
+          <button type="button"
+                  [class]="isRolSelected(rol)
+                    ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-600 text-white border border-brand-600 transition-colors'
+                    : 'px-3 py-1.5 rounded-lg text-sm font-medium bg-white text-stone-600 border border-stone-200 hover:border-brand-300 transition-colors'"
+                  [disabled]="!isAdmin()"
+                  (click)="toggleRol(rol)">
+            {{ rolLabels[rol] }}
+          </button>
+        }
+      </div>
+      @if (!isAdmin()) {
+        <p class="text-xs text-stone-400 mt-1">Solo ADMIN puede asignar roles</p>
+      }
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
+      <a routerLink="/rh/usuarios"
+         class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+        Cancelar
+      </a>
+      <button type="submit"
+              [disabled]="form.invalid || saving()"
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        @if (saving()) {
+          <span class="inline-flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            Guardando...
+          </span>
+        } @else {
+          Crear colaborador
+        }
+      </button>
+    </div>
+
+  </form>
+</div>

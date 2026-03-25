@@ -1,0 +1,107 @@
+﻿<div class="p-6 space-y-6">
+
+  <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900">Configuración</h1>
+      <p class="text-sm text-stone-500 mt-0.5">Gestión de sucursales</p>
+    </div>
+    @if (isAdmin()) {
+      <a routerLink="/rh/sucursales/create"
+         class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva sucursal
+      </a>
+    }
+  </div>
+
+  <!-- ── Loading skeleton ───────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-44 bg-stone-100 rounded-xl animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- ── Error ──────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── Grid de cards ──────────────────────────────────────────────────── -->
+  @if (!loading()) {
+    @if (stores().length === 0) {
+      <div class="py-20 text-center text-stone-400">
+        <svg class="w-14 h-14 mx-auto mb-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        <p class="text-sm font-medium">Sin sucursales registradas</p>
+        @if (isAdmin()) {
+          <p class="text-xs mt-1">Crea la primera sucursal para comenzar</p>
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (store of stores(); track store.id) {
+          <div class="bg-white border border-stone-200 rounded-xl shadow-card p-5 cursor-pointer hover:border-brand-300 hover:shadow-card-md transition-all"
+               (click)="goToDetail(store)">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-semibold text-stone-900 truncate">{{ store.nombre }}</h3>
+                <span class="inline-flex mt-1 px-2 py-0.5 bg-brand-100 text-brand-700 text-xs font-mono font-medium rounded-full">
+                  {{ store.codigo }}
+                </span>
+              </div>
+              @if (store.activo) {
+                <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Activa</span>
+              } @else {
+                <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">Inactiva</span>
+              }
+            </div>
+
+            <!-- Dirección (si existe) -->
+            @if (store.direccion) {
+              <p class="text-xs text-stone-500 mb-4 truncate">
+                <svg class="w-3 h-3 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {{ store.direccion }}
+              </p>
+            }
+
+            <!-- Divider -->
+            <div class="border-t border-stone-100 pt-4">
+              <!-- Stats mini -->
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <p class="text-lg font-bold text-stone-900">{{ store.totalUsers }}</p>
+                  <p class="text-xs text-stone-400">Colaboradores</p>
+                </div>
+                <div>
+                  <p class="text-lg font-bold text-stone-900">{{ store.totalTasks }}</p>
+                  <p class="text-xs text-stone-400">Tareas</p>
+                </div>
+                <div>
+                  <p class="text-lg font-bold text-stone-900">{{ store.totalTrainings }}</p>
+                  <p class="text-xs text-stone-400">Capacitaciones</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

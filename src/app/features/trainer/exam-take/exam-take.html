@@ -1,0 +1,205 @@
+<div class="p-6 max-w-2xl mx-auto">
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error() && !loading()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── RESULTADO ───────────────────────────────────────────────────── -->
+  @if (result(); as r) {
+    <div class="space-y-6">
+      <!-- Result card -->
+      <div class="bg-white border border-stone-200 rounded-2xl p-8 shadow-card text-center">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+             [class]="r.passed ? 'bg-emerald-100' : 'bg-red-100'">
+          @if (r.passed) {
+            <svg class="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+          } @else {
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          }
+        </div>
+        <p class="text-5xl font-bold mb-2" [class]="scoreClass(r.score)">{{ r.score | number:'1.0-1' }}%</p>
+        <p class="text-lg font-semibold text-stone-800 mb-1">
+          {{ r.passed ? '¡Examen aprobado!' : 'Examen no aprobado' }}
+        </p>
+        <p class="text-sm text-stone-500 mb-6">
+          Mínimo requerido: {{ r.passingScore }}% · Tiempo: {{ formatTime(r.timeTakenSeconds) }}
+        </p>
+        <button (click)="goBack()"
+                class="inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+          Volver a Trainer
+        </button>
+      </div>
+
+      <!-- Question breakdown -->
+      @if (r.questionResults && r.questionResults.length > 0) {
+        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-100">
+            <h2 class="font-semibold text-stone-800">Desglose por pregunta</h2>
+          </div>
+          <div class="divide-y divide-stone-100">
+            @for (qr of r.questionResults; track $index) {
+              <div class="p-5 flex gap-4">
+                <div class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                     [class]="qr.correct ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'">
+                  @if (qr.correct) {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  }
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-stone-800 mb-2">{{ qr.questionText }}</p>
+                  <div class="space-y-1">
+                    @for (opt of qr.options; track $index) {
+                      <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
+                           [class]="$index === qr.correctIndex
+                             ? 'bg-emerald-50 text-emerald-700 font-medium'
+                             : $index === qr.selectedIndex && !qr.correct
+                               ? 'bg-red-50 text-red-600'
+                               : 'text-stone-500'">
+                        @if ($index === qr.selectedIndex && $index !== qr.correctIndex) {
+                          <span class="text-red-400">✗</span>
+                        } @else if ($index === qr.correctIndex) {
+                          <span class="text-emerald-500">✓</span>
+                        } @else {
+                          <span class="w-4 inline-block"></span>
+                        }
+                        {{ opt }}
+                      </div>
+                    }
+                  </div>
+                  <p class="text-xs text-stone-400 mt-2">
+                    {{ qr.pointsEarned }} / {{ qr.pointsMax }} pts
+                  </p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── EXAMEN (tomar) ─────────────────────────────────────────────── -->
+  @if (!loading() && !result(); as e) {
+    @if (exam(); as exam) {
+      <div class="space-y-6">
+
+        <!-- Header + timer -->
+        <div class="bg-white border border-stone-200 rounded-xl px-5 py-4 shadow-card flex items-center justify-between gap-4">
+          <div>
+            <h1 class="text-lg font-bold text-stone-900">{{ exam.title }}</h1>
+            @if (exam.description) {
+              <p class="text-sm text-stone-500 mt-0.5">{{ exam.description }}</p>
+            }
+            <p class="text-xs text-stone-400 mt-1">
+              {{ answeredCount() }} / {{ exam.questions.length }} respondidas
+            </p>
+          </div>
+
+          @if (exam.timeLimitMinutes) {
+            <div class="text-center flex-shrink-0">
+              <p class="text-xs text-stone-400 mb-0.5">Tiempo restante</p>
+              <p class="text-2xl font-mono font-bold"
+                 [class]="timerWarning() ? 'text-red-600 animate-pulse' : 'text-stone-800'">
+                {{ timeLeftStr() }}
+              </p>
+            </div>
+          }
+        </div>
+
+        <!-- Progress bar -->
+        <div class="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+          <div class="h-full bg-orange-500 rounded-full transition-all"
+               [style.width.%]="exam.questions.length > 0 ? (answeredCount() / exam.questions.length) * 100 : 0">
+          </div>
+        </div>
+
+        <!-- Questions -->
+        @for (q of exam.questions; track q.id; let qIdx = $index) {
+          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 text-orange-700 text-xs font-bold flex items-center justify-center">
+                {{ qIdx + 1 }}
+              </span>
+              <p class="text-sm font-medium text-stone-800 leading-relaxed">{{ q.questionText }}</p>
+            </div>
+
+            <div class="space-y-2 pl-9">
+              @for (opt of q.options; track $index; let optIdx = $index) {
+                <button type="button"
+                        (click)="selectAnswer(qIdx, optIdx)"
+                        class="w-full text-left px-4 py-3 rounded-lg border text-sm transition-all"
+                        [class]="isSelected(qIdx, optIdx)
+                          ? 'border-orange-400 bg-orange-50 text-orange-800 font-medium'
+                          : 'border-stone-200 hover:border-orange-300 hover:bg-orange-50/50 text-stone-700'">
+                  <span class="inline-flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
+                          [class]="isSelected(qIdx, optIdx)
+                            ? 'border-orange-500 bg-orange-500'
+                            : 'border-stone-300'">
+                      @if (isSelected(qIdx, optIdx)) {
+                        <span class="w-2 h-2 bg-white rounded-full"></span>
+                      }
+                    </span>
+                    {{ opt }}
+                  </span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Error on submit -->
+        @if (error()) {
+          <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+            {{ error() }}
+          </div>
+        }
+
+        <!-- Submit -->
+        <div class="flex justify-between items-center">
+          <a routerLink="/trainer" class="text-sm text-stone-500 hover:text-stone-700">
+            ← Volver al listado
+          </a>
+          <button (click)="submit()"
+                  [disabled]="!allAnswered() || submitting()"
+                  class="px-6 py-2 text-sm font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            @if (submitting()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+              Enviando…
+            } @else {
+              Enviar respuestas
+            }
+          </button>
+        </div>
+
+      </div>
+    }
+  }
+
+</div>
