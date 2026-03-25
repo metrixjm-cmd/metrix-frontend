@@ -21,10 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Inject backend URL
-        run: |
-          sed -i "s|REPLACE_WITH_BACKEND_URL|${{ secrets.BACKEND_URL }}|g" src/environments/environment.prod.ts
-
       - name: Build production
         run: npx ng build --configuration=production
 

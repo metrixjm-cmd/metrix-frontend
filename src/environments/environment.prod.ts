@@ -4,5 +4,5 @@ export const environment = {
   // Formato: https://metrix-backend-HASH-uc.a.run.app/api/v1
   // ✅ producción
   // trigger deploy
-apiUrl: 'REPLACE_WITH_BACKEND_URL/api/v1'
+apiUrl: 'https://metrix-backend-249758130960.us-central1.run.app/api/v1'
 };
