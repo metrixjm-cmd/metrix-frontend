@@ -53,9 +53,19 @@ export class Leaderboard implements OnInit {
 
   readonly ejecutadorRows = computed(() => this.gamifSvc.leaderboard());
 
-  readonly tableRows = computed((): LeaderboardEntry[] =>
-    this.isGerente() ? this.gerenteRows() : this.ejecutadorRows()
-  );
+  readonly tableRows = computed((): LeaderboardEntry[] => {
+    if (this.isAdmin()) return this.gamifSvc.leaderboard();
+    return this.isGerente() ? this.gerenteRows() : this.ejecutadorRows();
+  });
+
+  readonly top3Podium = computed(() => {
+    const rows = this.tableRows();
+    const podium: (LeaderboardEntry | null)[] = [null, null, null];
+    if (rows[0]) podium[1] = rows[0]; // Rank 1 in middle
+    if (rows[1]) podium[0] = rows[1]; // Rank 2 on left
+    if (rows[2]) podium[2] = rows[2]; // Rank 3 on right
+    return podium;
+  });
 
   ngOnInit(): void {
     const storeId = this.authSvc.currentUser()?.storeId ?? '';
@@ -63,12 +73,14 @@ export class Leaderboard implements OnInit {
     if (this.isAdmin()) {
       this.settingsSvc.loadAll();
       this.rhSvc.loadAll();
-      if (!storeId) return;
-      setTimeout(() => {
-        if (this.rhSvc.users().length === 0 && storeId) {
-          this.rhSvc.loadUsersByStore(storeId);
-        }
-      }, 800);
+      if (storeId) {
+        this.gamifSvc.loadLeaderboard(storeId, 'weekly');
+        setTimeout(() => {
+          if (this.rhSvc.users().length === 0) {
+            this.rhSvc.loadUsersByStore(storeId);
+          }
+        }, 800);
+      }
     } else if (this.isGerente()) {
       if (storeId) {
         this.gamifSvc.loadLeaderboard(storeId, 'weekly');
