@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "metrix-app",
     "public": "dist/metrix-app/browser",
     "ignore": [
       "firebase.json",
