@@ -28,6 +28,6 @@ export class StoreList implements OnInit {
   }
 
   goToDetail(store: StoreResponse): void {
-    this.router.navigate(['/rh/sucursales', store.id]);
+    this.router.navigate(['/banco-info/sucursales', store.id]);
   }
 }

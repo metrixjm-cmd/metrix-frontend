@@ -47,7 +47,7 @@ export class UserList implements OnInit {
   }
 
   goToProfile(user: UserProfile): void {
-    this.router.navigate(['/rh/usuarios', user.id]);
+    this.router.navigate(['/banco-info/usuarios', user.id]);
   }
 
   igeoClass(igeo: number): string {

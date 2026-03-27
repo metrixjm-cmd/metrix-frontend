@@ -30,6 +30,17 @@ export class RhService {
 
   // ── Métodos HTTP ──────────────────────────────────────────────────────────
 
+  loadAll(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<UserProfile[]>(`${this.apiUrl}/all`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  users => { this._users.set(users); this._loading.set(false); },
+        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
   loadUsersByStore(storeId: string): void {
     this._loading.set(true);
     this._error.set(null);
@@ -111,12 +122,34 @@ export class RhService {
     });
   }
 
+  deleteUser(id: string): Promise<void> {
+    this._saving.set(true);
+    this._error.set(null);
+    return new Promise((resolve, reject) => {
+      this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
+        next: () => {
+          this._selectedUser.set(null);
+          this._users.update(list => list.filter(u => u.id !== id));
+          this._saving.set(false);
+          resolve();
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
   // ── Helper ─────────────────────────────────────────────────────────────────
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
-      if (e?.message) return e.message;
+      const body = (err as { error?: { error?: string; message?: string } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Error al procesar la solicitud';
   }
