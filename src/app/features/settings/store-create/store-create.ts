@@ -68,7 +68,7 @@ export class StoreCreate implements OnInit {
         telefono:  val.telefono  || undefined,
         turnos:    this.selectedTurnos(),
       });
-      this.router.navigate(['/rh/sucursales']);
+      this.router.navigate(['/banco-info/sucursales']);
     } catch {
       // error already set in service signal
     }

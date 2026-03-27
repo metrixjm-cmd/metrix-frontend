@@ -122,6 +122,26 @@ export class RhService {
     });
   }
 
+  deleteUser(id: string): Promise<void> {
+    this._saving.set(true);
+    this._error.set(null);
+    return new Promise((resolve, reject) => {
+      this.http.delete<void>(`${this.apiUrl}/${id}`).subscribe({
+        next: () => {
+          this._selectedUser.set(null);
+          this._users.update(list => list.filter(u => u.id !== id));
+          this._saving.set(false);
+          resolve();
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
   // ── Helper ─────────────────────────────────────────────────────────────────
 
   private extractMessage(err: unknown): string {

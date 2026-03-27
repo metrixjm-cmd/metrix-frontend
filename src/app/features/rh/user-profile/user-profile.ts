@@ -39,7 +39,7 @@ export class UserProfile implements OnInit {
 
   // ── Estado de UI ───────────────────────────────────────────────────────────
   readonly editMode        = signal(false);
-  readonly confirmDeact    = signal(false);
+  readonly confirmDelete   = signal(false);
   readonly downloadingCard = signal(false);
 
   // ── KPI #7: datos de este colaborador ────────────────────────────────────
@@ -59,7 +59,7 @@ export class UserProfile implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.router.navigate(['/rh/usuarios']); return; }
+    if (!id) { this.router.navigate(['/banco-info/usuarios']); return; }
 
     this.rhSvc.loadUserById(id);
 
@@ -94,11 +94,7 @@ export class UserProfile implements OnInit {
 
   toggleRol(rol: string): void {
     if (!this.isAdmin()) return;
-    const current = this.editForm.get('roles')?.value as string[] ?? [];
-    const updated = current.includes(rol)
-      ? current.filter(r => r !== rol)
-      : [...current, rol];
-    this.editForm.get('roles')?.setValue(updated.length ? updated : ['EJECUTADOR']);
+    this.editForm.get('roles')?.setValue([rol]);
   }
 
   async onSave(): Promise<void> {
@@ -124,15 +120,16 @@ export class UserProfile implements OnInit {
     }
   }
 
-  async onDeactivate(): Promise<void> {
+  async onDelete(): Promise<void> {
     const id = this.user()?.id;
     if (!id || this.saving()) return;
 
     try {
-      await this.rhSvc.deactivateUser(id);
-      this.router.navigate(['/rh/usuarios']);
+      await this.rhSvc.deleteUser(id);
+      const ok = await this.router.navigateByUrl('/banco-info/usuarios');
+      if (!ok) window.location.href = '/banco-info/usuarios';
     } catch {
-      this.confirmDeact.set(false);
+      this.confirmDelete.set(false);
     }
   }
 

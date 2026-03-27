@@ -109,11 +109,7 @@ export class UserCreate implements OnInit {
 
   toggleRol(rol: string): void {
     if (!this.isAdmin()) return;
-    const current = this.form.get('roles')?.value as string[] ?? [];
-    const updated = current.includes(rol)
-      ? current.filter(r => r !== rol)
-      : [...current, rol];
-    this.form.get('roles')?.setValue(updated.length ? updated : ['EJECUTADOR']);
+    this.form.get('roles')?.setValue([rol]);
   }
 
   onPuestoAdded(entry: CatalogEntry): void {
@@ -140,7 +136,7 @@ export class UserCreate implements OnInit {
 
     try {
       await this.rhSvc.createUser(req);
-      this.router.navigate(['/rh/usuarios']);
+      this.router.navigate(['/banco-info/usuarios']);
     } catch {
       // error ya seteado en rhSvc._error
     }
