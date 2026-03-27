@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../auth/services/auth.service';
 import { RhService } from '../services/rh.service';
 import { ROL_LABELS, TURNOS, UserProfile } from '../rh.models';
+import { SettingsService } from '../../settings/services/settings.service';
 
 @Component({
   selector: 'app-user-list',
@@ -14,9 +15,10 @@ import { ROL_LABELS, TURNOS, UserProfile } from '../rh.models';
   templateUrl: './user-list.html',
 })
 export class UserList implements OnInit {
-  private readonly authSvc   = inject(AuthService);
-  private readonly rhSvc     = inject(RhService);
-  private readonly router    = inject(Router);
+  private readonly authSvc     = inject(AuthService);
+  private readonly rhSvc       = inject(RhService);
+  private readonly router      = inject(Router);
+  readonly settingsSvc         = inject(SettingsService);
 
   readonly loading  = this.rhSvc.loading;
   readonly error    = this.rhSvc.error;
@@ -24,13 +26,16 @@ export class UserList implements OnInit {
   readonly turnos   = TURNOS;
 
   // ── Filtros ───────────────────────────────────────────────────────────────
-  filterTurno = signal<string>('');
-  filterRol   = signal<string>('');
+  filterTurno  = signal<string>('');
+  filterRol    = signal<string>('');
+  filterStore  = signal<string>('');
 
   readonly filteredUsers = computed(() => {
     let list = this.rhSvc.users();
     const turno = this.filterTurno();
     const rol   = this.filterRol();
+    const store = this.filterStore();
+    if (store) list = list.filter(u => u.storeId === store);
     if (turno) list = list.filter(u => u.turno === turno);
     if (rol)   list = list.filter(u => u.roles.includes(rol));
     return list;
@@ -41,7 +46,10 @@ export class UserList implements OnInit {
 
   ngOnInit(): void {
     const user = this.authSvc.currentUser();
-    if (user?.storeId) {
+    if (this.isAdmin()) {
+      this.rhSvc.loadAll();
+      this.settingsSvc.loadAll();
+    } else if (user?.storeId) {
       this.rhSvc.loadUsersByStore(user.storeId);
     }
   }

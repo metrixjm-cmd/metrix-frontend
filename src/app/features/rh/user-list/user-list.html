@@ -6,7 +6,7 @@
       <h1 class="text-2xl font-bold text-stone-900">Recursos Humanos</h1>
       <p class="text-sm text-stone-500 mt-0.5">Gestión de colaboradores por sucursal</p>
     </div>
-    @if (isGerente()) {
+    @if (isAdmin()) {
       <a routerLink="/banco-info/usuarios/create"
          class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,6 +19,17 @@
 
   <!-- ── Filtros ────────────────────────────────────────────────────────── -->
   <div class="flex flex-wrap gap-3">
+    @if (isAdmin()) {
+      <select [(ngModel)]="filterStore"
+              (ngModelChange)="filterStore.set($event)"
+              class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <option value="">Todas las sucursales</option>
+        @for (s of settingsSvc.stores(); track s.id) {
+          <option [value]="s.id">{{ s.nombre }}</option>
+        }
+      </select>
+    }
+
     <select [(ngModel)]="filterTurno"
             (ngModelChange)="filterTurno.set($event)"
             class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
