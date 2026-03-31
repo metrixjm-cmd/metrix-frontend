@@ -5,6 +5,8 @@ import com.metrix.api.dto.EvidenceUploadResponse;
 import com.metrix.api.dto.QualityRatingRequest;
 import com.metrix.api.dto.TaskResponse;
 import com.metrix.api.dto.UpdateStatusRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -120,4 +122,33 @@ public interface TaskService {
      * @param currentUser subject del JWT del evaluador
      */
     TaskResponse rateQuality(String taskId, QualityRatingRequest request, String currentUser);
+
+    /** Actualiza un paso de proceso (checklist) de una tarea. */
+    TaskResponse updateProcessStep(String taskId, String stepId, boolean completed, String notes);
+
+    /** Edita título/descripción de un paso de proceso. Solo ADMIN. */
+    TaskResponse editProcessStep(String taskId, String stepId, String title, String description);
+
+    /** Elimina un paso de proceso de una tarea. Solo ADMIN. */
+    TaskResponse deleteProcessStep(String taskId, String stepId);
+
+    /** Soft-delete de una tarea. Solo ADMIN. */
+    void deactivateTask(String taskId);
+
+    /** Devuelve todas las tareas activas del sistema. Solo ADMIN. */
+    List<TaskResponse> getAllTasks();
+
+    // ── Paginated queries ────────────────────────────────────────────────
+
+    /** Paginated: all active tasks for a store. */
+    Page<TaskResponse> getTasksByStore(String storeId, Pageable pageable);
+
+    /** Paginated: all active tasks for a user. */
+    Page<TaskResponse> getTasksByUser(String assignedUserId, Pageable pageable);
+
+    /** Paginated: all active tasks (ADMIN). */
+    Page<TaskResponse> getAllTasks(Pageable pageable);
+
+    /** Elimina todas las tareas. Solo para uso administrativo. */
+    void deleteAll();
 }

@@ -19,16 +19,19 @@ public class ExamForTakeResponse {
     private String description;
     private int passingScore;
     private Integer timeLimitMinutes;
+    private int maxAttempts;
     private int questionCount;
     private List<QuestionForTake> questions;
 
     @Data
     @Builder
     public static class QuestionForTake {
-        private String id;
-        private String questionText;
+        private String       id;
+        private String       questionText;
         private QuestionType type;
         private List<String> options;
-        private int points;
+        private int          points;
+        // explanation se muestra DESPUÉS de responder, no antes
+        // (se omite aquí — viene en QuestionResult del submit response)
     }
 }

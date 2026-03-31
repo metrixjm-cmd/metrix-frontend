@@ -1,57 +1,41 @@
 package com.metrix.api.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.metrix.api.config.RedisConfig;
 import com.metrix.api.dto.NotificationEvent;
 import com.metrix.api.model.Role;
 import com.metrix.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Gestiona las conexiones SSE activas y el envío de eventos en tiempo real.
  * <p>
- * Fase 4: Soporta multi-instancia via Redis Pub/Sub.
- * <ul>
- *   <li>{@link #sendToUser} / {@link #sendToStoreManagers}: publican a Redis "sse.broadcast"</li>
- *   <li>{@link #deliverLocally}: entrega a emitters locales sin re-publicar (evita loop)</li>
- * </ul>
+ * Modo single-instance: entrega directa a emitters locales.
+ * Con Cloud Run max-instances=1, no se necesita Redis Pub/Sub.
+ * <p>
+ * Si en el futuro se necesita multi-instancia, se puede re-activar
+ * Redis Pub/Sub via {@code metrix.redis.enabled=true} y restaurar
+ * {@code RedisConfig} + {@code RedisSSESubscriber}.
  */
 @Slf4j
 @Service
 public class NotificationService {
 
     private final UserRepository userRepository;
-
-    @Nullable
-    private final StringRedisTemplate redisTemplate;
-
-    @Nullable
-    private final ObjectMapper objectMapper;
-
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
 
-    public NotificationService(
-            UserRepository userRepository,
-            @Nullable StringRedisTemplate redisTemplate,
-            @Nullable ObjectMapper redisObjectMapper) {
+    public NotificationService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.redisTemplate = redisTemplate;
-        this.objectMapper = redisObjectMapper;
     }
 
     // ── Suscripción ─────────────────────────────────────────────────────────
 
     public SseEmitter subscribe(String userId) {
-        SseEmitter emitter = new SseEmitter(300_000L);
+        SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout
 
         emitter.onCompletion(() -> {
             emitters.remove(userId, emitter);
@@ -66,6 +50,7 @@ public class NotificationService {
             log.debug("SSE error para usuario {}: {}", userId, e.getMessage());
         });
 
+        // Cerrar emitter anterior del mismo usuario
         SseEmitter old = emitters.put(userId, emitter);
         if (old != null) {
             try { old.complete(); } catch (Exception ignored) {}
@@ -80,68 +65,29 @@ public class NotificationService {
         return emitter;
     }
 
-    // ── Envío con broadcast Redis ───────────────────────────────────────────
+    // ── Envío directo (single-instance) ─────────────────────────────────────
 
-    /**
-     * Envía a un usuario. Si Redis está disponible, publica al channel "sse.broadcast"
-     * para que TODAS las instancias intenten entregar localmente.
-     * Si Redis no está, entrega solo localmente (single-instance mode).
-     */
     public void sendToUser(String userId, NotificationEvent event) {
-        if (redisTemplate != null) {
-            broadcastViaRedis(event);
-        } else {
-            deliverToLocalEmitter(userId, event);
-        }
+        deliverToLocalEmitter(userId, event);
     }
 
     public void sendToStoreManagers(String storeId, NotificationEvent event) {
-        if (redisTemplate != null) {
-            // Redis broadcast — el subscriber se encarga de resolver destinatarios
-            event.setStoreId(storeId);
-            broadcastViaRedis(event);
-        } else {
-            // Single-instance fallback
-            resolveAndDeliverManagers(storeId, event);
-        }
+        userRepository.findByStoreIdAndActivoTrue(storeId).stream()
+                .filter(u -> u.getRoles().contains(Role.GERENTE) || u.getRoles().contains(Role.ADMIN))
+                .map(u -> u.getId())
+                .forEach(managerId -> deliverToLocalEmitter(managerId, event));
     }
 
     public void sendToAllAdmins(NotificationEvent event) {
-        if (redisTemplate != null) {
-            broadcastViaRedis(event);
-        } else {
-            userRepository.findByRolesContaining(Role.ADMIN)
-                    .forEach(admin -> deliverToLocalEmitter(admin.getId(), event));
-        }
-    }
-
-    // ── Multi-instancia: entrega local (llamado por RedisSSESubscriber) ─────
-
-    /**
-     * Entrega la notificación a emitters locales SIN re-publicar a Redis.
-     * Llamado por {@code RedisSSESubscriber.onMessage()} en cada instancia.
-     */
-    public void deliverLocally(NotificationEvent event) {
-        // Si tiene un target userId específico, entregar solo a ese
-        String targetUserId = event.getTaskId() != null
-                ? resolveAssignedUser(event.getTaskId())
-                : null;
-
-        if (targetUserId != null && emitters.containsKey(targetUserId)) {
-            deliverToLocalEmitter(targetUserId, event);
-        }
-
-        // Siempre entregar a managers de la sucursal (si están conectados localmente)
-        if (event.getStoreId() != null) {
-            resolveAndDeliverManagers(event.getStoreId(), event);
-        }
+        userRepository.findByRolesContaining(Role.ADMIN)
+                .forEach(admin -> deliverToLocalEmitter(admin.getId(), event));
     }
 
     public int activeConnections() {
         return emitters.size();
     }
 
-    // ── Internals ───────────────────────────────────────────────────────────
+    // ── Internal ────────────────────────────────────────────────────────────
 
     private void deliverToLocalEmitter(String userId, NotificationEvent event) {
         SseEmitter emitter = emitters.get(userId);
@@ -157,30 +103,5 @@ public class NotificationService {
             emitters.remove(userId, emitter);
             log.warn("Error entregando notificación a {}: {}", userId, e.getMessage());
         }
-    }
-
-    private void resolveAndDeliverManagers(String storeId, NotificationEvent event) {
-        userRepository.findByStoreIdAndActivoTrue(storeId).stream()
-                .filter(u -> u.getRoles().contains(Role.GERENTE) || u.getRoles().contains(Role.ADMIN))
-                .map(u -> u.getId())
-                .forEach(managerId -> deliverToLocalEmitter(managerId, event));
-    }
-
-    private void broadcastViaRedis(NotificationEvent event) {
-        if (redisTemplate == null || objectMapper == null) return;
-        try {
-            String json = objectMapper.writeValueAsString(event);
-            redisTemplate.convertAndSend(RedisConfig.SSE_CHANNEL, json);
-        } catch (Exception e) {
-            log.warn("[SSE-Redis] Broadcast failed, falling back to local: {}", e.getMessage());
-            // Fallback: entregar localmente
-            deliverLocally(event);
-        }
-    }
-
-    @Nullable
-    private String resolveAssignedUser(String taskId) {
-        // Para simplicidad, retornamos null — el deliverLocally resolverá via storeId
-        return null;
     }
 }

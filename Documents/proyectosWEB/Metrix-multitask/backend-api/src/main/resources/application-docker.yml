@@ -11,3 +11,9 @@ metrix:
     url: ${METRIX_ANALYTICS_URL}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.data.mongodb: WARN
+    com.metrix.api: INFO

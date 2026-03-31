@@ -2,35 +2,29 @@ package com.metrix.api.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
 
-import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Configuración dual de cache: Redis (primary) + Caffeine (fallback).
+ * Cache SIEMPRE en Caffeine (in-memory).
  * <p>
- * Si Redis está disponible ({@code metrix.redis.enabled=true}), usa RedisCacheManager
- * para cache distribuido entre instancias Cloud Run.
- * Si no, cae a Caffeine in-memory (dev local sin Redis).
+ * Decisión de arquitectura (2026-03-14):
+ * Con Cloud Run limitado a 1 instancia, cache distribuido no aporta valor.
+ * Caffeine es ~100x más rápido que Redis (no hay round-trip de red)
+ * y $0/mes en costos.
  * <p>
- * Caches:
+ * Caches registrados:
  * <ul>
- *   <li>{@code kpiSummary} — TTL 5 min</li>
- *   <li>{@code storeRanking} — TTL 5 min</li>
- *   <li>{@code leaderboard} — TTL 10 min</li>
+ *   <li>{@code kpiSummary}        — TTL 5 min, max 100 entries</li>
+ *   <li>{@code storeRanking}      — TTL 5 min, max 50 entries</li>
+ *   <li>{@code leaderboard}       — TTL 10 min, max 50 entries</li>
+ *   <li>{@code templateSummaries} — TTL 5 min, max 50 entries</li>
+ *   <li>{@code materialTags}      — TTL 10 min, max 1 entry</li>
  * </ul>
  */
 @Slf4j
@@ -38,47 +32,14 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 public class CacheConfig {
 
-    /**
-     * Redis cache manager — activado cuando metrix.redis.enabled=true.
-     * Usa serialización JSON para que los datos sean legibles en redis-cli.
-     */
     @Bean
-    @Primary
-    @ConditionalOnProperty(name = "metrix.redis.enabled", havingValue = "true")
-    public CacheManager redisCacheManager(RedisConnectionFactory connectionFactory) {
-        log.info("[CacheConfig] Redis cache manager activado");
-
-        var jsonSerializer = RedisSerializationContext.SerializationPair
-                .fromSerializer(new GenericJackson2JsonRedisSerializer());
-
-        RedisCacheConfiguration defaults = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(5))
-                .serializeValuesWith(jsonSerializer)
-                .disableCachingNullValues();
-
-        Map<String, RedisCacheConfiguration> perCache = Map.of(
-                "kpiSummary",   defaults.entryTtl(Duration.ofMinutes(5)),
-                "storeRanking", defaults.entryTtl(Duration.ofMinutes(5)),
-                "leaderboard",  defaults.entryTtl(Duration.ofMinutes(10))
-        );
-
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(defaults)
-                .withInitialCacheConfigurations(perCache)
-                .transactionAware()
-                .build();
-    }
-
-    /**
-     * Caffeine fallback — activado cuando Redis NO está habilitado (dev local).
-     */
-    @Bean
-    @ConditionalOnProperty(name = "metrix.redis.enabled", havingValue = "false", matchIfMissing = true)
     public CacheManager caffeineCacheManager() {
-        log.info("[CacheConfig] Caffeine (local) cache manager activado — Redis no disponible");
+        log.info("[CacheConfig] Caffeine in-memory cache — zero-cost mode");
 
         CaffeineCacheManager manager = new CaffeineCacheManager(
-                "kpiSummary", "storeRanking", "leaderboard");
+                "kpiSummary", "storeRanking", "leaderboard",
+                "templateSummaries", "materialTags", "questionBankTags",
+                "examTemplateSummaries");
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .maximumSize(200)

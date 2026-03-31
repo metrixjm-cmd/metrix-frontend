@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,9 +32,23 @@ public class ExamQuestion {
     @Field("options")
     private List<String> options;
 
-    /** Índice (0-based) de la opción correcta en {@code options}. */
+    /** Índice (0-based) de la opción correcta. Para MULTIPLE_CHOICE y TRUE_FALSE. */
     @Field("correct_option_index")
     private int correctOptionIndex;
+
+    /** Índices correctos. Para MULTI_SELECT (puede haber N correctas). */
+    @Builder.Default
+    @Field("correct_option_indexes")
+    private List<Integer> correctOptionIndexes = new ArrayList<>();
+
+    /** Palabras clave aceptadas. Para OPEN_TEXT (matching insensible a mayúsculas). */
+    @Builder.Default
+    @Field("accepted_keywords")
+    private List<String> acceptedKeywords = new ArrayList<>();
+
+    /** Retroalimentación mostrada al usuario después de responder. */
+    @Field("explanation")
+    private String explanation;
 
     @Builder.Default
     @Field("points")

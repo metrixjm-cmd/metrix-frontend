@@ -2,13 +2,15 @@ package com.metrix.api.service;
 
 import com.metrix.api.dto.CreateIncidentRequest;
 import com.metrix.api.dto.IncidentResponse;
-import com.metrix.api.dto.NotificationEvent;
 import com.metrix.api.dto.UpdateIncidentStatusRequest;
+import com.metrix.api.event.DomainEvents.IncidentCreatedEvent;
+import com.metrix.api.event.DomainEvents.IncidentStatusChangedEvent;
 import com.metrix.api.exception.ResourceNotFoundException;
 import com.metrix.api.model.*;
 import com.metrix.api.repository.IncidentRepository;
 import com.metrix.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,7 +18,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Motor de incidencias operativas para METRIX (Sprint 15).
@@ -30,10 +31,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class IncidentServiceImpl implements IncidentService {
 
-    private final IncidentRepository  incidentRepository;
-    private final UserRepository      userRepository;
-    private final NotificationService notificationService;
-    private final GcsService          gcsService;
+    private final IncidentRepository        incidentRepository;
+    private final UserRepository            userRepository;
+    private final GcsService                gcsService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── Crear ────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,9 @@ public class IncidentServiceImpl implements IncidentService {
         User reporter = userRepository.findByNumeroUsuario(reporterNumeroUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Usuario reportador no encontrado: " + reporterNumeroUsuario));
+
+        String primaryRole = reporter.getRoles().contains(Role.ADMIN) ? "ADMIN"
+                : reporter.getRoles().contains(Role.GERENTE) ? "GERENTE" : "EJECUTADOR";
 
         Incident incident = Incident.builder()
                 .title(request.getTitle())
@@ -52,6 +56,7 @@ public class IncidentServiceImpl implements IncidentService {
                 .reporterUserId(reporter.getId())
                 .reporterName(reporter.getNombre())
                 .reporterPosition(reporter.getPuesto())
+                .reporterRole(primaryRole)
                 .storeId(request.getStoreId())
                 .shift(request.getShift())
                 .implicados(request.getImplicados() != null
@@ -62,21 +67,11 @@ public class IncidentServiceImpl implements IncidentService {
 
         Incident saved = incidentRepository.save(incident);
 
-        // Notificar a los gerentes/admin de la sucursal
-        String severity = saved.getSeverity() == IncidentSeverity.CRITICA ? "critical" : "warning";
-        String title    = saved.getSeverity() == IncidentSeverity.CRITICA
-                ? "Incidencia CRÍTICA reportada"
-                : "Nueva incidencia reportada";
-
-        notificationService.sendToStoreManagers(saved.getStoreId(), NotificationEvent.builder()
-                .id(UUID.randomUUID().toString())
-                .type("INCIDENT_CREATED")
-                .severity(severity)
-                .title(title)
-                .body(saved.getTitle() + " · " + saved.getReporterName() + " · " + saved.getShift())
-                .storeId(saved.getStoreId())
-                .timestamp(Instant.now())
-                .build());
+        // Emit domain event — IncidentEventListener handles SSE notification
+        eventPublisher.publishEvent(new IncidentCreatedEvent(
+                saved.getId(), saved.getStoreId(), saved.getReporterUserId(),
+                saved.getTitle(), saved.getReporterName(), saved.getShift(),
+                saved.getSeverity() != null ? saved.getSeverity().name() : "MEDIA"));
 
         return toResponse(saved);
     }
@@ -96,6 +91,42 @@ public class IncidentServiceImpl implements IncidentService {
     public List<IncidentResponse> getByStore(String storeId) {
         return incidentRepository.findByStoreIdAndActivoTrue(storeId)
                 .stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    public List<IncidentResponse> getVisibleForUser(String currentNumeroUsuario) {
+        User current = userRepository.findByNumeroUsuario(currentNumeroUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Usuario no encontrado: " + currentNumeroUsuario));
+
+        if (current.getRoles().contains(Role.ADMIN)) {
+            // ADMIN: ve incidencias de GERENTES (todas las sucursales) + las suyas propias
+            List<Incident> byRole = incidentRepository
+                    .findByActivoTrueAndReporterRoleIn(List.of("GERENTE"));
+            List<Incident> own = incidentRepository
+                    .findByReporterUserIdAndActivoTrue(current.getId());
+            return mergeAndDeduplicate(byRole, own);
+
+        } else if (current.getRoles().contains(Role.GERENTE)) {
+            // GERENTE: ve incidencias de EJECUTADORES de su sucursal + las suyas propias
+            List<Incident> byRole = incidentRepository
+                    .findByStoreIdAndActivoTrueAndReporterRoleIn(current.getStoreId(), List.of("EJECUTADOR"));
+            List<Incident> own = incidentRepository
+                    .findByReporterUserIdAndActivoTrue(current.getId());
+            return mergeAndDeduplicate(byRole, own);
+
+        } else {
+            // EJECUTADOR: solo las suyas
+            return incidentRepository.findByReporterUserIdAndActivoTrue(current.getId())
+                    .stream().map(this::toResponse).toList();
+        }
+    }
+
+    private List<IncidentResponse> mergeAndDeduplicate(List<Incident> listA, List<Incident> listB) {
+        java.util.Map<String, Incident> map = new java.util.LinkedHashMap<>();
+        for (Incident i : listA) map.put(i.getId(), i);
+        for (Incident i : listB) map.putIfAbsent(i.getId(), i);
+        return map.values().stream().map(this::toResponse).toList();
     }
 
     @Override
@@ -146,7 +177,13 @@ public class IncidentServiceImpl implements IncidentService {
                 .build());
 
         Incident saved = incidentRepository.save(incident);
-        emitStatusNotification(saved, next);
+
+        // Emit domain event — IncidentEventListener handles SSE notification
+        eventPublisher.publishEvent(new IncidentStatusChangedEvent(
+                saved.getId(), current, next, saved.getStoreId(),
+                saved.getReporterUserId(), saved.getTitle(),
+                saved.getResolutionNotes()));
+
         return toResponse(saved);
     }
 
@@ -206,47 +243,6 @@ public class IncidentServiceImpl implements IncidentService {
         incident.setResolutionNotes(null);
     }
 
-    // ── Notificaciones ────────────────────────────────────────────────────────
-
-    private void emitStatusNotification(Incident incident, IncidentStatus newStatus) {
-        switch (newStatus) {
-            case EN_RESOLUCION ->
-                notificationService.sendToUser(incident.getReporterUserId(), NotificationEvent.builder()
-                        .id(UUID.randomUUID().toString())
-                        .type("INCIDENT_IN_RESOLUTION")
-                        .severity("info")
-                        .title("Incidencia en resolución")
-                        .body(incident.getTitle() + " ha sido tomada por el equipo.")
-                        .storeId(incident.getStoreId())
-                        .timestamp(Instant.now())
-                        .build());
-
-            case CERRADA ->
-                notificationService.sendToUser(incident.getReporterUserId(), NotificationEvent.builder()
-                        .id(UUID.randomUUID().toString())
-                        .type("INCIDENT_RESOLVED")
-                        .severity("info")
-                        .title("Incidencia cerrada")
-                        .body(incident.getTitle() + " ha sido resuelta: " +
-                              incident.getResolutionNotes().substring(
-                                  0, Math.min(60, incident.getResolutionNotes().length())))
-                        .storeId(incident.getStoreId())
-                        .timestamp(Instant.now())
-                        .build());
-
-            case ABIERTA ->
-                notificationService.sendToStoreManagers(incident.getStoreId(), NotificationEvent.builder()
-                        .id(UUID.randomUUID().toString())
-                        .type("INCIDENT_REOPENED")
-                        .severity("warning")
-                        .title("Incidencia reabierta")
-                        .body(incident.getTitle() + " ha sido reabierta para nueva revisión.")
-                        .storeId(incident.getStoreId())
-                        .timestamp(Instant.now())
-                        .build());
-        }
-    }
-
     // ── Evidencias Multimedia ─────────────────────────────────────────────────
 
     @Override
@@ -257,7 +253,8 @@ public class IncidentServiceImpl implements IncidentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Incidencia no encontrada: " + incidentId));
 
-        String contentType = file.getContentType() != null ? file.getContentType() : "";
+        String rawContentType = file.getContentType();
+        String contentType = rawContentType != null ? rawContentType : "";
         String tipo;
         String extension;
 
@@ -292,6 +289,7 @@ public class IncidentServiceImpl implements IncidentService {
     private IncidentResponse toResponse(Incident incident) {
         return IncidentResponse.builder()
                 .id(incident.getId())
+                .version(incident.getVersion())
                 .title(incident.getTitle())
                 .description(incident.getDescription())
                 .category(incident.getCategory())
@@ -300,6 +298,7 @@ public class IncidentServiceImpl implements IncidentService {
                 .reporterUserId(incident.getReporterUserId())
                 .reporterName(incident.getReporterName())
                 .reporterPosition(incident.getReporterPosition())
+                .reporterRole(incident.getReporterRole())
                 .storeId(incident.getStoreId())
                 .shift(incident.getShift())
                 .implicados(incident.getImplicados())
@@ -314,5 +313,10 @@ public class IncidentServiceImpl implements IncidentService {
                 .createdAt(incident.getCreatedAt())
                 .updatedAt(incident.getUpdatedAt())
                 .build();
+    }
+
+    @Override
+    public void deleteAll() {
+        incidentRepository.deleteAll();
     }
 }

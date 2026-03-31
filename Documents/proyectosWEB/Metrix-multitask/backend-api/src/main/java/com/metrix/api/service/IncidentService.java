@@ -16,6 +16,9 @@ public interface IncidentService {
 
     List<IncidentResponse> getByStore(String storeId);
 
+    /** Incidencias visibles según la jerarquía del usuario autenticado. */
+    List<IncidentResponse> getVisibleForUser(String currentNumeroUsuario);
+
     List<IncidentResponse> getByStoreAndStatus(String storeId, IncidentStatus status);
 
     IncidentResponse getById(String incidentId);
@@ -25,4 +28,6 @@ public interface IncidentService {
 
     IncidentResponse uploadEvidence(String incidentId, MultipartFile file,
                                     String currentNumeroUsuario);
+
+    void deleteAll();
 }

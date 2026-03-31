@@ -4,7 +4,6 @@ import com.metrix.api.model.ExamSubmission;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ExamSubmissionRepository extends MongoRepository<ExamSubmission, String> {
 
@@ -12,11 +11,9 @@ public interface ExamSubmissionRepository extends MongoRepository<ExamSubmission
 
     List<ExamSubmission> findByUserIdOrderBySubmittedAtDesc(String userId);
 
-    List<ExamSubmission> findByStoreIdOrderBySubmittedAtDesc(String storeId);
-
-    Optional<ExamSubmission> findFirstByExamIdAndUserIdOrderBySubmittedAtDesc(String examId, String userId);
-
     long countByExamId(String examId);
 
     long countByExamIdAndPassedTrue(String examId);
+
+    long countByExamIdAndUserId(String examId, String userId);
 }

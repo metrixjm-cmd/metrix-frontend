@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -36,6 +37,9 @@ public class Exam {
     @Id
     private String id;
 
+    @Version
+    private Long version;
+
     @Field("title")
     private String title;
 
@@ -61,6 +65,11 @@ public class Exam {
     /** Límite de tiempo en minutos. Null = sin límite. */
     @Field("time_limit_minutes")
     private Integer timeLimitMinutes;
+
+    /** Número máximo de intentos permitidos. 0 = ilimitado. */
+    @Builder.Default
+    @Field("max_attempts")
+    private int maxAttempts = 0;
 
     @Field("created_by_user_id")
     private String createdByUserId;

@@ -1,5 +1,6 @@
 package com.metrix.api.dto;
 
+import com.metrix.api.model.ImplicadoEntry;
 import com.metrix.api.model.IncidentCategory;
 import com.metrix.api.model.IncidentSeverity;
 import com.metrix.api.model.IncidentStatus;
@@ -14,6 +15,7 @@ import java.util.List;
 public class IncidentResponse {
 
     private String id;
+    private Long version;
     private String title;
     private String description;
     private IncidentCategory category;
@@ -23,10 +25,11 @@ public class IncidentResponse {
     private String reporterUserId;
     private String reporterName;
     private String reporterPosition;
+    private String reporterRole;
     private String storeId;
     private String shift;
 
-    private List<String> implicados;
+    private List<ImplicadoEntry> implicados;
     private String followUpResponsible;
 
     private IncidentStatus status;

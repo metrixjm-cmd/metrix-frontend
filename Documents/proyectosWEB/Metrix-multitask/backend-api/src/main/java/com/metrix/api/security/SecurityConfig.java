@@ -60,6 +60,8 @@ public class SecurityConfig {
                 // ── Rutas públicas ─────────────────────────────────
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/api/v1/evidence/local/**").permitAll()
+                .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
                 // ── SSE: token viaja como query param, validación manual en el controller ──
                 .requestMatchers("/api/v1/notifications/stream").permitAll()
@@ -70,15 +72,18 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/reports/**").hasAnyRole("ADMIN", "GERENTE")
 
                 // ── Módulo RH (Sprint 9) ────────────────────────────
-                .requestMatchers(HttpMethod.GET,   "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers(HttpMethod.POST,  "/api/v1/users").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT,   "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET,    "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.POST,   "/api/v1/users").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT,    "/api/v1/users/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PATCH,  "/api/v1/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasRole("ADMIN")
 
                 // ── Módulo Capacitación (Sprint 10 + flujo roles) ────
                 .requestMatchers(HttpMethod.GET,    "/api/v1/trainings/store/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.GET,    "/api/v1/trainings").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST,   "/api/v1/trainings").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.POST,   "/api/v1/trainings/from-template/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PATCH,  "/api/v1/trainings/*/materials/*/view").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/trainings/**").hasRole("ADMIN")
 
                 // ── Módulo Configuración / Stores (Sprint 11) ────────
@@ -87,6 +92,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT,   "/api/v1/stores/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/stores/**").hasRole("ADMIN")
 
+                // ── Catálogos dinámicos ─────────────────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/v1/catalogs/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/v1/catalogs/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PUT,    "/api/v1/catalogs/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/catalogs/**").hasAnyRole("ADMIN", "GERENTE")
+
                 // ── Módulo Gamificación (Sprint 12) ──────────────────
                 .requestMatchers(HttpMethod.GET, "/api/v1/gamification/store/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.GET, "/api/v1/gamification/me").authenticated()
@@ -94,12 +105,29 @@ public class SecurityConfig {
                 // ── Módulo Contingencias (Sprint 15) ──────────────────
                 .requestMatchers(HttpMethod.POST,  "/api/v1/incidents").authenticated()
                 .requestMatchers(HttpMethod.POST,  "/api/v1/incidents/*/evidence").authenticated()
+                .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/visible").authenticated()
                 .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/my").authenticated()
                 .requestMatchers(HttpMethod.GET,   "/api/v1/incidents/store/**").hasAnyRole("ADMIN", "GERENTE")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/incidents/**").hasAnyRole("ADMIN", "GERENTE")
 
                 // ── Calificación de Calidad (Sprint 18) ───────────────
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/*/quality").hasAnyRole("ADMIN", "GERENTE")
+
+                // ── Banco de Preguntas (E3) ────────────────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/v1/question-bank/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/v1/question-bank/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PUT,    "/api/v1/question-bank/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/question-bank/**").hasRole("ADMIN")
+
+                // ── Banco de Materiales + Plantillas ──────────────────
+                .requestMatchers(HttpMethod.GET,    "/api/v1/training-materials/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/v1/training-materials/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/training-materials/**").hasRole("ADMIN")
+
+                .requestMatchers(HttpMethod.GET,    "/api/v1/training-templates/**").authenticated()
+                .requestMatchers(HttpMethod.POST,   "/api/v1/training-templates/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.PUT,    "/api/v1/training-templates/**").hasAnyRole("ADMIN", "GERENTE")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/training-templates/**").hasRole("ADMIN")
 
                 // ── Módulo Trainer / Exámenes (Sprint 19) ─────────────
                 .requestMatchers(HttpMethod.POST,  "/api/v1/exams").hasAnyRole("ADMIN", "GERENTE")

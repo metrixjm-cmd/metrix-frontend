@@ -23,6 +23,8 @@ public class ExamResponse {
     private Instant createdAt;
     private Instant updatedAt;
 
+    private int maxAttempts;
+
     /** Estadísticas calculadas al listar. */
     private long submissionCount;
     private int passRate; // 0–100
@@ -30,11 +32,14 @@ public class ExamResponse {
     @Data
     @Builder
     public static class QuestionDto {
-        private String id;
-        private String questionText;
+        private String       id;
+        private String       questionText;
         private QuestionType type;
         private List<String> options;
-        private int correctOptionIndex;
-        private int points;
+        private int          correctOptionIndex;
+        private List<Integer> correctOptionIndexes;
+        private List<String> acceptedKeywords;
+        private String       explanation;
+        private int          points;
     }
 }

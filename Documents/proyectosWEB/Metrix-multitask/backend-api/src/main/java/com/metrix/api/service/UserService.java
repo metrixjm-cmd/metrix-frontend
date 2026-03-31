@@ -35,9 +35,18 @@ public interface UserService {
      */
     UserResponse updateUser(String id, UpdateUserRequest request, String requestorNumeroUsuario);
 
+    /** Lista todos los colaboradores activos del sistema. Solo ADMIN. */
+    List<UserResponse> getAllUsers();
+
     /**
      * Soft-delete: marca {@code activo=false}.
      * Solo ADMIN. Los datos históricos se conservan para KPIs.
      */
     void deactivateUser(String id);
+
+    /**
+     * Hard-delete: elimina el registro permanentemente de la base de datos.
+     * Solo ADMIN.
+     */
+    void deleteUser(String id);
 }

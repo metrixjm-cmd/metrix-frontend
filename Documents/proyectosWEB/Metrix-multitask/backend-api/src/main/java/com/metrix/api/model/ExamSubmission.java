@@ -11,7 +11,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import com.metrix.api.dto.ExamAnswer;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,9 +53,14 @@ public class ExamSubmission {
     @Field("store_id")
     private String storeId;
 
-    /** Índice de la opción elegida por pregunta (mismo orden que exam.questions). */
+    /** Legacy: índices para MULTIPLE_CHOICE/TRUE_FALSE (pre-E2). Null en nuevas submissions. */
     @Field("answers")
     private List<Integer> answers;
+
+    /** Respuestas detalladas por pregunta — soporta todos los tipos. */
+    @Builder.Default
+    @Field("detailed_answers")
+    private List<ExamAnswer> detailedAnswers = new ArrayList<>();
 
     /** Puntaje obtenido (0.0–100.0). */
     @Field("score")
@@ -67,6 +74,21 @@ public class ExamSubmission {
 
     @Field("submitted_at")
     private Instant submittedAt;
+
+    /** Desglose pregunta por pregunta persistido al momento del submit. */
+    @Builder.Default
+    @Field("question_results")
+    private List<SubmissionQuestionResult> questionResults = new ArrayList<>();
+
+    /** true una vez que ADMIN/GERENTE revisa las respuestas OPEN_TEXT pendientes. */
+    @Builder.Default
+    @Field("reviewed")
+    private boolean reviewed = false;
+
+    /** Flags de actividad sospechosa detectados en submit(). */
+    @Builder.Default
+    @Field("fraud_flags")
+    private List<String> fraudFlags = new ArrayList<>();
 
     @CreatedDate
     @Field("created_at")

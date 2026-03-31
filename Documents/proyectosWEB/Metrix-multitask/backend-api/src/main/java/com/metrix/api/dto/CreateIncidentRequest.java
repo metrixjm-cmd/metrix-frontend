@@ -1,5 +1,6 @@
 package com.metrix.api.dto;
 
+import com.metrix.api.model.ImplicadoEntry;
 import com.metrix.api.model.IncidentCategory;
 import com.metrix.api.model.IncidentSeverity;
 import jakarta.validation.constraints.NotBlank;
@@ -34,8 +35,8 @@ public class CreateIncidentRequest {
     @NotBlank
     private String shift;
 
-    /** Lista de nombres/IDs de personas involucradas. Opcional. */
-    private List<String> implicados;
+    /** Personas involucradas en el evento (con tipo y responsabilidad). Opcional. */
+    private List<ImplicadoEntry> implicados;
 
     /** Nombre o identificador del responsable de seguimiento. Opcional. */
     private String followUpResponsible;

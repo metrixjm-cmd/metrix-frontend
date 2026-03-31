@@ -17,12 +17,23 @@ public class ExamQuestionDto {
     @NotNull
     private QuestionType type;
 
-    @NotNull
-    @Size(min = 2, max = 6)
+    /**
+     * Opciones de respuesta. Requerido para MC/TF/MULTI_SELECT (2-6 items).
+     * Para OPEN_TEXT puede ser null o vacío.
+     */
     private List<String> options;
 
-    /** Índice de la opción correcta. */
+    /** Índice de la opción correcta. Para MULTIPLE_CHOICE y TRUE_FALSE. */
     private int correctOptionIndex;
+
+    /** Índices correctos. Para MULTI_SELECT. */
+    private List<Integer> correctOptionIndexes;
+
+    /** Palabras clave aceptadas. Para OPEN_TEXT. */
+    private List<String> acceptedKeywords;
+
+    /** Retroalimentación post-respuesta (opcional). */
+    private String explanation;
 
     private int points = 1;
 }
