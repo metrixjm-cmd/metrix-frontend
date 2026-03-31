@@ -90,20 +90,6 @@
                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Colaborador asignado *</label>
-        <select formControlName="assignedUserId"
-                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
-          <option value="">— Selecciona un colaborador —</option>
-          @for (u of users(); track u.id) {
-            <option [value]="u.id">{{ u.nombre }} · {{ u.puesto }}</option>
-          }
-        </select>
-        @if (form.get('assignedUserId')?.invalid && form.get('assignedUserId')?.touched) {
-          <p class="text-xs text-red-600 mt-1">Selecciona un colaborador</p>
-        }
-      </div>
-
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
@@ -132,6 +118,57 @@
       </div>
 
       <div>
+        <label class="block text-sm font-medium text-stone-700 mb-2">Colaboradores asignados *</label>
+        
+        <div class="border border-stone-200 rounded-xl bg-white overflow-hidden shadow-sm">
+          <div class="max-h-64 overflow-y-auto">
+            <table class="w-full text-left text-sm text-stone-600">
+              <thead class="bg-stone-50 border-b border-stone-200 sticky top-0 z-10">
+                <tr>
+                  <th class="py-3 px-4 w-12 text-center">
+                    <input type="checkbox"
+                           class="w-4 h-4 text-orange-600 border-stone-300 rounded focus:ring-orange-500 cursor-pointer"
+                           [checked]="isAllUsersSelected(false)"
+                           (change)="toggleAllUsers(false, $event)">
+                  </th>
+                  <th class="py-3 px-4 font-semibold text-stone-900">Nombre</th>
+                  <th class="py-3 px-4 font-semibold text-stone-900">Puesto</th>
+                  <th class="py-3 px-4 font-semibold text-stone-900">Turno</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-100">
+                @if (filteredUsers().length === 0) {
+                  <tr>
+                    <td colspan="4" class="py-6 text-center text-stone-500">
+                      No hay colaboradores disponibles para esta selección
+                    </td>
+                  </tr>
+                } @else {
+                  @for (u of filteredUsers(); track u.id) {
+                    <tr class="hover:bg-orange-50/50 transition-colors cursor-pointer"
+                        (click)="toggleUser(u.id, false)">
+                      <td class="py-2.5 px-4 text-center">
+                        <input type="checkbox"
+                               class="w-4 h-4 text-orange-600 border-stone-300 rounded focus:ring-orange-500 cursor-pointer pointer-events-none"
+                               [checked]="isUserSelected(u.id, false)">
+                      </td>
+                      <td class="py-2.5 px-4 font-medium text-stone-800">{{ u.nombre }}</td>
+                      <td class="py-2.5 px-4 text-stone-500">{{ u.puesto }}</td>
+                      <td class="py-2.5 px-4 text-stone-500">{{ u.turno }}</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        @if (form.get('assignedUserIds')?.invalid && form.get('assignedUserIds')?.touched) {
+          <p class="text-xs text-red-600 mt-2">Selecciona al menos un colaborador</p>
+        }
+      </div>
+
+      <div>
         <label class="block text-sm font-medium text-stone-700 mb-1">Fecha límite *</label>
         <input formControlName="dueAt" type="datetime-local" [min]="todayMin"
                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
@@ -140,7 +177,50 @@
         }
       </div>
 
-      <div class="flex justify-end gap-3 pt-2 border-t border-stone-100">
+      <!-- ── Materiales seleccionados ────────────────────────────────────────── -->
+      <div class="space-y-3 pt-4 border-t border-stone-100">
+        <div class="flex items-center justify-between">
+          <label class="block text-sm font-medium text-stone-700">Materiales de capacitación</label>
+          <div class="flex gap-2">
+            <button type="button" (click)="openSelectModal()"
+                    class="text-xs px-3 py-1.5 border border-stone-200 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors">
+              Elegir del banco
+            </button>
+            <button type="button" (click)="openCreateModal()"
+                    class="text-xs px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
+              Insertar nuevo
+            </button>
+          </div>
+        </div>
+
+        @if (selectedMaterials().length === 0) {
+          <div class="text-center py-6 border-2 border-dashed border-stone-200 rounded-xl bg-stone-50">
+            <p class="text-sm text-stone-500">No hay materiales seleccionados</p>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (m of selectedMaterials(); track m.id) {
+              <div class="flex items-center justify-between p-3 border border-stone-200 rounded-xl bg-white shadow-sm">
+                <div class="flex items-center gap-3">
+                  <span class="text-xl">{{ typeIcon(m.type) }}</span>
+                  <div>
+                    <p class="text-sm font-medium text-stone-800">{{ m.title }}</p>
+                    <p class="text-xs text-stone-500">{{ typeLabels[m.type] }}</p>
+                  </div>
+                </div>
+                <button type="button" (click)="removeMaterial(m)"
+                        class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t border-stone-100">
         <a routerLink="/training"
            class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
           Cancelar
@@ -243,20 +323,6 @@
             Datos de asignación
           </p>
 
-          <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Colaborador asignado *</label>
-            <select formControlName="assignedUserId"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white">
-              <option value="">— Selecciona un colaborador —</option>
-              @for (u of users(); track u.id) {
-                <option [value]="u.id">{{ u.nombre }} · {{ u.puesto }}</option>
-              }
-            </select>
-            @if (templateForm.get('assignedUserId')?.invalid && templateForm.get('assignedUserId')?.touched) {
-              <p class="text-xs text-red-600 mt-1">Selecciona un colaborador</p>
-            }
-          </div>
-
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
@@ -285,6 +351,57 @@
           </div>
 
           <div>
+            <label class="block text-sm font-medium text-stone-700 mb-2">Colaboradores asignados *</label>
+            
+            <div class="border border-stone-200 rounded-xl bg-white overflow-hidden shadow-sm">
+              <div class="max-h-64 overflow-y-auto">
+                <table class="w-full text-left text-sm text-stone-600">
+                  <thead class="bg-stone-50 border-b border-stone-200 sticky top-0 z-10">
+                    <tr>
+                      <th class="py-3 px-4 w-12 text-center">
+                        <input type="checkbox"
+                               class="w-4 h-4 text-teal-600 border-stone-300 rounded focus:ring-teal-500 cursor-pointer"
+                               [checked]="isAllUsersSelected(true)"
+                               (change)="toggleAllUsers(true, $event)">
+                      </th>
+                      <th class="py-3 px-4 font-semibold text-stone-900">Nombre</th>
+                      <th class="py-3 px-4 font-semibold text-stone-900">Puesto</th>
+                      <th class="py-3 px-4 font-semibold text-stone-900">Turno</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-stone-100">
+                    @if (templateFilteredUsers().length === 0) {
+                      <tr>
+                        <td colspan="4" class="py-6 text-center text-stone-500">
+                          No hay colaboradores disponibles para esta selección
+                        </td>
+                      </tr>
+                    } @else {
+                      @for (u of templateFilteredUsers(); track u.id) {
+                        <tr class="hover:bg-teal-50/50 transition-colors cursor-pointer"
+                            (click)="toggleUser(u.id, true)">
+                          <td class="py-2.5 px-4 text-center">
+                            <input type="checkbox"
+                                   class="w-4 h-4 text-teal-600 border-stone-300 rounded focus:ring-teal-500 cursor-pointer pointer-events-none"
+                                   [checked]="isUserSelected(u.id, true)">
+                          </td>
+                          <td class="py-2.5 px-4 font-medium text-stone-800">{{ u.nombre }}</td>
+                          <td class="py-2.5 px-4 text-stone-500">{{ u.puesto }}</td>
+                          <td class="py-2.5 px-4 text-stone-500">{{ u.turno }}</td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            @if (templateForm.get('assignedUserIds')?.invalid && templateForm.get('assignedUserIds')?.touched) {
+              <p class="text-xs text-red-600 mt-2">Selecciona al menos un colaborador</p>
+            }
+          </div>
+
+          <div>
             <label class="block text-sm font-medium text-stone-700 mb-1">Fecha límite *</label>
             <input formControlName="dueAt" type="datetime-local" [min]="todayMin"
                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
@@ -308,6 +425,200 @@
 
       </div>
     }
+  }
+
+  <!-- ── Modal Selector de Materiales ──────────────────────────────────────── -->
+  @if (showSelectModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+          <h2 class="text-lg font-bold text-stone-900">Elegir del banco</h2>
+          <button type="button" (click)="closeSelectModal()"
+                  class="p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-600 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="px-6 py-4 border-b border-stone-100 flex gap-2 items-center flex-wrap">
+          <div class="flex gap-1.5 bg-stone-100 rounded-lg p-1">
+            <button type="button" (click)="setType('')"
+                    [class]="filterType() === '' ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                                   'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+              Todos
+            </button>
+            @for (t of allTypes; track t) {
+              <button type="button" (click)="setType(t)"
+                      [class]="filterType() === t ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
+                                                    'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+                {{ typeIcon(t) }} {{ typeLabels[t] }}
+              </button>
+            }
+          </div>
+          @if (catalogSvc.categorias().length > 0) {
+            <select [value]="filterCategory()"
+                    (change)="setCategory($any($event.target).value)"
+                    class="border border-stone-200 rounded-lg px-3 py-1.5 text-xs bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <option value="">Todas las categorías</option>
+              @for (cat of catalogSvc.categorias(); track cat.id) {
+                <option [value]="cat.value">{{ cat.label || cat.value }}</option>
+              }
+            </select>
+          }
+        </div>
+
+        <!-- Body / Grid -->
+        <div class="p-6 overflow-y-auto flex-1 bg-stone-50/50">
+          @if (materialSvc.loading()) {
+            <div class="text-center py-10 text-stone-500 text-sm animate-pulse">Cargando materiales...</div>
+          } @else if (materialSvc.materials().length === 0) {
+            <div class="text-center py-10 text-stone-500 text-sm">No hay materiales en el banco con estos filtros.</div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              @for (m of materialSvc.materials(); track m.id) {
+                <div class="bg-white border rounded-xl p-4 flex flex-col cursor-pointer transition-all"
+                     [class]="isSelected(m) ? 'border-orange-500 ring-1 ring-orange-500 shadow-md' : 'border-stone-200 hover:border-orange-300 hover:shadow-sm'"
+                     (click)="toggleSelection(m)">
+                  <div class="flex items-start justify-between mb-2">
+                    <span class="text-2xl">{{ typeIcon(m.type) }}</span>
+                    <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
+                         [class]="isSelected(m) ? 'bg-orange-500 border-orange-500 text-white' : 'border-stone-300 bg-white'">
+                      @if (isSelected(m)) {
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      }
+                    </div>
+                  </div>
+                  <h3 class="font-semibold text-sm text-stone-900 line-clamp-2" [title]="m.title">{{ m.title }}</h3>
+                  <div class="mt-2 flex items-center justify-between text-xs text-stone-500">
+                    <span>{{ typeLabels[m.type] }}</span>
+                    @if (m.category) {
+                      <span class="bg-stone-100 px-2 py-0.5 rounded-full truncate max-w-[100px]">{{ m.category }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-stone-100 flex justify-end">
+          <button type="button" (click)="closeSelectModal()"
+                  class="px-4 py-2 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-800 transition-colors">
+            Listo ({{ selectedMaterials().length }})
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal Crear Material ──────────────────────────────────────────────── -->
+  @if (showCreateModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+          <h2 class="text-lg font-bold text-stone-900">Insertar nuevo material</h2>
+          <button type="button" (click)="closeCreateModal()"
+                  class="p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-600 rounded-lg transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-6 px-6 pt-4 border-b border-stone-100">
+          <button type="button" (click)="setTab('file')"
+                  [class]="activeTab() === 'file'
+                    ? 'pb-3 text-sm font-semibold text-orange-600 border-b-2 border-orange-600'
+                    : 'pb-3 text-sm font-medium text-stone-500 hover:text-stone-800'">
+            Subir archivo
+          </button>
+          <button type="button" (click)="setTab('link')"
+                  [class]="activeTab() === 'link'
+                    ? 'pb-3 text-sm font-semibold text-orange-600 border-b-2 border-orange-600'
+                    : 'pb-3 text-sm font-medium text-stone-500 hover:text-stone-800'">
+            Agregar liga URL
+          </button>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-6 overflow-y-auto">
+          <form [formGroup]="materialForm" (ngSubmit)="submitMaterial()" class="space-y-4">
+            
+            @if (activeTab() === 'file') {
+              <label class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors"
+                     [class]="selectedFile() ? 'border-orange-300 bg-orange-50' : 'border-stone-200 hover:border-orange-300 hover:bg-stone-50'">
+                <input type="file" class="sr-only" [accept]="ACCEPTED" (change)="onFileSelected($event)">
+                @if (selectedFile(); as f) {
+                  <div class="flex items-center gap-3 w-full">
+                    <span class="text-3xl">{{ fileTypeIcon(f) }}</span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-stone-800 truncate">{{ f.name }}</p>
+                      <p class="text-xs text-stone-400">{{ formatSize(f.size) }}</p>
+                    </div>
+                    <span class="text-xs text-orange-600 font-medium">Cambiar</span>
+                  </div>
+                } @else {
+                  <svg class="w-10 h-10 text-stone-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                  </svg>
+                  <p class="text-sm text-stone-500">Arrastra o <span class="text-orange-600 font-medium">selecciona</span></p>
+                  <p class="text-xs text-stone-400 mt-1">PDF, JPG, PNG, WebP, MP4, WebM · máx. 20 MB</p>
+                }
+              </label>
+              @if (fileError()) {
+                <p class="text-xs text-red-600">{{ fileError() }}</p>
+              }
+            } @else {
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">URL *</label>
+                <input formControlName="url" type="url" placeholder="https://..."
+                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                @if (materialForm.get('url')?.invalid && materialForm.get('url')?.touched) {
+                  <p class="text-xs text-red-600 mt-1">URL requerida.</p>
+                }
+              </div>
+            }
+
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Título *</label>
+              <input formControlName="title" type="text" placeholder="Nombre del material"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500">
+              @if (materialForm.get('title')?.invalid && materialForm.get('title')?.touched) {
+                <p class="text-xs text-red-600 mt-1">Título requerido.</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-stone-600 mb-1">Descripción</label>
+              <textarea formControlName="description" rows="2" placeholder="Breve descripción del contenido…"
+                        class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 mt-2 border-t border-stone-100">
+              <button type="button" (click)="closeCreateModal()"
+                      class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                Cancelar
+              </button>
+              <button type="submit" [disabled]="materialSvc.saving()"
+                      class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors">
+                @if (materialSvc.saving()) { Guardando… }
+                @else if (activeTab() === 'file') { Subir material }
+                @else { Agregar liga }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   }
 
 </div>
