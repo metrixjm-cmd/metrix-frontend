@@ -8,6 +8,7 @@ import { KpiService } from '../kpi/services/kpi.service';
 import { GamificationService } from '../gamification/services/gamification.service';
 import { IncidentService } from '../incidents/services/incident.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { APP_VERSION } from '../../../environments/app-version';
 
 export interface KpiCard {
   label:    string;
@@ -46,7 +47,8 @@ export interface LiveEvent {
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
-  readonly auth     = inject(AuthService);
+  readonly auth       = inject(AuthService);
+  readonly appVersion = APP_VERSION;
   readonly taskSvc  = inject(TaskService);
   readonly kpiSvc   = inject(KpiService);
   readonly gamifSvc    = inject(GamificationService);

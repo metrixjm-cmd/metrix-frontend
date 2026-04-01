@@ -41,6 +41,11 @@ export class UserProfile implements OnInit {
   readonly editMode        = signal(false);
   readonly confirmDelete   = signal(false);
   readonly downloadingCard = signal(false);
+  readonly showCurrentPassword = signal(false);
+
+  toggleCurrentPassword(): void {
+    this.showCurrentPassword.update(s => !s);
+  }
 
   // ── KPI #7: datos de este colaborador ────────────────────────────────────
   readonly userKpi = computed(() => {
@@ -55,7 +60,16 @@ export class UserProfile implements OnInit {
     puesto: ['', Validators.required],
     turno:  ['', Validators.required],
     roles:  [[] as string[]],
+    password: [''], // Para que admin cambie la contraseña opcionalmente
+    email: [''],
+    fechaNacimiento: [''],
   });
+
+  readonly showPassword = signal(false);
+
+  togglePassword(): void {
+    this.showPassword.update(s => !s);
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -78,6 +92,9 @@ export class UserProfile implements OnInit {
       puesto: u.puesto,
       turno:  u.turno,
       roles:  [...u.roles],
+      email: u.email || '',
+      fechaNacimiento: u.fechaNacimiento || '',
+      password: '', // reiniciar si edita de nuevo
     });
     this.editMode.set(true);
   }
@@ -107,9 +124,14 @@ export class UserProfile implements OnInit {
       nombre: v.nombre ?? undefined,
       puesto: v.puesto ?? undefined,
       turno:  v.turno  ?? undefined,
+      email: v.email ?? undefined,
+      fechaNacimiento: v.fechaNacimiento ?? undefined,
     };
     if (this.isAdmin() && v.roles?.length) {
       req.roles = v.roles as string[];
+    }
+    if (this.isAdmin() && v.password) {
+      req.password = v.password;
     }
 
     try {

@@ -12,6 +12,7 @@ export interface UserProfile {
   fechaNacimiento?: string;  // ISO date: yyyy-MM-dd
   createdAt: string;
   updatedAt: string;
+  password?: string;
 }
 
 /** Payload para crear un colaborador (POST /api/v1/users) */
@@ -33,6 +34,9 @@ export interface UpdateUserRequest {
   puesto?: string;
   turno?: string;
   roles?: string[];
+  password?: string;
+  email?: string;
+  fechaNacimiento?: string;
 }
 
 export const TURNOS = ['MATUTINO', 'VESPERTINO', 'NOCTURNO'] as const;

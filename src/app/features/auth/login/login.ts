@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService }  from '../services/auth.service';
 import { ThemeService } from '../../../core/theme.service';
+import { APP_VERSION }  from '../../../../environments/app-version';
 
 @Component({
   selector: 'app-login',
@@ -33,6 +34,7 @@ export class Login {
   readonly errorMessage = signal('');
   readonly showPassword = signal(false);
   readonly currentYear  = new Date().getFullYear();
+  readonly appVersion   = APP_VERSION;
 
   togglePassword(): void {
     this.showPassword.update(v => !v);

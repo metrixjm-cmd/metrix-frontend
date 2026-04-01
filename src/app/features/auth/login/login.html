@@ -104,9 +104,14 @@
         }
       </div>
 
-      <p class="text-brand-200/60 text-xs mt-5">
-        METRIX v1.0 &copy; {{ currentYear }} &middot; Todos los derechos reservados
-      </p>
+      <div class="flex items-center justify-between mt-5">
+        <p class="text-brand-200/60 text-xs">
+          &copy; {{ currentYear }} METRIX &middot; Todos los derechos reservados
+        </p>
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-[10px] font-mono font-semibold tracking-wide">
+          v{{ appVersion.version }}
+        </span>
+      </div>
     </div>
 
   </div>
