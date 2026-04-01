@@ -1,0 +1,19 @@
+<div class="container d-flex flex-column align-items-center mt-5" style="max-width: 320px;">
+  <h4 class="mb-3">Iniciar Sesión</h4>
+
+  <div class="w-100 mb-2 input-group input-group-sm">
+    <span class="input-group-text"><i class="fas fa-user"></i></span>
+    <input class="form-control" type="text" [(ngModel)]="username" placeholder="Usuario" />
+  </div>
+
+  <div class="w-100 mb-2 input-group input-group-sm">
+    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+    <input class="form-control" type="password" [(ngModel)]="password" placeholder="Contraseña" />
+  </div>
+
+  <button class="btn btn-success btn-sm w-100" (click)="login()">
+    <i class="fas fa-sign-in-alt me-1"></i> Entrar
+  </button>
+
+  <p *ngIf="error" class="text-danger mt-2 text-center small">Usuario o contraseña incorrectos</p>
+</div>

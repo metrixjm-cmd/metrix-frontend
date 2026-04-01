@@ -1,0 +1,354 @@
+<div class="p-6 space-y-6">
+
+  <!-- ── Encabezado ───────────────────────────────────────────────────── -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-stone-900">Capacitaciones</h1>
+      <p class="text-sm text-stone-500 mt-0.5">
+        @if (isAdmin()) { Vista global — todas las sucursales }
+        @else if (isGerente()) { Formación interna de tu sucursal }
+        @else { Mis capacitaciones asignadas }
+      </p>
+    </div>
+    @if (isGerente()) {
+      <a routerLink="/training/create"
+         class="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nueva capacitación
+      </a>
+    }
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="h-24 bg-stone-100 rounded-xl animate-pulse"></div>
+      }
+    </div>
+    <div class="space-y-3">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="h-14 bg-stone-100 rounded-xl animate-pulse"></div>
+      }
+    </div>
+  }
+
+  <!-- ── Error ────────────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      {{ error() }}
+    </div>
+  }
+
+  @if (!loading()) {
+
+    <!-- ══════════════════════════════════════════════════════
+         VISTA ADMIN — todo el sistema
+    ══════════════════════════════════════════════════════════ -->
+    @if (isAdmin()) {
+
+      <!-- KPIs globales -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">Total</p>
+          <p class="text-3xl font-bold text-stone-900 mt-1">{{ globalStats().total }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
+          <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
+          <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
+          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
+          <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
+        </div>
+      </div>
+
+      <!-- Resumen por sucursal (clickeable para filtrar) -->
+      @if (storeSummaries().length > 0) {
+        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
+            <h2 class="font-semibold text-stone-800 text-sm">Resumen por sucursal</h2>
+            @if (filterStore()) {
+              <button (click)="filterStore.set('')"
+                      class="text-xs text-orange-600 hover:text-orange-800 font-medium">
+                ✕ Quitar filtro
+              </button>
+            }
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50">
+                <tr class="text-xs text-stone-400 uppercase tracking-wide">
+                  <th class="px-5 py-2 text-left font-medium">Sucursal</th>
+                  <th class="px-4 py-2 text-right font-medium">Prog.</th>
+                  <th class="px-4 py-2 text-right font-medium">Curso</th>
+                  <th class="px-4 py-2 text-right font-medium">Complet.</th>
+                  <th class="px-4 py-2 text-right font-medium">No Comp.</th>
+                  <th class="px-5 py-2 text-left font-medium">Tasa aprobación</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-100">
+                @for (s of storeSummaries(); track s.storeId) {
+                  <tr class="hover:bg-stone-50 cursor-pointer transition-colors"
+                      [class.bg-orange-50]="filterStore() === s.storeId"
+                      (click)="filterByStore(s.storeId)">
+                    <td class="px-5 py-3 font-medium text-stone-800">
+                      {{ s.storeId }}
+                      <span class="ml-1 text-xs text-stone-400">({{ s.total }})</span>
+                    </td>
+                    <td class="px-4 py-3 text-right text-amber-600 font-medium">{{ s.programadas }}</td>
+                    <td class="px-4 py-3 text-right text-blue-600 font-medium">{{ s.enCurso }}</td>
+                    <td class="px-4 py-3 text-right text-emerald-600 font-medium">{{ s.completadas }}</td>
+                    <td class="px-4 py-3 text-right text-red-500 font-medium">{{ s.noCompletadas }}</td>
+                    <td class="px-5 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-stone-100 rounded-full h-1.5 min-w-[80px]">
+                          <div class="h-1.5 rounded-full transition-all"
+                               [class]="completionBarClass(s.completionRate)"
+                               [style.width.%]="s.completionRate"></div>
+                        </div>
+                        <span class="text-xs text-stone-500 tabular-nums w-8 text-right">{{ s.completionRate }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Alertas globales -->
+      @if (alerts().length > 0) {
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="text-sm font-semibold text-red-700">{{ alerts().length }} capacitación(es) requieren atención</span>
+          </div>
+          <div class="space-y-1">
+            @for (t of alerts().slice(0, 4); track t.id) {
+              <div class="flex items-center justify-between text-xs cursor-pointer hover:underline"
+                   (click)="goToDetail(t)">
+                <span class="text-red-700 font-medium">{{ t.title }}</span>
+                <span class="text-red-500">{{ t.storeId }} · {{ t.status === 'NO_COMPLETADA' ? 'No completada' : 'Vencida' }}</span>
+              </div>
+            }
+            @if (alerts().length > 4) {
+              <p class="text-xs text-red-400 mt-1">... y {{ alerts().length - 4 }} más</p>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════
+         VISTA GERENTE — su sucursal
+    ══════════════════════════════════════════════════════════ -->
+    @if (isGerente() && !isAdmin()) {
+
+      <!-- KPIs de la sucursal -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
+          <p class="text-3xl font-bold text-amber-600 mt-1">{{ storeStats().programadas }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
+          <p class="text-3xl font-bold text-blue-600 mt-1">{{ storeStats().enCurso }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
+          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ storeStats().completadas }}</p>
+        </div>
+        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+          <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
+          <p class="text-3xl font-bold text-red-500 mt-1">{{ storeStats().noCompletadas }}</p>
+        </div>
+      </div>
+
+      <!-- Alertas de la sucursal -->
+      @if (alerts().length > 0) {
+        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
+          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <span class="text-sm text-amber-800">
+            <strong>{{ alerts().length }}</strong> capacitación(es) con problema — revísalas en la tabla
+          </span>
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════
+         EJECUTADOR — mis capacitaciones (tarjetas)
+    ══════════════════════════════════════════════════════════ -->
+    @if (isEjecutador()) {
+      @if (trainingSvc.trainings().length === 0) {
+        <div class="bg-white border border-stone-200 rounded-xl p-12 text-center shadow-card">
+          <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          <p class="text-stone-500 text-sm font-medium">Sin capacitaciones asignadas</p>
+          <p class="text-xs text-stone-400 mt-1">Tu gerente te asignará cursos cuando estén disponibles</p>
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          @for (t of trainingSvc.trainings(); track t.id) {
+            <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card cursor-pointer hover:border-orange-300 transition-colors flex flex-col gap-3"
+                 (click)="goToDetail(t)">
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-semibold text-stone-900 text-sm leading-snug">{{ t.title }}</h3>
+                <span class="text-xs font-medium rounded-full px-2 py-0.5 flex-shrink-0"
+                      [class]="statusBadgeClass(t.status)">
+                  {{ statusLabels[t.status] }}
+                </span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-stone-500">
+                <span class="px-2 py-0.5 rounded-full" [class]="levelBadgeClass(t.level)">
+                  {{ levelLabels[t.level] }}
+                </span>
+                <span>{{ t.durationHours }}h</span>
+                <span>Aprobación ≥ {{ t.minPassGrade }}</span>
+              </div>
+              <!-- Progreso -->
+              <div>
+                <div class="flex justify-between text-xs text-stone-400 mb-1">
+                  <span>Avance</span>
+                  <span class="font-medium text-stone-600">{{ t.percentage }}%</span>
+                </div>
+                <div class="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all"
+                       [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
+                       [style.width.%]="t.percentage"></div>
+                </div>
+              </div>
+              <!-- Vencimiento -->
+              <p class="text-xs text-stone-400">{{ t.dueAt | appDate:'due' }}</p>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════
+         TABLA ADMIN + GERENTE
+    ══════════════════════════════════════════════════════════ -->
+    @if (isGerente()) {
+
+      <!-- Filtros -->
+      <div class="flex flex-wrap gap-3">
+        <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
+                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <option value="">Todos los estados</option>
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ statusLabels[s] ?? s }}</option>
+          }
+        </select>
+        <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
+                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <option value="">Todos los niveles</option>
+          @for (l of levels; track l) {
+            <option [value]="l">{{ levelLabels[l] ?? l }}</option>
+          }
+        </select>
+        @if (isAdmin()) {
+          <select [ngModel]="filterStore()" (ngModelChange)="filterStore.set($event)"
+                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <option value="">Todas las sucursales</option>
+            @for (id of uniqueStoreIds(); track id) {
+              <option [value]="id">{{ id }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      <!-- Tabla -->
+      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+        @if (filteredTrainings().length === 0) {
+          <div class="py-16 text-center text-stone-400">
+            <p class="text-sm">Sin resultados — ajusta los filtros</p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50 border-b border-stone-200">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Capacitación</th>
+                  @if (isAdmin()) {
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Sucursal</th>
+                  }
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Nivel</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Asignado a</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Vencimiento</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Estado</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Avance</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-100">
+                @for (t of filteredTrainings(); track t.id) {
+                  <tr class="hover:bg-stone-50 cursor-pointer transition-colors"
+                      [class.bg-red-50]="t.status === 'NO_COMPLETADA'"
+                      (click)="goToDetail(t)">
+                    <td class="px-4 py-3">
+                      <div class="font-medium text-stone-900">{{ t.title }}</div>
+                      <div class="text-xs text-stone-400">{{ t.durationHours }}h · min {{ t.minPassGrade }}</div>
+                    </td>
+                    @if (isAdmin()) {
+                      <td class="px-4 py-3 text-xs text-stone-500 font-medium">{{ t.storeId }}</td>
+                    }
+                    <td class="px-4 py-3">
+                      <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
+                            [class]="levelBadgeClass(t.level)">
+                        {{ levelLabels[t.level] ?? t.level }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-stone-700 text-xs">{{ t.position }}</td>
+                    <td class="px-4 py-3 text-stone-500 text-xs">{{ t.dueAt | appDate:'due' }}</td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
+                            [class]="statusBadgeClass(t.status)">
+                        {{ statusLabels[t.status] ?? t.status }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-stone-100 rounded-full h-1.5 min-w-[60px]">
+                          <div class="h-1.5 rounded-full transition-all"
+                               [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
+                               [style.width.%]="t.percentage"></div>
+                        </div>
+                        <span class="text-xs text-stone-500 tabular-nums">{{ t.percentage }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      @if (isAdmin()) {
+        <p class="text-xs text-stone-400 text-right">
+          Mostrando {{ filteredTrainings().length }} de {{ globalStats().total }} capacitaciones
+        </p>
+      }
+    }
+
+  }
+</div>

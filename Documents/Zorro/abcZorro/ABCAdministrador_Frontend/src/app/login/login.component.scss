@@ -1,0 +1,13 @@
+.login-form {
+  max-width: 300px;
+  margin: 100px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  input {
+    padding: 8px;
+  }
+  .error {
+    color: red;
+  }
+}
