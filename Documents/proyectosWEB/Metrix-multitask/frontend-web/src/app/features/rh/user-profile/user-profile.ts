@@ -7,6 +7,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { RhService } from '../services/rh.service';
 import { KpiService } from '../../kpi/services/kpi.service';
 import { ReportService } from '../../reports/services/report.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import { ROL_LABELS, ROLES_DISPONIBLES, TURNOS, UpdateUserRequest } from '../rh.models';
 
 @Component({
@@ -16,13 +17,14 @@ import { ROL_LABELS, ROLES_DISPONIBLES, TURNOS, UpdateUserRequest } from '../rh.
   templateUrl: './user-profile.html',
 })
 export class UserProfile implements OnInit {
-  private readonly authSvc    = inject(AuthService);
-  private readonly rhSvc      = inject(RhService);
-  private readonly kpiSvc     = inject(KpiService);
-  private readonly reportSvc  = inject(ReportService);
-  private readonly route      = inject(ActivatedRoute);
-  private readonly router     = inject(Router);
-  private readonly fb         = inject(FormBuilder);
+  private readonly authSvc     = inject(AuthService);
+  private readonly rhSvc       = inject(RhService);
+  private readonly kpiSvc      = inject(KpiService);
+  private readonly reportSvc   = inject(ReportService);
+  readonly settingsSvc         = inject(SettingsService);
+  private readonly route       = inject(ActivatedRoute);
+  private readonly router      = inject(Router);
+  private readonly fb          = inject(FormBuilder);
 
   readonly user        = this.rhSvc.selectedUser;
   readonly loading     = this.rhSvc.loading;
@@ -37,10 +39,22 @@ export class UserProfile implements OnInit {
   readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
   readonly isGerente = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
 
+  readonly storeName = computed(() => {
+    const u = this.user();
+    if (!u) return '';
+    const store = this.settingsSvc.stores().find(s => s.id === u.storeId);
+    return store?.nombre ?? u.storeId;
+  });
+
   // ── Estado de UI ───────────────────────────────────────────────────────────
   readonly editMode        = signal(false);
   readonly confirmDelete   = signal(false);
   readonly downloadingCard = signal(false);
+  readonly showCurrentPassword = signal(false);
+
+  toggleCurrentPassword(): void {
+    this.showCurrentPassword.update(s => !s);
+  }
 
   // ── KPI #7: datos de este colaborador ────────────────────────────────────
   readonly userKpi = computed(() => {
@@ -54,14 +68,25 @@ export class UserProfile implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     puesto: ['', Validators.required],
     turno:  ['', Validators.required],
+    storeId: [''],
     roles:  [[] as string[]],
+    password: [''], // Para que admin cambie la contraseña opcionalmente
+    email: [''],
+    fechaNacimiento: [''],
   });
+
+  readonly showPassword = signal(false);
+
+  togglePassword(): void {
+    this.showPassword.update(s => !s);
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/banco-info/usuarios']); return; }
 
     this.rhSvc.loadUserById(id);
+    this.settingsSvc.loadAll();
 
     // Cargar KPI #7 de la sucursal del usuario en sesión
     const storeId = this.authSvc.currentUser()?.storeId;
@@ -77,7 +102,11 @@ export class UserProfile implements OnInit {
       nombre: u.nombre,
       puesto: u.puesto,
       turno:  u.turno,
+      storeId: u.storeId,
       roles:  [...u.roles],
+      email: u.email || '',
+      fechaNacimiento: u.fechaNacimiento || '',
+      password: '', // reiniciar si edita de nuevo
     });
     this.editMode.set(true);
   }
@@ -107,9 +136,17 @@ export class UserProfile implements OnInit {
       nombre: v.nombre ?? undefined,
       puesto: v.puesto ?? undefined,
       turno:  v.turno  ?? undefined,
+      email: v.email ?? undefined,
+      fechaNacimiento: v.fechaNacimiento ?? undefined,
     };
+    if (this.isAdmin() && v.storeId) {
+      req.storeId = v.storeId;
+    }
     if (this.isAdmin() && v.roles?.length) {
       req.roles = v.roles as string[];
+    }
+    if (this.isAdmin() && v.password) {
+      req.password = v.password;
     }
 
     try {
