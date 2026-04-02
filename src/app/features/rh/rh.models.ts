@@ -32,6 +32,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   nombre?: string;
   puesto?: string;
+  storeId?: string;
   turno?: string;
   roles?: string[];
   password?: string;

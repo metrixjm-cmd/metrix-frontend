@@ -16,7 +16,7 @@ export class ThemeService {
   readonly themes: Theme[] = [
     { id: 'blue',   label: 'Corporativo', color: '#491AD5', tagline: 'Profesional' },
     { id: 'orange', label: 'Restaurante', color: '#ea580c', tagline: 'Cálido'      },
-    { id: 'red',    label: 'Impacto',     color: '#e31717', tagline: 'Dinámico'    },
+    { id: 'red',    label: 'Impacto',     color: '#D95518', tagline: 'Dinámico'    },
   ];
 
   readonly current = signal<ThemeId>(
