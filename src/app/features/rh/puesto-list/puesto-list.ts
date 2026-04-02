@@ -61,11 +61,23 @@ export class PuestoList implements OnInit {
 
   async submitCreate(): Promise<void> {
     if (this.createForm.invalid || this.saving()) return;
+    
+    const v = this.createForm.getRawValue();
+    const newValue = v.value!.trim();
+    
+    const exists = this.catalogSvc.puestos().some(
+      p => p.value.toLowerCase() === newValue.toLowerCase()
+    );
+    if (exists) {
+      this.error.set('Ya existe ese puesto.');
+      return;
+    }
+    
     this.saving.set(true);
     this.error.set(null);
-    const v = this.createForm.getRawValue();
+
     try {
-      await this.catalogSvc.addEntry('PUESTO', v.value!);
+      await this.catalogSvc.addEntry('PUESTO', newValue);
       this.catalogSvc.loadPuestos();
       this.showCreateForm.set(false);
       this.createForm.reset();
@@ -91,13 +103,25 @@ export class PuestoList implements OnInit {
     if (this.editForm.invalid || this.saving()) return;
     const id = this.editingId();
     if (!id) return;
+    
+    const v = this.editForm.getRawValue();
+    const newValue = v.value!.trim();
+
+    // Validar duplicado al editar (ignorando el mismo puesto que se está editando)
+    const exists = this.catalogSvc.puestos().some(
+      p => p.id !== id && p.value.toLowerCase() === newValue.toLowerCase()
+    );
+    if (exists) {
+      this.error.set('Ya existe ese puesto.');
+      return;
+    }
+    
     this.saving.set(true);
     this.error.set(null);
-    const v = this.editForm.getRawValue();
     try {
       await this.http.put(
         `${environment.apiUrl}/catalogs/PUESTO/${id}`,
-        { value: v.value, label: v.label || v.value }
+        { value: newValue, label: v.label || newValue }
       ).toPromise();
       this.catalogSvc.loadPuestos();
       this.editingId.set(null);

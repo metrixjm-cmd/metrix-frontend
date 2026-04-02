@@ -30,19 +30,32 @@ export class AddCatalogDialog {
   async onSubmit(): Promise<void> {
     if (this.form.invalid || this.saving()) return;
 
+    const newValue = this.form.get('value')!.value!.trim();
+    
+    // Verificar si el puesto ya existe localmente para evitar duplicados
+    if (this.catalogType() === 'PUESTO') {
+      const exists = this.catalogSvc.puestos().some(
+        p => p.value.toLowerCase() === newValue.toLowerCase()
+      );
+      if (exists) {
+        this.errorMsg.set('Ya existe ese puesto.');
+        return;
+      }
+    }
+
     this.saving.set(true);
     this.errorMsg.set('');
 
     try {
       const entry = await this.catalogSvc.addEntry(
         this.catalogType(),
-        this.form.get('value')!.value!
+        newValue
       );
       this.form.reset();
       this.saved.emit(entry);
     } catch (err: unknown) {
-      const e = err as { error?: { message?: string } };
-      this.errorMsg.set(e?.error?.message ?? 'Error al guardar el registro');
+      const e = err as { error?: { error?: string; message?: string } };
+      this.errorMsg.set(e?.error?.error ?? e?.error?.message ?? 'Error al guardar el registro');
     } finally {
       this.saving.set(false);
     }
