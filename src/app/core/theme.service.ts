@@ -14,7 +14,7 @@ export class ThemeService {
   private readonly STORAGE_KEY = 'metrix-theme';
 
   readonly themes: Theme[] = [
-    { id: 'blue',   label: 'Corporativo', color: '#005a9c', tagline: 'Profesional' },
+    { id: 'blue',   label: 'Corporativo', color: '#491AD5', tagline: 'Profesional' },
     { id: 'orange', label: 'Restaurante', color: '#ea580c', tagline: 'Cálido'      },
     { id: 'red',    label: 'Impacto',     color: '#e31717', tagline: 'Dinámico'    },
   ];
