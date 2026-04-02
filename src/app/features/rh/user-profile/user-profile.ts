@@ -7,6 +7,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { RhService } from '../services/rh.service';
 import { KpiService } from '../../kpi/services/kpi.service';
 import { ReportService } from '../../reports/services/report.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import { ROL_LABELS, ROLES_DISPONIBLES, TURNOS, UpdateUserRequest } from '../rh.models';
 
 @Component({
@@ -23,6 +24,7 @@ export class UserProfile implements OnInit {
   private readonly route      = inject(ActivatedRoute);
   private readonly router     = inject(Router);
   private readonly fb         = inject(FormBuilder);
+  readonly settingsSvc  = inject(SettingsService);
 
   readonly user        = this.rhSvc.selectedUser;
   readonly loading     = this.rhSvc.loading;
@@ -58,6 +60,7 @@ export class UserProfile implements OnInit {
   readonly editForm = this.fb.group({
     nombre: ['', [Validators.required, Validators.minLength(2)]],
     puesto: ['', Validators.required],
+    storeId: ['', Validators.required],
     turno:  ['', Validators.required],
     roles:  [[] as string[]],
     password: [''], // Para que admin cambie la contraseña opcionalmente
@@ -76,6 +79,7 @@ export class UserProfile implements OnInit {
     if (!id) { this.router.navigate(['/banco-info/usuarios']); return; }
 
     this.rhSvc.loadUserById(id);
+    this.settingsSvc.loadAll();
 
     // Cargar KPI #7 de la sucursal del usuario en sesión
     const storeId = this.authSvc.currentUser()?.storeId;
@@ -90,6 +94,7 @@ export class UserProfile implements OnInit {
     this.editForm.patchValue({
       nombre: u.nombre,
       puesto: u.puesto,
+      storeId: u.storeId,
       turno:  u.turno,
       roles:  [...u.roles],
       email: u.email || '',
@@ -123,6 +128,7 @@ export class UserProfile implements OnInit {
     const req: UpdateUserRequest = {
       nombre: v.nombre ?? undefined,
       puesto: v.puesto ?? undefined,
+      storeId: v.storeId ?? undefined,
       turno:  v.turno  ?? undefined,
       email: v.email ?? undefined,
       fechaNacimiento: v.fechaNacimiento ?? undefined,
@@ -165,6 +171,10 @@ export class UserProfile implements OnInit {
       },
       error: () => this.downloadingCard.set(false),
     });
+  }
+
+  getStoreName(storeId: string): string {
+    return this.settingsSvc.stores().find(s => s.id === storeId)?.nombre ?? storeId;
   }
 
   igeoClass(igeo: number): string {

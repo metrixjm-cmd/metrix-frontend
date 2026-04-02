@@ -115,7 +115,7 @@ export interface UpdateStatusRequest {
 /** Labels conocidos — categorías dinámicas del catálogo se muestran tal cual */
 export const CATEGORY_LABELS: Record<string, string> = {
   OPERACIONES:  'Operaciones',
-  RH:           'Recursos Humanos',
+  RH:           'Capital Humano',
   CAPACITACION: 'Capacitación',
 };
 

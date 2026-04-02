@@ -46,9 +46,10 @@ export class UserList implements OnInit {
 
   ngOnInit(): void {
     const user = this.authSvc.currentUser();
+    this.settingsSvc.loadAll();
+    
     if (this.isAdmin()) {
       this.rhSvc.loadAll();
-      this.settingsSvc.loadAll();
     } else if (user?.storeId) {
       this.rhSvc.loadUsersByStore(user.storeId);
     }
@@ -56,6 +57,10 @@ export class UserList implements OnInit {
 
   goToProfile(user: UserProfile): void {
     this.router.navigate(['/banco-info/usuarios', user.id]);
+  }
+
+  getStoreName(storeId: string): string {
+    return this.settingsSvc.stores().find(s => s.id === storeId)?.nombre ?? storeId;
   }
 
   igeoClass(igeo: number): string {
