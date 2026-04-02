@@ -69,9 +69,7 @@
 
     <!-- ── SELECTOR DE TEMA ──────────────────────── -->
     <div class="relative z-10">
-      <p class="text-brand-200 text-[11px] font-semibold tracking-widest uppercase mb-3">
-        Tema de color
-      </p>
+
       <div class="flex items-center gap-4">
         @for (theme of themeSvc.themes; track theme.id) {
           <button
@@ -93,13 +91,7 @@
                 </svg>
               }
             </span>
-            <!-- Label -->
-            <span
-              class="text-[10px] font-semibold transition-colors"
-              [class]="themeSvc.current() === theme.id ? 'text-white' : 'text-brand-200 group-hover:text-white'"
-            >
-              {{ theme.label }}
-            </span>
+
           </button>
         }
       </div>
@@ -284,7 +276,7 @@
 
       <!-- ── Selector de tema mobile (solo visible en mobile) ── -->
       <div class="mt-6 pt-5 border-t border-stone-100 lg:hidden">
-        <p class="text-xs text-stone-400 text-center mb-3 font-medium uppercase tracking-wide">Tema de color</p>
+
         <div class="flex items-center justify-center gap-5">
           @for (theme of themeSvc.themes; track theme.id) {
             <button
@@ -306,7 +298,7 @@
                   </svg>
                 }
               </span>
-              <span class="text-[10px] font-medium text-stone-500">{{ theme.label }}</span>
+
             </button>
           }
         </div>
