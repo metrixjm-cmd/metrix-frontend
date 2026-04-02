@@ -25,19 +25,20 @@
    para compatibilidad con Tailwind <alpha-value>
 ══════════════════════════════════════════════════ */
 
+
 /* ── Tema Azul Corporativo (default) ───────────── */
 :root,
 [data-theme="blue"] {
-  --brand-50:  230 240 248;
-  --brand-100: 204 225 241;
-  --brand-200: 153 195 227;
-  --brand-300: 102 165 213;
-  --brand-400:  51 135 199;
-  --brand-500:   0 105 185;
-  --brand-600:   0  90 156;   /* #005a9c */
-  --brand-700:   0  75 131;
-  --brand-800:   0  60 105;
-  --brand-900:   0  45  80;
+  --brand-50:  244 240 255;
+  --brand-100: 233 224 255;
+  --brand-200: 211 193 255;
+  --brand-300: 189 162 255;
+  --brand-400: 167 131 255;
+  --brand-500: 145 100 255;
+  --brand-600:  73  26 213;   /* #491AD5 */
+  --brand-700:  58  20 170;
+  --brand-800:  43  15 127;
+  --brand-900:  29  10  85;
 }
 
 /* ── Tema Naranja Restaurante ───────────────────── */
