@@ -1,18 +1,18 @@
 <div class="p-3 sm:p-6 space-y-4 sm:space-y-6">
 
   <!-- ── Encabezado ───────────────────────────────────────────────────── -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <div>
-      <h1 class="text-xl sm:text-2xl font-bold text-stone-900">Capacitaciones</h1>
-      <p class="text-xs sm:text-sm text-stone-500 mt-0.5">
-        @if (isAdmin()) { Vista global — todas las sucursales }
-        @else if (isGerente()) { Formación interna de tu sucursal }
-        @else { Mis capacitaciones asignadas }
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-1">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">Capacitaciones</h1>
+      <p class="text-sm text-stone-500 max-w-2xl">
+        @if (isAdmin()) { Vista global — monitorea el estado de las capacitaciones en todas las sucursales }
+        @else if (isGerente()) { Da seguimiento a la formación interna de tu sucursal }
+        @else { Revisa tus capacitaciones asignadas y continúa tu progreso }
       </p>
     </div>
     @if (isGerente()) {
       <a routerLink="/training/create"
-         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
+         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-brand-700 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
@@ -50,44 +50,47 @@
     @if (isAdmin()) {
 
       <!-- KPIs globales -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Total</p>
-          <p class="text-3xl font-bold text-stone-900 mt-1">{{ globalStats().total }}</p>
+      <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Total</p>
+          <p class="text-3xl sm:text-4xl font-bold text-stone-900 mt-2">{{ globalStats().total }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
-          <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Programadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-2">{{ globalStats().programadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
-          <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">En curso</p>
+          <p class="text-3xl sm:text-4xl font-bold text-brand-600 mt-2">{{ globalStats().enCurso }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
-          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-emerald-600 mt-2">{{ globalStats().completadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
-          <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card col-span-2 xl:col-span-1">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">No completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-red-500 mt-2">{{ globalStats().noCompletadas }}</p>
         </div>
       </div>
 
       <!-- Resumen por sucursal (clickeable para filtrar) -->
       @if (storeSummaries().length > 0) {
-        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
-            <h2 class="font-semibold text-stone-800 text-sm">Resumen por sucursal</h2>
+        <div class="bg-white border border-stone-200 rounded-2xl shadow-card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="font-semibold text-stone-900 text-sm">Resumen por sucursal</h2>
+              <p class="text-xs text-stone-400 mt-0.5">Comparativo rápido del desempeño por tienda</p>
+            </div>
             @if (filterStore()) {
               <button (click)="filterStore.set('')"
-                      class="text-xs text-orange-600 hover:text-orange-800 font-medium">
+                      class="text-xs text-brand-600 hover:text-brand-700 font-medium">
                 ✕ Quitar filtro
               </button>
             }
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-stone-50">
+              <thead class="bg-stone-50/80">
                 <tr class="text-xs text-stone-400 uppercase tracking-wide">
                   <th class="px-5 py-2 text-left font-medium">Sucursal</th>
                   <th class="px-4 py-2 text-right font-medium">Prog.</th>
@@ -197,52 +200,86 @@
          EJECUTADOR — mis capacitaciones (tarjetas)
     ══════════════════════════════════════════════════════════ -->
     @if (isEjecutador()) {
-      @if (trainingSvc.trainings().length === 0) {
-        <div class="bg-white border border-stone-200 rounded-xl p-12 text-center shadow-card">
-          <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-          </svg>
-          <p class="text-stone-500 text-sm font-medium">Sin capacitaciones asignadas</p>
-          <p class="text-xs text-stone-400 mt-1">Tu gerente te asignará cursos cuando estén disponibles</p>
-        </div>
-      } @else {
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          @for (t of trainingSvc.trainings(); track t.id) {
-            <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card cursor-pointer hover:border-orange-300 transition-colors flex flex-col gap-3"
-                 (click)="goToDetail(t)">
-              <div class="flex items-start justify-between gap-2">
-                <h3 class="font-semibold text-stone-900 text-sm leading-snug">{{ t.title }}</h3>
-                <span class="text-xs font-medium rounded-full px-2 py-0.5 flex-shrink-0"
-                      [class]="statusBadgeClass(t.status)">
-                  {{ statusLabels[t.status] }}
-                </span>
-              </div>
-              <div class="flex items-center gap-3 text-xs text-stone-500">
-                <span class="px-2 py-0.5 rounded-full" [class]="levelBadgeClass(t.level)">
-                  {{ levelLabels[t.level] }}
-                </span>
-                <span>{{ t.durationHours }}h</span>
-                <span>Aprobación ≥ {{ t.minPassGrade }}</span>
-              </div>
-              <!-- Progreso -->
-              <div>
-                <div class="flex justify-between text-xs text-stone-400 mb-1">
-                  <span>Avance</span>
-                  <span class="font-medium text-stone-600">{{ t.percentage }}%</span>
-                </div>
-                <div class="h-2 bg-stone-100 rounded-full overflow-hidden">
-                  <div class="h-full rounded-full transition-all"
-                       [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
-                       [style.width.%]="t.percentage"></div>
-                </div>
-              </div>
-              <!-- Vencimiento -->
-              <p class="text-xs text-stone-400">{{ t.dueAt | appDate:'due' }}</p>
-            </div>
+      <div class="space-y-4">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-stone-900">Mi ruta de capacitación</h2>
+            <p class="text-sm text-stone-500">Revisa tu avance, continúa tus módulos activos y completa tus asignaciones a tiempo.</p>
+          </div>
+          @if (trainingSvc.trainings().length > 0) {
+            <span class="text-xs font-medium text-stone-500">{{ trainingSvc.trainings().length }} capacitación(es) asignada(s)</span>
           }
         </div>
-      }
+
+        @if (trainingSvc.trainings().length === 0) {
+          <div class="bg-white border border-stone-200 rounded-2xl p-12 text-center shadow-card">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100">
+              <svg class="w-7 h-7 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <p class="text-stone-700 text-sm font-semibold">Sin capacitaciones asignadas</p>
+            <p class="text-xs text-stone-400 mt-1">Tu gerente te asignará cursos cuando estén disponibles.</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @for (t of trainingSvc.trainings(); track t.id) {
+              <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-card cursor-pointer hover:border-brand-300 hover:shadow-md transition-all flex flex-col gap-4"
+                   (click)="goToDetail(t)">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <h3 class="font-semibold text-stone-900 text-sm leading-snug line-clamp-2">{{ t.title }}</h3>
+                    <p class="text-xs text-stone-500 mt-1 line-clamp-2">{{ t.description }}</p>
+                  </div>
+                  <span class="text-xs font-medium rounded-full px-2.5 py-1 flex-shrink-0"
+                        [class]="statusBadgeClass(t.status)">
+                    {{ statusLabels[t.status] }}
+                  </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500">
+                  <span class="px-2 py-0.5 rounded-full font-medium" [class]="levelBadgeClass(t.level)">
+                    {{ levelLabels[t.level] }}
+                  </span>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">⏱ {{ t.durationHours }}h</span>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">🎯 Mín. {{ t.minPassGrade }}</span>
+                </div>
+
+                <div class="rounded-xl border border-stone-100 bg-stone-50/80 p-3">
+                  <div class="flex justify-between text-xs text-stone-500 mb-1.5">
+                    <span>Avance</span>
+                    <span class="font-semibold text-stone-700 tabular-nums">{{ t.percentage }}%</span>
+                  </div>
+                  <div class="h-2 bg-stone-200 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500"
+                         [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : t.status === 'EN_CURSO' ? 'bg-amber-500' : 'bg-stone-400'"
+                         [style.width.%]="t.percentage"></div>
+                  </div>
+                  <div class="mt-2 flex items-center justify-between text-[11px] text-stone-400">
+                    <span>
+                      @if (t.status === 'COMPLETADA') { Finalizada correctamente }
+                      @else if (t.status === 'NO_COMPLETADA') { Requiere seguimiento }
+                      @else if (t.status === 'EN_CURSO') { Sigue avanzando }
+                      @else { Lista para iniciar }
+                    </span>
+                    <span>{{ t.dueAt | appDate:'due' }}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-xs text-stone-400">{{ t.position }} · {{ t.shift }}</span>
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-brand-600">Ver detalle
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
     }
 
     <!-- ══════════════════════════════════════════════════════
@@ -253,14 +290,14 @@
       <!-- Filtros -->
       <div class="flex flex-wrap gap-3">
         <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
-                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">Todos los estados</option>
           @for (s of statuses; track s) {
             <option [value]="s">{{ statusLabels[s] ?? s }}</option>
           }
         </select>
         <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
           <option value="">Todos los niveles</option>
           @for (l of levels; track l) {
             <option [value]="l">{{ levelLabels[l] ?? l }}</option>
@@ -268,7 +305,7 @@
         </select>
         @if (isAdmin()) {
           <select [ngModel]="filterStore()" (ngModelChange)="filterStore.set($event)"
-                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option value="">Todas las sucursales</option>
             @for (id of uniqueStoreIds(); track id) {
               <option [value]="id">{{ id }}</option>
