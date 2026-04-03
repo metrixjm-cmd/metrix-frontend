@@ -1,18 +1,18 @@
 <div class="p-3 sm:p-6 space-y-4 sm:space-y-6">
 
   <!-- ── Encabezado ───────────────────────────────────────────────────── -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <div>
-      <h1 class="text-xl sm:text-2xl font-bold text-stone-900">Capacitaciones</h1>
-      <p class="text-xs sm:text-sm text-stone-500 mt-0.5">
-        @if (isAdmin()) { Vista global — todas las sucursales }
-        @else if (isGerente()) { Formación interna de tu sucursal }
-        @else { Mis capacitaciones asignadas }
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="space-y-1">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">Capacitaciones</h1>
+      <p class="text-sm text-stone-500 max-w-2xl">
+        @if (isAdmin()) { Vista global — monitorea el estado de las capacitaciones en todas las sucursales }
+        @else if (isGerente()) { Da seguimiento a la formación interna de tu sucursal }
+        @else { Revisa tus capacitaciones asignadas y continúa tu progreso }
       </p>
     </div>
     @if (isGerente()) {
       <a routerLink="/training/create"
-         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
+         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-brand-700 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
@@ -50,34 +50,37 @@
     @if (isAdmin()) {
 
       <!-- KPIs globales -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Total</p>
-          <p class="text-3xl font-bold text-stone-900 mt-1">{{ globalStats().total }}</p>
+      <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Total</p>
+          <p class="text-3xl sm:text-4xl font-bold text-stone-900 mt-2">{{ globalStats().total }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
-          <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Programadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-2">{{ globalStats().programadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
-          <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">En curso</p>
+          <p class="text-3xl sm:text-4xl font-bold text-brand-600 mt-2">{{ globalStats().enCurso }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
-          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-emerald-600 mt-2">{{ globalStats().completadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
-          <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
+        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card col-span-2 xl:col-span-1">
+          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">No completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-red-500 mt-2">{{ globalStats().noCompletadas }}</p>
         </div>
       </div>
 
       <!-- Resumen por sucursal (clickeable para filtrar) -->
       @if (storeSummaries().length > 0) {
-        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
-            <h2 class="font-semibold text-stone-800 text-sm">Resumen por sucursal</h2>
+        <div class="bg-white border border-stone-200 rounded-2xl shadow-card overflow-hidden">
+          <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="font-semibold text-stone-900 text-sm">Resumen por sucursal</h2>
+              <p class="text-xs text-stone-400 mt-0.5">Comparativo rápido del desempeño por tienda</p>
+            </div>
             @if (filterStore()) {
               <button (click)="filterStore.set('')"
                       class="text-xs text-brand-600 hover:text-brand-700 font-medium">
@@ -87,7 +90,7 @@
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-stone-50">
+              <thead class="bg-stone-50/80">
                 <tr class="text-xs text-stone-400 uppercase tracking-wide">
                   <th class="px-5 py-2 text-left font-medium">Sucursal</th>
                   <th class="px-4 py-2 text-right font-medium">Prog.</th>
