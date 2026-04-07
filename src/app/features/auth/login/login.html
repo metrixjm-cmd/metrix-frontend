@@ -71,7 +71,7 @@
         @for (theme of themeSvc.themes; track theme.id) {
           <button
             (click)="themeSvc.set(theme.id)"
-            class="flex flex-col items-center gap-2 group focus:outline-none"
+            class="flex items-center justify-center group focus:outline-none"
           >
             <span
               class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm"
@@ -255,7 +255,7 @@
           @for (theme of themeSvc.themes; track theme.id) {
             <button
               (click)="themeSvc.set(theme.id)"
-              class="flex flex-col items-center gap-1.5 focus:outline-none"
+              class="flex items-center justify-center focus:outline-none"
             >
               <span
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200"

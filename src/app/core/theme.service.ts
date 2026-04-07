@@ -3,10 +3,8 @@ import { Injectable, signal } from '@angular/core';
 export type ThemeId = 'blue' | 'orange' | 'red';
 
 export interface Theme {
-  id:      ThemeId;
-  label:   string;
-  color:   string;   // hex para el swatch
-  tagline: string;   // descripción breve
+  id: ThemeId;
+  color: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -14,9 +12,9 @@ export class ThemeService {
   private readonly STORAGE_KEY = 'metrix-theme';
 
   readonly themes: Theme[] = [
-    { id: 'blue',   label: 'Corporativo', color: '#260E6D', tagline: 'Profesional' },
-    { id: 'orange', label: 'Restaurante', color: '#ea580c', tagline: 'Cálido'      },
-    { id: 'red',    label: 'Negro',       color: '#000000', tagline: 'Absoluto'    },
+    { id: 'blue', color: '#000000' },
+    { id: 'orange', color: '#df570c' },
+    { id: 'red', color: '#280d69' },
   ];
 
   readonly current = signal<ThemeId>(
