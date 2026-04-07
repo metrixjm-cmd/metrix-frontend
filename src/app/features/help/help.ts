@@ -139,7 +139,7 @@ export class Help {
         {
           id: 'g1',
           question: '¿Cómo cambio el tema de color de la aplicación?',
-          answer:   'En la pantalla de inicio de sesión (panel izquierdo) o en el selector de abajo de esta página encontrarás 3 temas: Corporativo (azul), Restaurante (naranja) y Impacto (rojo). El tema se guarda automáticamente en tu navegador.',
+          answer:   'En la pantalla de inicio de sesión o en el selector de abajo de esta página encontrarás 3 temas: negro, naranja y morado. El tema se guarda automáticamente en tu navegador.',
         },
         {
           id: 'g2',
