@@ -19,11 +19,8 @@
     <!-- Logo + wordmark -->
     <div class="relative z-10">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center border border-white/30 shadow-sm">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+        <div class="w-11 h-11 bg-brand-600 rounded-xl flex items-center justify-center border border-white/30 shadow-sm overflow-hidden p-1.5">
+          <img src="icons/IconoMetrix.png" alt="Metrix" class="max-w-full max-h-full object-contain" />
         </div>
         <div>
           <span class="text-white font-extrabold text-xl tracking-tight leading-none block">METRIX</span>
@@ -75,9 +72,7 @@
           <button
             (click)="themeSvc.set(theme.id)"
             class="flex flex-col items-center gap-2 group focus:outline-none"
-            [attr.aria-label]="'Tema ' + theme.label"
           >
-            <!-- Swatch circular -->
             <span
               class="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm"
               [class]="themeSvc.current() === theme.id
@@ -116,11 +111,8 @@
 
       <!-- Logo mobile (solo visible en sm/md) -->
       <div class="flex items-center justify-center gap-2.5 mb-8 lg:hidden">
-        <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+        <div class="w-9 h-9 bg-brand-600 rounded-xl flex items-center justify-center shadow-sm overflow-hidden p-1">
+          <img src="icons/IconoMetrix.png" alt="Metrix" class="max-w-full max-h-full object-contain" />
         </div>
         <div>
           <span class="text-stone-900 font-extrabold text-xl tracking-tight leading-none block">METRIX</span>
@@ -264,7 +256,6 @@
             <button
               (click)="themeSvc.set(theme.id)"
               class="flex flex-col items-center gap-1.5 focus:outline-none"
-              [attr.aria-label]="'Tema ' + theme.label"
             >
               <span
                 class="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200"
