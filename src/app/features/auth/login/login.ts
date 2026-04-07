@@ -47,7 +47,8 @@ export class Login {
     this.errorMessage.set('');
 
     this.auth.login(this.form.value).subscribe({
-      next: () => {
+      next: response => {
+        this.themeSvc.assignLoginSelectionToUser(response.numeroUsuario);
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },
