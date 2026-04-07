@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git config:*)",
+      "Bash(gh run:*)",
+      "Bash(where gh:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git checkout:*)",
+      "Bash(npx ng:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(git log:*)",
+      "Bash(java:*)",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(ls \"C:/Users/carlo/Documents/proyectosWEB/Metrix-multitask/MetrixDesarrollo/metrix-backend/mvnw\"*)",
+      "Bash(where mvn:*)",
+      "Bash(mvn spring-boot:run)"
+    ]
+  }
+}
