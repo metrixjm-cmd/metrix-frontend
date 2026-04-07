@@ -136,7 +136,7 @@
             </thead>
             <tbody class="divide-y divide-stone-100">
               @for (sub of submissions(); track sub.id) {
-                <tr [class]="(sub.fraudFlags ?? []).length > 0 ? 'bg-amber-50/30 hover:bg-amber-50/60' : 'hover:bg-stone-50'" class="transition-colors">
+                <tr [class]="sub.fraudFlags.length > 0 ? 'bg-amber-50/30 hover:bg-amber-50/60' : 'hover:bg-stone-50'" class="transition-colors">
 
                   <td class="px-5 py-3">
                     <p class="font-medium text-stone-800">{{ sub.userName }}</p>

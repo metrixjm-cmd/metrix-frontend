@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 import { AuthService }         from '../../auth/services/auth.service';
 import { GamificationService } from '../services/gamification.service';
@@ -10,7 +10,7 @@ import { LeaderboardEntry }    from '../gamification.models';
 @Component({
   selector: 'app-leaderboard',
   standalone: true,
-  imports: [CommonModule, NgTemplateOutlet],
+  imports: [CommonModule],
   templateUrl: './leaderboard.html',
 })
 export class Leaderboard implements OnInit {
