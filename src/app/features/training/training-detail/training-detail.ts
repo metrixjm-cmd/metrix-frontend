@@ -115,7 +115,7 @@ export class TrainingDetail implements OnInit {
   }
 
   openCompleteModal(): void {
-    this.gradeInput.set(this.training()?.minPassGrade ?? 7);
+    this.gradeInput.set(7);
     this.showCompleteModal.set(true);
   }
 

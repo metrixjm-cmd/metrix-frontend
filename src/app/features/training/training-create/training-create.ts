@@ -49,8 +49,9 @@ export class TrainingCreate implements OnInit {
   readonly templates   = this.trainingSvc.templates;
   readonly turnos      = ['TODOS', 'MATUTINO', 'VESPERTINO', 'NOCTURNO'];
 
-  readonly isAdmin  = computed(() => this.authSvc.hasRole('ADMIN'));
-  readonly todayMin = new Date().toISOString().slice(0, 16);
+  readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
+  readonly todayDate = new Date().toISOString().slice(0, 10);
+  readonly timeOptions = this.buildTimeOptions();
 
   // ── Modo de creación ──────────────────────────────────────────────────────
   readonly mode             = signal<CreateMode>('scratch');
@@ -81,11 +82,11 @@ export class TrainingCreate implements OnInit {
     description:     ['', Validators.required],
     level:           ['BASICO', Validators.required],
     durationHours:   [1, [Validators.required, Validators.min(1), Validators.max(40)]],
-    minPassGrade:    [7, [Validators.required, Validators.min(0), Validators.max(10)]],
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
-    dueAt:           ['', Validators.required],
+    dueDate:         ['', Validators.required],
+    dueTime:         ['', Validators.required],
   });
 
   // ── Formulario mínimo (desde plantilla) ───────────────────────────────────
@@ -93,7 +94,8 @@ export class TrainingCreate implements OnInit {
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
-    dueAt:           ['', Validators.required],
+    dueDate:         ['', Validators.required],
+    dueTime:         ['', Validators.required],
   });
 
   readonly formShift = toSignal(this.form.controls.shift.valueChanges, { initialValue: 'TODOS' });
@@ -280,6 +282,20 @@ export class TrainingCreate implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
+  buildTimeOptions(): string[] {
+    const options: string[] = [];
+    for (let hour = 0; hour < 24; hour += 1) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        options.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+      }
+    }
+    return options;
+  }
+
+  private toIsoDueAt(date: string, time: string): string {
+    return new Date(`${date}T${time}:00`).toISOString();
+  }
+
   parseTags(raw: string): string[] {
     return raw.split(',').map(t => t.trim()).filter(t => t.length > 0);
   }
@@ -333,11 +349,10 @@ export class TrainingCreate implements OnInit {
           description:    v.description!,
           level:          v.level as CreateTrainingRequest['level'],
           durationHours:  Number(v.durationHours),
-          minPassGrade:   Number(v.minPassGrade),
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          new Date(v.dueAt! + ':00').toISOString(),
+          dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
           materialIds:    materialIds,
         };
         await this.trainingSvc.create(req);
@@ -359,7 +374,7 @@ export class TrainingCreate implements OnInit {
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          new Date(v.dueAt! + ':00').toISOString(),
+          dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
         };
         await this.trainingSvc.createFromTemplate(tmpl.id, req);
       }
