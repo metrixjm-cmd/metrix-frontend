@@ -81,7 +81,6 @@ export class TrainingCreate implements OnInit {
     title:           ['', [Validators.required, Validators.minLength(3)]],
     description:     ['', Validators.required],
     level:           ['BASICO', Validators.required],
-    durationHours:   [1, [Validators.required, Validators.min(1), Validators.max(40)]],
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
@@ -296,6 +295,13 @@ export class TrainingCreate implements OnInit {
     return new Date(`${date}T${time}:00`).toISOString();
   }
 
+  private buildAssignmentGroupId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `grp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
   parseTags(raw: string): string[] {
     return raw.split(',').map(t => t.trim()).filter(t => t.length > 0);
   }
@@ -341,6 +347,7 @@ export class TrainingCreate implements OnInit {
     if (this.form.invalid || this.saving()) return;
     const v = this.form.getRawValue();
     const materialIds = this.selectedMaterials().map(m => m.id);
+    const assignmentGroupId = this.buildAssignmentGroupId();
     
     try {
       for (const userId of v.assignedUserIds!) {
@@ -348,11 +355,11 @@ export class TrainingCreate implements OnInit {
           title:          v.title!,
           description:    v.description!,
           level:          v.level as CreateTrainingRequest['level'],
-          durationHours:  Number(v.durationHours),
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
           dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
+          assignmentGroupId,
           materialIds:    materialIds,
         };
         await this.trainingSvc.create(req);
@@ -367,6 +374,7 @@ export class TrainingCreate implements OnInit {
     const tmpl = this.selectedTemplate();
     if (!tmpl || this.templateForm.invalid || this.saving()) return;
     const v = this.templateForm.getRawValue();
+    const assignmentGroupId = this.buildAssignmentGroupId();
     
     try {
       for (const userId of v.assignedUserIds!) {
@@ -375,6 +383,7 @@ export class TrainingCreate implements OnInit {
           storeId:        v.storeId!,
           shift:          v.shift!,
           dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
+          assignmentGroupId,
         };
         await this.trainingSvc.createFromTemplate(tmpl.id, req);
       }

@@ -106,7 +106,7 @@
                       [class.bg-orange-50]="filterStore() === s.storeId"
                       (click)="filterByStore(s.storeId)">
                     <td class="px-5 py-3 font-medium text-stone-800">
-                      {{ s.storeId }}
+                      {{ storeLabel(s.storeId) }}
                       <span class="ml-1 text-xs text-stone-400">({{ s.total }})</span>
                     </td>
                     <td class="px-4 py-3 text-right text-amber-600 font-medium">{{ s.programadas }}</td>
@@ -146,7 +146,7 @@
               <div class="flex items-center justify-between text-xs cursor-pointer hover:underline"
                    (click)="goToDetail(t)">
                 <span class="text-red-700 font-medium">{{ t.title }}</span>
-                <span class="text-red-500">{{ t.storeId }} · {{ t.status === 'NO_COMPLETADA' ? 'No completada' : 'Vencida' }}</span>
+                <span class="text-red-500">{{ storeLabel(t.storeId) }} · {{ t.status === 'NO_COMPLETADA' ? 'No completada' : 'Vencida' }}</span>
               </div>
             }
             @if (alerts().length > 4) {
@@ -242,7 +242,7 @@
                   <span class="px-2 py-0.5 rounded-full font-medium" [class]="levelBadgeClass(t.level)">
                     {{ levelLabels[t.level] }}
                   </span>
-                  <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">⏱ {{ t.durationHours }}h</span>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">{{ t.shift }}</span>
                 </div>
 
                 <div class="rounded-xl border border-stone-100 bg-stone-50/80 p-3">
@@ -307,7 +307,7 @@
                   class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
             <option value="">Todas las sucursales</option>
             @for (id of uniqueStoreIds(); track id) {
-              <option [value]="id">{{ id }}</option>
+              <option [value]="id">{{ storeLabel(id) }}</option>
             }
           </select>
         }
@@ -342,10 +342,16 @@
                       (click)="goToDetail(t)">
                     <td class="px-4 py-3">
                       <div class="font-medium text-stone-900">{{ t.title }}</div>
-                      <div class="text-xs text-stone-400">{{ t.durationHours }}h</div>
+                      <div class="text-xs text-stone-400 line-clamp-1 max-w-[360px]">
+                        @if (t.groupSize > 1) {
+                          {{ t.groupSize }} colaboradores asignados
+                        } @else {
+                          {{ t.description }}
+                        }
+                      </div>
                     </td>
                     @if (isAdmin()) {
-                      <td class="px-4 py-3 text-xs text-stone-500 font-medium">{{ t.storeId }}</td>
+                      <td class="px-4 py-3 text-xs text-stone-500 font-medium">{{ storeLabel(t.storeId) }}</td>
                     }
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -353,7 +359,7 @@
                         {{ levelLabels[t.level] ?? t.level }}
                       </span>
                     </td>
-                    <td class="px-4 py-3 text-stone-700 text-xs">{{ t.position }}</td>
+                    <td class="px-4 py-3 text-stone-700 text-xs">{{ assigneeLabel(t) }}</td>
                     <td class="px-4 py-3 text-stone-500 text-xs">{{ t.dueAt | appDate:'due' }}</td>
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"

@@ -44,10 +44,12 @@ export interface TrainingResponse {
   durationHours: number;
   minPassGrade: number;
   assignedUserId: string;
+  assignedUserName?: string;
   position: string;
   storeId: string;
   shift: string;
   dueAt: string;
+  assignmentGroupId?: string | null;
   // plantilla y materiales
   templateId: string | null;
   materials:  TrainingMaterialRef[];
@@ -72,12 +74,12 @@ export interface CreateTrainingRequest {
   title: string;
   description: string;
   level: TrainingLevel;
-  durationHours: number;
   assignedUserId: string;
   storeId: string;
   shift: string;
   dueAt: string;
   // opcionales
+  assignmentGroupId?: string;
   templateId?:  string;
   materialIds?: string[];
   category?:    string;
@@ -89,6 +91,7 @@ export interface CreateFromTemplateRequest {
   storeId:        string;
   shift:          string;
   dueAt:          string;
+  assignmentGroupId?: string;
 }
 
 export interface UpdateTrainingProgressRequest {

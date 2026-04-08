@@ -99,6 +99,15 @@ export class TrainingService {
       });
   }
 
+  getByAssignmentGroup(groupId: string): Promise<TrainingResponse[]> {
+    return new Promise((resolve, reject) => {
+      this.http.get<TrainingResponse[]>(`${this.apiUrl}/group/${groupId}`).subscribe({
+        next: list => resolve(list),
+        error: err => reject(err),
+      });
+    });
+  }
+
   // ── Mutaciones (Promise) ──────────────────────────────────────────────────
 
   create(req: CreateTrainingRequest): Promise<TrainingResponse> {
@@ -179,6 +188,7 @@ export class TrainingService {
       ).subscribe({
         next: t => {
           this._selectedTraining.set(t);
+          this._trainings.update(list => list.map(item => item.id === trainingId ? t : item));
           this._saving.set(false);
           resolve(t);
         },

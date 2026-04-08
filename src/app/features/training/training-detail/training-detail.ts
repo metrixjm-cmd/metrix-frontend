@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,12 +7,14 @@ import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { AuthService } from '../../auth/services/auth.service';
 import { TrainingService } from '../services/training.service';
 import { TrainerService } from '../../trainer/services/trainer.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import {
   MATERIAL_TYPE_COLORS,
   MATERIAL_TYPE_ICONS,
   TRAINING_LEVEL_LABELS,
   TRAINING_STATUS_LABELS,
   TrainingLevel,
+  TrainingResponse,
   TrainingStatus,
   UpdateTrainingProgressRequest,
 } from '../training.models';
@@ -27,6 +29,7 @@ export class TrainingDetail implements OnInit {
   private readonly authSvc     = inject(AuthService);
   private readonly trainingSvc = inject(TrainingService);
   private readonly trainerSvc  = inject(TrainerService);
+  private readonly settingsSvc = inject(SettingsService);
   private readonly route       = inject(ActivatedRoute);
   private readonly router      = inject(Router);
 
@@ -43,13 +46,25 @@ export class TrainingDetail implements OnInit {
   readonly error        = this.trainingSvc.error;
   readonly statusLabels: Record<string, string | undefined> = TRAINING_STATUS_LABELS;
   readonly levelLabels:  Record<string, string | undefined> = TRAINING_LEVEL_LABELS;
+  readonly storeName = computed(() => {
+    const currentTraining = this.training();
+    if (!currentTraining) return '-';
+    const store = this.settingsSvc.stores().find(s => s.id === currentTraining.storeId);
+    return store?.nombre ?? currentTraining.storeId;
+  });
 
   readonly isGerente      = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
   readonly materialIcons  = MATERIAL_TYPE_ICONS;
   readonly materialColors = MATERIAL_TYPE_COLORS;
+  readonly hasTrackableMaterials = computed(() =>
+    (this.trainingSvc.selectedTraining()?.materials?.length ?? 0) > 0
+  );
   readonly viewedCount    = computed(() =>
     this.trainingSvc.selectedTraining()?.materials?.filter(m => m.viewed).length ?? 0
   );
+  readonly groupMembers   = signal<TrainingResponse[]>([]);
+
+  private groupRequestToken = 0;
 
   // ── Estado de modales ─────────────────────────────────────────────────────
   showCompleteModal    = signal(false);
@@ -58,10 +73,47 @@ export class TrainingDetail implements OnInit {
   commentsInput        = signal<string>('');
   percentageInput      = signal<number>(0);
 
+  constructor() {
+    effect(() => {
+      const currentTraining = this.training();
+      if (currentTraining) {
+        this.percentageInput.set(currentTraining.percentage);
+      }
+    });
+
+    effect(() => {
+      const currentTraining = this.training();
+      if (!currentTraining || !this.isGerente()) {
+        this.groupMembers.set([]);
+        return;
+      }
+
+      const groupId = currentTraining.assignmentGroupId;
+      if (!groupId) {
+        this.groupMembers.set([currentTraining]);
+        return;
+      }
+
+      const requestToken = ++this.groupRequestToken;
+      this.trainingSvc.getByAssignmentGroup(groupId)
+        .then(list => {
+          if (requestToken !== this.groupRequestToken) return;
+          this.groupMembers.set(list.length > 0 ? list : [currentTraining]);
+        })
+        .catch(() => {
+          if (requestToken !== this.groupRequestToken) return;
+          this.groupMembers.set([currentTraining]);
+        });
+    });
+  }
+
   ngOnInit(): void {
     const id   = this.route.snapshot.paramMap.get('id');
     if (!id) { this.router.navigate(['/training']); return; }
     this.trainingSvc.loadById(id);
+    if (this.isGerente() && this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
     const user = this.authSvc.currentUser();
     if (user?.storeId && this.trainerSvc.exams().length === 0) {
       this.trainerSvc.loadByStore(user.storeId);
