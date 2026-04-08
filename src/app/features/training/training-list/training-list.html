@@ -243,7 +243,6 @@
                     {{ levelLabels[t.level] }}
                   </span>
                   <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">⏱ {{ t.durationHours }}h</span>
-                  <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5">🎯 Mín. {{ t.minPassGrade }}</span>
                 </div>
 
                 <div class="rounded-xl border border-stone-100 bg-stone-50/80 p-3">
@@ -343,7 +342,7 @@
                       (click)="goToDetail(t)">
                     <td class="px-4 py-3">
                       <div class="font-medium text-stone-900">{{ t.title }}</div>
-                      <div class="text-xs text-stone-400">{{ t.durationHours }}h · min {{ t.minPassGrade }}</div>
+                      <div class="text-xs text-stone-400">{{ t.durationHours }}h</div>
                     </td>
                     @if (isAdmin()) {
                       <td class="px-4 py-3 text-xs text-stone-500 font-medium">{{ t.storeId }}</td>

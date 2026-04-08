@@ -73,7 +73,6 @@ export interface CreateTrainingRequest {
   description: string;
   level: TrainingLevel;
   durationHours: number;
-  minPassGrade: number;
   assignedUserId: string;
   storeId: string;
   shift: string;
