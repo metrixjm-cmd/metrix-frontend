@@ -15,7 +15,16 @@
       "Bash(./mvnw spring-boot:run)",
       "Bash(ls \"C:/Users/carlo/Documents/proyectosWEB/Metrix-multitask/MetrixDesarrollo/metrix-backend/mvnw\"*)",
       "Bash(where mvn:*)",
-      "Bash(mvn spring-boot:run)"
+      "Bash(mvn spring-boot:run)",
+      "Bash(curl:*)",
+      "Bash(echo \"Backend starting... PID: $!\")",
+      "Bash(mongosh:*)",
+      "Bash(where mongosh:*)",
+      "Bash(where mongo:*)",
+      "Read(//c/Program Files/MongoDB/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(python3 -c ':*)",
+      "Bash(git:*)"
     ]
   }
 }
