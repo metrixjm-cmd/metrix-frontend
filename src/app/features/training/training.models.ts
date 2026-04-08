@@ -94,6 +94,15 @@ export interface CreateFromTemplateRequest {
   assignmentGroupId?: string;
 }
 
+export interface UpdateTrainingRequest {
+  title: string;
+  description: string;
+  level: TrainingLevel;
+  storeId: string;
+  shift: string;
+  dueAt: string;
+}
+
 export interface UpdateTrainingProgressRequest {
   newStatus: TrainingStatus;
   percentage?: number;

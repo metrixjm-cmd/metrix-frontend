@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService }  from '../../features/auth/services/auth.service';
 import { NotificationService } from '../../features/notifications/notification.service';
 import { AppNotification } from '../../features/notifications/notification.models';
+import { SettingsService } from '../../features/settings/services/settings.service';
 import { ThemeService } from '../theme.service';
 
 export interface NavItem {
@@ -27,6 +28,7 @@ export type { AppNotification };
 export class AppLayout implements OnInit, OnDestroy {
   readonly auth      = inject(AuthService);
   readonly notifSvc  = inject(NotificationService);
+  private readonly settingsSvc = inject(SettingsService);
   // Inyectar ThemeService aplica el tema guardado en localStorage al iniciar la app
   private readonly _theme = inject(ThemeService);
 
@@ -140,9 +142,40 @@ export class AppLayout implements OnInit, OnDestroy {
     return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   });
 
+  readonly isAdminUser = computed(() => {
+    const roles = this.auth.currentUser()?.roles ?? [];
+    return roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
+  });
+
+  readonly profileStoreLabel = computed(() => {
+    if (this.isAdminUser()) return 'TODAS';
+    return this.auth.currentUser()?.storeId ?? '—';
+  });
+
+  readonly profileShiftLabel = computed(() => {
+    if (this.isAdminUser()) return 'TODOS';
+    return this.auth.currentUser()?.turno ?? '—';
+  });
+
+  readonly profileStoreDisplay = computed(() => {
+    if (this.isAdminUser()) return 'TODAS';
+    const user = this.auth.currentUser();
+    if (!user?.storeId) return '-';
+    if (user.storeName?.trim()) return user.storeName;
+    const store = this.settingsSvc.stores().find(s => s.id === user.storeId);
+    return store?.nombre ?? store?.codigo ?? user.storeId;
+  });
+
+  readonly profileShiftDisplay = computed(() => {
+    if (this.isAdminUser()) return 'TODOS';
+    const shift = this.auth.currentUser()?.turno?.trim();
+    return shift || '-';
+  });
+
   ngOnInit(): void {
     const token = this.auth.getToken();
     if (token) this.notifSvc.connect(token);
+    if (this.settingsSvc.stores().length === 0) this.settingsSvc.loadAll();
 
     // Tema automático por rol
     const roles = this.auth.currentUser()?.roles ?? [];

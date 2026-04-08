@@ -182,6 +182,50 @@
         </div>
       </div>
 
+      <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-sm font-semibold text-stone-900">Resultados del equipo ejecutador</p>
+          <span class="text-xs text-stone-500">{{ gerenteTeamStats().total }} capacitaciones</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-lg bg-stone-50 px-3 py-2">
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide">Programadas</p>
+            <p class="text-lg font-bold text-amber-600">{{ gerenteTeamStats().programadas }}</p>
+          </div>
+          <div class="rounded-lg bg-stone-50 px-3 py-2">
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide">En curso</p>
+            <p class="text-lg font-bold text-blue-600">{{ gerenteTeamStats().enCurso }}</p>
+          </div>
+          <div class="rounded-lg bg-stone-50 px-3 py-2">
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide">Completadas</p>
+            <p class="text-lg font-bold text-emerald-600">{{ gerenteTeamStats().completadas }}</p>
+          </div>
+          <div class="rounded-lg bg-stone-50 px-3 py-2">
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide">% cierre</p>
+            <p class="text-lg font-bold text-brand-700">{{ gerenteTeamStats().completionRate }}%</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-1 inline-flex gap-1 shadow-card">
+        <button
+          (click)="setGerenteTab('created')"
+          class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
+          [class]="gerenteTab() === 'created' ? 'bg-brand-600 text-white' : 'text-stone-600 hover:bg-stone-100'"
+        >
+          Capacitaciones creadas
+          <span class="ml-1 text-xs opacity-80">({{ gerenteCreatedTrainings().length }})</span>
+        </button>
+        <button
+          (click)="setGerenteTab('todo')"
+          class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
+          [class]="gerenteTab() === 'todo' ? 'bg-brand-600 text-white' : 'text-stone-600 hover:bg-stone-100'"
+        >
+          Capacitaciones por hacer
+          <span class="ml-1 text-xs opacity-80">({{ gerenteToDoTrainings().length }})</span>
+        </button>
+      </div>
+
       <!-- Alertas de la sucursal -->
       @if (alerts().length > 0) {
         <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
@@ -331,6 +375,7 @@
                   <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Nivel</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Asignado a</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Vencimiento</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Creada</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Estado</th>
                   <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Avance</th>
                 </tr>
@@ -361,6 +406,7 @@
                     </td>
                     <td class="px-4 py-3 text-stone-700 text-xs">{{ assigneeLabel(t) }}</td>
                     <td class="px-4 py-3 text-stone-500 text-xs">{{ t.dueAt | appDate:'due' }}</td>
+                    <td class="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
                             [class]="statusBadgeClass(t.status)">

@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/services/auth.service';
+import { RoleContext } from '../../../shared/services/role-context.service';
 import { TrainingService } from '../services/training.service';
 import { TrainingMaterialService } from '../services/training-material.service';
 import { RhService } from '../../rh/services/rh.service';
@@ -29,6 +30,7 @@ type CreateMode = 'scratch' | 'template';
 })
 export class TrainingCreate implements OnInit {
   private readonly authSvc     = inject(AuthService);
+  private readonly role        = inject(RoleContext);
   readonly trainingSvc         = inject(TrainingService);
   readonly materialSvc         = inject(TrainingMaterialService);
   private readonly rhSvc       = inject(RhService);
@@ -49,9 +51,15 @@ export class TrainingCreate implements OnInit {
   readonly templates   = this.trainingSvc.templates;
   readonly turnos      = ['TODOS', 'MATUTINO', 'VESPERTINO', 'NOCTURNO'];
 
-  readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
+  readonly isAdmin   = this.role.isAdmin;
   readonly todayDate = new Date().toISOString().slice(0, 10);
   readonly timeOptions = this.buildTimeOptions();
+  readonly currentStoreName = computed(() => {
+    const storeId = this.authSvc.currentUser()?.storeId;
+    if (!storeId) return 'Sucursal no disponible';
+    const store = this.stores().find(s => s.id === storeId);
+    return store?.nombre ?? storeId;
+  });
 
   // ── Modo de creación ──────────────────────────────────────────────────────
   readonly mode             = signal<CreateMode>('scratch');
@@ -98,16 +106,23 @@ export class TrainingCreate implements OnInit {
   });
 
   readonly formShift = toSignal(this.form.controls.shift.valueChanges, { initialValue: 'TODOS' });
+  readonly assignableUsers = computed(() => {
+    const all = this.users().filter(u => u.activo);
+    if (this.isAdmin()) {
+      return all.filter(u => (u.roles ?? []).some(role => role === 'GERENTE' || role === 'ROLE_GERENTE'));
+    }
+    return all.filter(u => (u.roles ?? []).some(role => role === 'EJECUTADOR' || role === 'ROLE_EJECUTADOR'));
+  });
   readonly filteredUsers = computed(() => {
     const shift = this.formShift();
-    const all = this.users();
+    const all = this.assignableUsers();
     return shift === 'TODOS' ? all : all.filter(u => u.turno === shift);
   });
 
   readonly templateFormShift = toSignal(this.templateForm.controls.shift.valueChanges, { initialValue: 'TODOS' });
   readonly templateFilteredUsers = computed(() => {
     const shift = this.templateFormShift();
-    const all = this.users();
+    const all = this.assignableUsers();
     return shift === 'TODOS' ? all : all.filter(u => u.turno === shift);
   });
 
@@ -153,9 +168,11 @@ export class TrainingCreate implements OnInit {
 
   ngOnInit(): void {
     this.trainingSvc.loadTemplateSummaries();
+    if (this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
     const user = this.authSvc.currentUser();
     if (this.isAdmin()) {
-      this.settingsSvc.loadAll();
       this.form.get('storeId')!.valueChanges.subscribe(storeId => {
         if (storeId) { this.form.get('assignedUserIds')!.reset([]); this.rhSvc.loadUsersByStore(storeId); }
       });

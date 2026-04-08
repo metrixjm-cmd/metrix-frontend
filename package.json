@@ -8,7 +8,10 @@
     "prebuild": "node scripts/set-version.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "e2e": "npx playwright test",
+    "e2e:headed": "npx playwright test --headed",
+    "e2e:ui": "npx playwright test --ui"
   },
   "prettier": {
     "printWidth": 100,
@@ -40,6 +43,8 @@
     "@angular/cli": "^21.0.4",
     "@angular/compiler-cli": "^21.0.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.5.2",
     "angular-eslint": "21.3.0",
     "autoprefixer": "^10.4.27",
     "eslint": "^10.0.2",

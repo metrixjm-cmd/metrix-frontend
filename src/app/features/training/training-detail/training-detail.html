@@ -1,14 +1,29 @@
-﻿<div class="p-6 max-w-3xl mx-auto space-y-6">
+﻿<div class="p-6 max-w-5xl mx-auto space-y-6">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
-  <div class="flex items-center gap-3">
-    <a routerLink="/training"
-       class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
-    </a>
-    <h1 class="text-xl font-bold text-stone-900">Detalle de capacitación</h1>
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <a [routerLink]="['/training']"
+         [queryParams]="backQueryParams()"
+         class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div class="min-w-0">
+        <h1 class="text-2xl font-bold text-stone-900">Capacitación</h1>
+        @if (training() && !isLearnerView()) {
+          <p class="text-sm text-stone-500 truncate">{{ training()!.title }}</p>
+        }
+      </div>
+    </div>
+    @if (training() && isManagerView()) {
+      <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap"
+            [class]="headerStatusClass(resolvedStatus(training()))">
+        <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+        {{ statusLabels[resolvedStatus(training())] ?? resolvedStatus(training()) }}
+      </span>
+    }
   </div>
 
   <!-- ── Loading ────────────────────────────────────────────────────────── -->
@@ -29,305 +44,461 @@
 
   <!-- ── Contenido ──────────────────────────────────────────────────────── -->
   @if (training() && !loading()) {
-    <!-- Card principal -->
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-4">
-
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-stone-700 mb-1">Título *</label>
-          <div class="w-full border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-base font-semibold text-stone-900">
-            {{ training()!.title }}
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-stone-700 mb-1">Descripción *</label>
-          <div class="w-full min-h-[88px] border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-sm text-stone-700 whitespace-pre-wrap">
-            {{ training()!.description }}
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Nivel *</label>
-            <div class="w-full border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-stone-900">
-              {{ levelLabels[training()!.level] ?? training()!.level }}
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Sucursal *</label>
-            <div class="w-full border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-stone-900">
-              {{ storeName() }}
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Turno *</label>
-            <div class="w-full border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-stone-900">
-              {{ training()!.shift }}
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Fecha límite *</label>
-            <div class="w-full border border-stone-200 rounded-lg bg-stone-50 px-3 py-2.5 text-stone-900">
-              {{ training()!.dueAt | appDate:'date' }}
-            </div>
-            <p class="text-xs text-stone-500 mt-1">{{ training()!.dueAt | appDate:'due' }}</p>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 pt-1">
-          <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
-                [class]="statusBadgeClass(training()!.status)">
-            {{ statusLabels[training()!.status] ?? training()!.status }}
+    @if (isLearnerView()) {
+      <section class="rounded-xl border border-stone-200 bg-white/90 p-4 md:p-5 shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
+                [class]="learnerStatusClass(training()!.status)">
+            {{ learnerStatusLabel(training()!.status) }}
+          </span>
+          <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+            {{ levelLabels[training()!.level] ?? training()!.level }}
           </span>
         </div>
-      </div>
 
-      @if (training()!.status !== 'PROGRAMADA' || training()!.percentage > 0) {
-        <!-- Barra de progreso -->
-        <div class="space-y-1.5 pt-2 border-t border-stone-100">
-          <div class="flex justify-between items-center">
-            <span class="text-sm font-medium text-stone-600">Progreso</span>
-            <span class="text-sm font-bold text-stone-800 tabular-nums">{{ training()!.percentage }}%</span>
-          </div>
-          <div class="w-full bg-stone-100 rounded-full h-3">
-            <div class="h-3 rounded-full transition-all duration-500"
-                 [class]="progressBarClass(training()!.status)"
-                 [style.width.%]="training()!.percentage"></div>
-          </div>
+        <div>
+          <h2 class="text-2xl md:text-[1.9rem] font-bold text-stone-950 leading-tight">{{ training()!.title }}</h2>
+          <p class="text-sm text-stone-600 mt-1.5 max-w-3xl leading-relaxed">{{ training()!.description }}</p>
         </div>
-      } @else {
-        <div class="pt-2 border-t border-stone-100">
-          <p class="text-sm font-medium text-stone-600">Progreso</p>
-          <p class="text-sm text-stone-500 mt-1">
-            Sin avance todavía. El progreso aparecerá cuando ese colaborador inicie o vea materiales.
-          </p>
-        </div>
-      }
 
-      <!-- Resultado (si terminada) -->
-      @if (training()!.status === 'COMPLETADA' || training()!.status === 'NO_COMPLETADA') {
-        <div class="pt-2 border-t border-stone-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          @if (training()!.grade !== null) {
-            <div>
-              <p class="text-xs text-stone-400 uppercase font-medium">Calificación</p>
-              <p class="text-lg font-bold mt-0.5"
-                 [class]="training()!.passed ? 'text-emerald-600' : 'text-red-600'">
-                {{ training()!.grade }}
-              </p>
-            </div>
-            <div>
-              <p class="text-xs text-stone-400 uppercase font-medium">Resultado</p>
-              <p class="text-sm font-semibold mt-0.5"
-                 [class]="training()!.passed ? 'text-emerald-600' : 'text-red-600'">
-                {{ training()!.passed ? 'Aprobado' : 'Reprobado' }}
-              </p>
-            </div>
-          }
-          @if (training()!.onTime !== null) {
-            <div>
-              <p class="text-xs text-stone-400 uppercase font-medium">A tiempo</p>
-              <p class="text-sm font-semibold mt-0.5"
-                 [class]="training()!.onTime ? 'text-emerald-600' : 'text-brand-600'">
-                {{ training()!.onTime ? 'Sí' : 'No' }}
-              </p>
-            </div>
-          }
-          @if (training()!.completedAt) {
-            <div>
-              <p class="text-xs text-stone-400 uppercase font-medium">Completado</p>
-              <p class="text-xs font-medium text-stone-700 mt-0.5">{{ training()!.completedAt | appDate:'relative' }}</p>
-            </div>
-          }
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-stone-600">
+          <span class="inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {{ storeName() }}
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Turno: {{ training()!.shift }}
+          </span>
         </div>
-        @if (training()!.comments) {
-          <div class="pt-2 border-t border-stone-100">
-            <p class="text-xs text-stone-400 uppercase font-medium mb-1">Comentarios</p>
-            <p class="text-sm text-stone-700">{{ training()!.comments }}</p>
-          </div>
-        }
-      }
-    </div>
-
-    @if (isGerente() && groupMembers().length > 0) {
-      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-        <div class="px-5 py-4 border-b border-stone-100">
-          <p class="text-sm font-semibold text-stone-800">Progreso por colaborador</p>
-          <p class="text-xs text-stone-400 mt-0.5">{{ groupMembers().length }} asignado(s)</p>
-        </div>
-        <div class="divide-y divide-stone-100">
-          @for (member of groupMembers(); track member.id) {
-            <div class="px-5 py-3 space-y-2">
-              <div class="flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <p class="text-sm font-semibold text-stone-900 truncate">
-                    {{ member.assignedUserName || member.assignedUserId }}
-                  </p>
-                  <p class="text-xs text-stone-500 truncate">{{ member.position }}</p>
-                </div>
-                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
-                      [class]="statusBadgeClass(member.status)">
-                  {{ statusLabels[member.status] ?? member.status }}
-                </span>
-              </div>
-              <div class="flex items-center justify-between gap-4">
-                <div class="flex-1">
-                  <div class="w-full bg-stone-100 rounded-full h-2">
-                    <div class="h-2 rounded-full transition-all duration-500"
-                         [class]="progressBarClass(member.status)"
-                         [style.width.%]="member.percentage"></div>
-                  </div>
-                </div>
-                <span class="text-xs font-semibold text-stone-700 tabular-nums">{{ member.percentage }}%</span>
-                <span class="text-xs text-stone-500 whitespace-nowrap">{{ member.dueAt | appDate:'date' }}</span>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
+      </section>
     }
 
-    <!-- ── Materiales de estudio ──────────────────────────────────────────── -->
-    @if (training()!.materials && training()!.materials.length > 0) {
-      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-
-        <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-          <div>
-            <p class="text-sm font-semibold text-stone-800">Materiales de estudio</p>
-            <p class="text-xs text-stone-400 mt-0.5">
-              {{ training()!.materials.length }} material(es) ·
-              {{ viewedCount() }} vistos
-            </p>
-          </div>
-          <!-- Contador de vistos -->
-          <div class="flex items-center gap-1.5">
-            @for (m of training()!.materials; track m.materialId) {
-              <div class="w-2 h-2 rounded-full"
-                   [class]="m.viewed ? 'bg-emerald-500' : 'bg-stone-200'">
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Lista -->
-        <div class="divide-y divide-stone-100">
-          @for (m of training()!.materials; track m.materialId) {
-            <div class="flex items-center gap-4 px-5 py-3.5">
-
-              <!-- Icono tipo -->
-              <div class="text-xl shrink-0">{{ materialIcons[m.type] }}</div>
-
-              <!-- Info material -->
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <p class="text-sm font-medium text-stone-900 truncate">{{ m.title }}</p>
-                  <span [class]="'text-xs px-1.5 py-0.5 rounded-full ' + materialColors[m.type]">
-                    {{ m.type }}
-                  </span>
-                  @if (m.required) {
-                    <span class="text-xs text-red-500 font-medium">Obligatorio</span>
-                  }
-                </div>
-                @if (m.notes) {
-                  <p class="text-xs text-stone-500 mt-0.5">{{ m.notes }}</p>
-                }
-              </div>
-
-              <!-- Acciones -->
-              <div class="flex items-center gap-2 shrink-0">
-
-                <!-- Ver material -->
-                <button type="button" (click)="openMaterial(m.url)"
-                        title="Abrir material"
-                        class="p-1.5 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                  </svg>
-                </button>
-
-                <!-- Marcar como visto (solo ejecutador y no visto aún) -->
-                @if (!isGerente() && !m.viewed) {
-                  <button type="button"
-                          (click)="onMarkMaterialViewed(m.materialId)"
-                          [disabled]="saving()"
-                          title="Marcar como visto"
-                          class="p-1.5 rounded-lg text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-40">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                    </svg>
-                  </button>
-                }
-
-                <!-- Badge visto -->
-                @if (m.viewed) {
-                  <span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Visto
-                  </span>
-                }
-
-              </div>
+    @if (isManagerView()) {
+      <section class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 md:px-6 py-4 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="inline-flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 20.055a12.083 12.083 0 01-6.16-9.477L12 14z"/>
+              </svg>
+            </span>
+            <div>
+              <p class="text-[11px] font-semibold tracking-wide text-stone-900 uppercase">Ficha de información</p>
+              <p class="text-xs text-stone-500">Datos base de tu capacitación y tiempo restante</p>
             </div>
-          }
-        </div>
+          </div>
 
-      </div>
-    }
-
-    <!-- ── Acciones (solo EJECUTADOR y estado activo) ─────────────────────── -->
-    @if (!isGerente()) {
-      <div class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-4">
-        <h3 class="text-sm font-semibold text-stone-700">Mis acciones</h3>
-
-        <!-- PROGRAMADA → iniciar -->
-        @if (training()!.status === 'PROGRAMADA') {
-          <button (click)="onStart()" [disabled]="saving()"
-                  class="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
-            @if (saving()) { Procesando... } @else { Iniciar capacitación }
-          </button>
-        }
-
-        <!-- EN_CURSO → actualizar % + completar + no completar -->
-        @if (training()!.status === 'EN_CURSO') {
-          @if (hasTrackableMaterials()) {
-            <div class="rounded-xl border border-brand-100 bg-brand-50/70 px-4 py-3 text-sm text-stone-600">
-              El avance se actualiza automáticamente según los materiales vistos por este colaborador.
-            </div>
-          } @else {
-            <!-- Actualizar porcentaje -->
-            <div class="space-y-2">
-              <label class="block text-sm font-medium text-stone-600">Actualizar avance (%)</label>
-              <div class="flex gap-3">
-                <input type="range" min="0" max="100"
-                       [ngModel]="percentageInput()"
-                       (ngModelChange)="percentageInput.set($event)"
-                       class="flex-1 accent-brand-600">
-                <span class="text-sm font-bold text-stone-800 w-10 text-right tabular-nums">{{ percentageInput() }}%</span>
-              </div>
-              <button (click)="onUpdatePercentage()" [disabled]="saving()"
-                      class="px-4 py-2 text-sm font-medium text-brand-600 border border-brand-300 rounded-lg hover:bg-brand-50 disabled:opacity-50 transition-colors">
-                Guardar avance
+          @if (canModifyTrainingDefinition()) {
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                (click)="openEditModal()"
+                [disabled]="saving()"
+                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-brand-300 text-brand-700 hover:bg-brand-50 disabled:opacity-50 transition-colors"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                (click)="onDeleteTraining()"
+                [disabled]="saving()"
+                class="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+              >
+                Eliminar
               </button>
             </div>
+          } @else {
+            <span class="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+              {{ definitionLockReason() }}
+            </span>
           }
+        </div>
 
-          <!-- Botones terminales -->
-          <div class="flex gap-3 pt-2 border-t border-stone-100">
-            <button (click)="openCompleteModal()" [disabled]="saving()"
-                    class="flex-1 py-2.5 px-4 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-              Completar
-            </button>
-            <button (click)="openFailModal()" [disabled]="saving()"
-                    class="flex-1 py-2.5 px-4 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
-              No completar
-            </button>
+        <div class="px-5 md:px-6 py-5 space-y-5">
+          <div>
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1">Título</p>
+            <p class="text-[31px] leading-tight md:text-[33px] font-semibold text-stone-950">{{ training()!.title }}</p>
+          </div>
+
+          <div>
+            <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1">Descripción</p>
+            <p class="text-sm text-stone-700 leading-relaxed">{{ training()!.description }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 border-t border-stone-200">
+            <div>
+              <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1.5">Nivel</p>
+              <p class="text-sm font-semibold text-stone-900 inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+                  <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
+                </svg>
+                {{ levelLabels[training()!.level] ?? training()!.level }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1.5">Sucursal</p>
+              <p class="text-sm font-semibold text-stone-900 inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M5 21V7l8-4 6 4v14M9 9h.01M9 13h.01M9 17h.01M13 9h.01M13 13h.01M13 17h.01"/>
+                </svg>
+                {{ storeName() }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1.5">Turno</p>
+              <p class="text-sm font-semibold text-stone-900 inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ training()!.shift }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[11px] text-stone-500 uppercase tracking-wide mb-1.5">Fecha límite</p>
+              <p class="text-sm font-semibold text-stone-900 inline-flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-13 9h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                </svg>
+                {{ training()!.dueAt | appDate:'date' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-brand-100 bg-brand-50/20 p-4 md:p-5">
+            <h3 class="text-sm font-semibold text-brand-700 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0"/>
+              </svg>
+              Tiempo restante
+            </h3>
+
+            @if (isCompletedTraining()) {
+              <div class="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-4">
+                <p class="text-sm font-semibold text-emerald-700">Capacitación cumplida</p>
+                <p class="mt-1 text-xs text-emerald-700/90">
+                  @if (training()!.completedAt) {
+                    Cumplida el {{ training()!.completedAt | appDate:'date' }}.
+                  } @else {
+                    Esta capacitación ya fue finalizada.
+                  }
+                </p>
+              </div>
+            } @else {
+              <div class="mt-3 grid grid-cols-4 gap-2 md:gap-3 max-w-[560px]">
+                <div class="text-center">
+                  <div class="rounded-xl border border-brand-200 bg-white py-2.5 text-3xl font-bold text-brand-700 tabular-nums">{{ remainingParts().days }}</div>
+                  <p class="text-[11px] tracking-wide uppercase text-stone-500 mt-1">Días</p>
+                </div>
+                <div class="text-center">
+                  <div class="rounded-xl border border-brand-200 bg-white py-2.5 text-3xl font-bold text-brand-700 tabular-nums">{{ remainingParts().hours }}</div>
+                  <p class="text-[11px] tracking-wide uppercase text-stone-500 mt-1">Horas</p>
+                </div>
+                <div class="text-center">
+                  <div class="rounded-xl border border-brand-200 bg-white py-2.5 text-3xl font-bold text-brand-700 tabular-nums">{{ remainingParts().minutes }}</div>
+                  <p class="text-[11px] tracking-wide uppercase text-stone-500 mt-1">Min</p>
+                </div>
+                <div class="text-center">
+                  <div class="rounded-xl border border-brand-200 bg-white py-2.5 text-3xl font-bold text-brand-700 tabular-nums">{{ remainingParts().seconds }}</div>
+                  <p class="text-[11px] tracking-wide uppercase text-stone-500 mt-1">Seg</p>
+                </div>
+              </div>
+
+              <p class="mt-3 text-xs text-stone-600" [class]="timeLeftClass()">
+                @if (!isOverdue()) { Vence el {{ training()!.dueAt | appDate:'due' }} }
+                @else { Esta capacitación ya venció. }
+              </p>
+            }
+          </div>
+
+          <div class="pt-1">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-stone-800">Progreso general</p>
+              <p class="text-sm font-semibold text-brand-700 tabular-nums">{{ training()!.percentage }}%</p>
+            </div>
+            <div class="mt-2 h-3 rounded-full bg-stone-100 overflow-hidden">
+              <div class="h-3 bg-brand-500 transition-all duration-500"
+                   [style.width.%]="training()!.percentage"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      @if (groupMembers().length > 0) {
+        <section class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-5 md:px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-2a4 4 0 10-8 0v2m8 0H9m4-9a4 4 0 100-8 4 4 0 000 8z"/>
+                </svg>
+              </span>
+              <div>
+                <p class="text-base font-semibold text-stone-900">Progreso por Colaborador</p>
+                <p class="text-xs text-stone-500">{{ groupMembers().length }} asignado(s)</p>
+              </div>
+            </div>
+            <span class="text-sm text-stone-500">Ver todos</span>
+          </div>
+
+          <div class="p-4 space-y-3 bg-stone-50/40">
+            @for (member of groupMembers(); track member.id) {
+              <article class="rounded-xl border border-stone-200 bg-white px-4 py-3 space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-9 h-9 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold flex items-center justify-center">
+                      {{ memberInitials(member.assignedUserName) }}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-stone-900 truncate">{{ member.assignedUserName || member.assignedUserId }}</p>
+                      <p class="text-xs text-stone-500 truncate">{{ member.position }}</p>
+                    </div>
+                  </div>
+                  <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
+                        [class]="statusBadgeClass(resolvedStatus(member))">
+                    {{ statusLabels[resolvedStatus(member)] ?? resolvedStatus(member) }}
+                  </span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-stone-600">
+                  <span>Progreso</span>
+                  <span class="font-semibold text-stone-900 tabular-nums">{{ member.percentage }}%</span>
+                </div>
+                <div class="h-2.5 rounded-full bg-stone-100 overflow-hidden">
+                  <div class="h-2.5 rounded-full transition-all duration-500"
+                       [class]="progressBarClass(resolvedStatus(member))"
+                       [style.width.%]="member.percentage"></div>
+                </div>
+
+                <p class="text-xs text-stone-500">
+                  @if (member.completedAt) {
+                    Completado el {{ member.completedAt | appDate:'date' }}
+                  } @else {
+                    {{ member.dueAt | appDate:'due' }}
+                  }
+                </p>
+              </article>
+            }
+          </div>
+        </section>
+      }
+
+      @if (training()!.materials && training()!.materials.length > 0) {
+        <section class="bg-white border border-stone-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-5 md:px-6 py-4 border-b border-stone-200 flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </span>
+            <div>
+              <p class="text-base font-semibold text-stone-900">Materiales de Estudio</p>
+              <p class="text-xs text-stone-500">{{ training()!.materials.length }} material(es)</p>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-2.5 bg-stone-50/40">
+            @for (m of training()!.materials; track m.materialId) {
+              <article class="rounded-xl border border-stone-200 bg-white px-4 py-3 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span [class]="'w-8 h-8 rounded-xl flex items-center justify-center text-base ' + materialIconToneClass(m.type)">
+                    {{ materialIcons[m.type] }}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-stone-900 truncate">{{ m.title }}</p>
+                    <p class="text-xs text-stone-500">{{ materialTypeLabel(m.type) }}</p>
+                  </div>
+                </div>
+                <button type="button" (click)="openMaterial(m.url)"
+                        class="inline-flex items-center gap-1.5 bg-white border border-stone-300 text-stone-700 text-sm font-semibold rounded-lg px-3 py-1.5 hover:bg-stone-50 transition-colors">
+                  Abrir
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </button>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    }
+
+    @if (isLearnerView()) {
+      <section class="bg-white border border-stone-200 rounded-2xl shadow-card overflow-hidden">
+        <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between gap-3">
+          <h3 class="text-lg font-semibold text-stone-900 inline-flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Materiales de estudio
+          </h3>
+          <span class="text-xs font-semibold text-brand-700 bg-brand-50 rounded-full px-2.5 py-1 whitespace-nowrap">
+            {{ viewedCount() }} / {{ materialTotal() }} vistos
+          </span>
+        </div>
+        <div class="px-5 py-2 border-b border-stone-100 bg-brand-50/30">
+          <p class="text-[11px] text-stone-600">
+            Regla de validación: el material se marca como revisado al abrirlo.
+          </p>
+        </div>
+
+        @if (materialTotal() === 0) {
+          <div class="px-5 py-10 text-center text-sm text-stone-500">
+            Esta capacitación aún no tiene materiales asignados.
+          </div>
+        } @else {
+          <div class="p-4 space-y-3 bg-stone-50/40">
+            @for (m of training()!.materials; track m.materialId; let idx = $index) {
+              <article class="rounded-xl border border-stone-200 bg-white px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <span class="w-7 h-7 shrink-0 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold flex items-center justify-center">
+                    {{ idx + 1 }}
+                  </span>
+                  <span [class]="'w-9 h-9 shrink-0 rounded-xl flex items-center justify-center text-base ' + materialIconToneClass(m.type)">
+                    {{ materialIcons[m.type] }}
+                  </span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <p class="text-[15px] font-semibold text-stone-900 truncate">{{ m.title }}</p>
+                      @if (m.required) {
+                        <span class="inline-flex rounded-full bg-red-100 text-red-700 text-[10px] font-semibold px-2 py-0.5">Obligatorio</span>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="inline-flex rounded-md bg-stone-100 text-stone-600 text-[10px] font-medium px-1.5 py-0.5">{{ materialTypeLabel(m.type) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 md:justify-end">
+                  <button type="button"
+                          (click)="onOpenMaterialAsLearner(m.materialId, m.url, m.viewed)"
+                          [disabled]="saving() || isMaterialMarking(m.materialId)"
+                          class="inline-flex items-center gap-1.5 bg-brand-600 text-white text-[13px] font-semibold rounded-lg px-3 py-1.5 hover:bg-brand-700 disabled:opacity-50 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                    @if (isMaterialMarking(m.materialId)) {
+                      Abriendo...
+                    } @else if (m.viewed) {
+                      Reabrir
+                    } @else {
+                      Abrir y marcar
+                    }
+                  </button>
+
+                  @if (m.viewed) {
+                    <span class="inline-flex items-center gap-1.5 text-[13px] font-medium text-emerald-600">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      Revisado
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center gap-1.5 text-[13px] text-stone-500">
+                      <span class="w-4 h-4 rounded-full border border-stone-400"></span>
+                      Pendiente
+                    </span>
+                  }
+                </div>
+              </article>
+            }
           </div>
         }
-      </div>
+      </section>
+
+      <section class="border border-brand-100 bg-brand-50/20 rounded-xl p-4 md:p-5">
+        <h3 class="text-base font-semibold text-stone-900 flex items-center gap-2">
+          <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Tiempo restante
+        </h3>
+
+        @if (isLearnerCompleted()) {
+          <div class="mt-3 rounded-lg border border-brand-100 bg-white/80 px-4 py-5 text-center">
+            <div class="flex items-center justify-center gap-3 text-2xl md:text-3xl">
+              <span class="animate-bounce [animation-delay:-0.2s]">🎓</span>
+              <span class="animate-pulse">✅</span>
+              <span class="animate-bounce [animation-delay:-0.4s]">🎉</span>
+            </div>
+            <p class="mt-3 text-base font-semibold text-brand-700">Capacitacion completada</p>
+            <p class="mt-1 text-xs text-stone-500">Terminaste todos los materiales asignados.</p>
+          </div>
+        } @else {
+          <div class="mt-3 grid grid-cols-4 gap-2 md:gap-3">
+            <div class="text-center">
+              <div class="rounded-lg border border-brand-100 bg-white/80 py-2 text-xl font-bold text-brand-700 tabular-nums">{{ remainingParts().days }}</div>
+              <p class="text-[10px] tracking-wide uppercase text-stone-500 mt-1">Días</p>
+            </div>
+            <div class="text-center">
+              <div class="rounded-lg border border-brand-100 bg-white/80 py-2 text-xl font-bold text-brand-700 tabular-nums">{{ remainingParts().hours }}</div>
+              <p class="text-[10px] tracking-wide uppercase text-stone-500 mt-1">Horas</p>
+            </div>
+            <div class="text-center">
+              <div class="rounded-lg border border-brand-100 bg-white/80 py-2 text-xl font-bold text-brand-700 tabular-nums">{{ remainingParts().minutes }}</div>
+              <p class="text-[10px] tracking-wide uppercase text-stone-500 mt-1">Min</p>
+            </div>
+            <div class="text-center">
+              <div class="rounded-lg border border-brand-100 bg-white/80 py-2 text-xl font-bold text-brand-700 tabular-nums">{{ remainingParts().seconds }}</div>
+              <p class="text-[10px] tracking-wide uppercase text-stone-500 mt-1">Seg</p>
+            </div>
+          </div>
+
+          <div class="mt-3 rounded-lg border border-brand-100 bg-white/70 px-3 py-2 text-center">
+            <p class="text-xs" [class]="timeLeftClass()">
+              @if (!isOverdue()) { Vence el {{ training()!.dueAt | appDate:'due' }} }
+              @else { Esta capacitación ya venció. }
+            </p>
+          </div>
+        }
+      </section>
+
+      <section class="border border-stone-200 rounded-xl p-4 md:p-5">
+        <h3 class="text-base font-semibold text-stone-900 mb-3 inline-flex items-center gap-2">
+          <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l4-4 4 4 5-5" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 12h3v3" />
+          </svg>
+          Tu progreso
+        </h3>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-4xl font-bold text-stone-900 tabular-nums">{{ learnerProgressPercent() }}%</p>
+            <p class="text-xs text-stone-500 mt-0.5">{{ learnerProgressText() }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-stone-700 font-semibold inline-flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ viewedCount() }} de {{ materialTotal() }}
+            </p>
+            <p class="text-[11px] text-stone-500">materiales vistos</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="h-2 rounded-full border border-stone-200 overflow-hidden">
+            <div class="h-full bg-brand-500 transition-all duration-500" [style.width.%]="learnerProgressPercent()"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-stone-400 mt-1">
+            <span>Inicio</span>
+            <span>Completado</span>
+          </div>
+        </div>
+        <div class="mt-3 rounded-lg border border-stone-200 px-3 py-2.5">
+          <p class="text-xs font-medium text-stone-800">{{ pendingMaterials() }} materiales pendientes</p>
+          <p class="text-xs text-stone-500 mt-0.5">Revisa los materiales para completar tu capacitación.</p>
+        </div>
+      </section>
     }
   }
 
@@ -365,6 +536,70 @@
             </a>
           </div>
         }
+      </div>
+    </div>
+  }
+
+  <!-- ── Modal: Editar ───────────────────────────────────────────────────── -->
+  @if (showEditModal()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4 space-y-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-bold text-stone-900">Editar capacitación</h3>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-1">Título *</label>
+            <input type="text"
+                   [ngModel]="editTitle()"
+                   (ngModelChange)="editTitle.set($event)"
+                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-1">Descripción *</label>
+            <textarea rows="3"
+                      [ngModel]="editDescription()"
+                      (ngModelChange)="editDescription.set($event)"
+                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Nivel *</label>
+              <select [ngModel]="editLevel()"
+                      (ngModelChange)="editLevel.set($event)"
+                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                @for (level of levelOptions; track level) {
+                  <option [ngValue]="level">{{ levelLabels[level] ?? level }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Fecha límite *</label>
+              <input type="datetime-local"
+                     [ngModel]="editDueAtLocal()"
+                     (ngModelChange)="editDueAtLocal.set($event)"
+                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+          </div>
+        </div>
+
+        @if (error()) {
+          <p class="text-xs text-red-600">{{ error() }}</p>
+        }
+
+        <div class="flex gap-3 pt-2">
+          <button (click)="showEditModal.set(false)"
+                  class="flex-1 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+            Cancelar
+          </button>
+          <button (click)="onSaveEdit()"
+                  [disabled]="saving()"
+                  class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
+            @if (saving()) { Guardando... } @else { Guardar cambios }
+          </button>
+        </div>
       </div>
     </div>
   }
