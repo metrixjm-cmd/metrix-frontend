@@ -94,8 +94,12 @@
               }
             </select>
           } @else {
-            <input formControlName="storeId" type="text" readonly
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-stone-50 text-stone-400">
+            <input [value]="currentStoreName()" type="text" readonly
+                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-stone-50 text-stone-700">
+            <input formControlName="storeId" type="hidden">
+            <p class="mt-1 text-xs text-stone-400">
+              ID interno: {{ form.get('storeId')?.value }}
+            </p>
           }
         </div>
         <div>
@@ -342,8 +346,12 @@
                   }
                 </select>
               } @else {
-                <input formControlName="storeId" type="text" readonly
-                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-stone-50 text-stone-400">
+                <input [value]="currentStoreName()" type="text" readonly
+                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-stone-50 text-stone-700">
+                <input formControlName="storeId" type="hidden">
+                <p class="mt-1 text-xs text-stone-400">
+                  ID interno: {{ templateForm.get('storeId')?.value }}
+                </p>
               }
             </div>
             <div>

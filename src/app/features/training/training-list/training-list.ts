@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
+import { RoleContext } from '../../../shared/services/role-context.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { SettingsService } from '../../settings/services/settings.service';
 import { TrainingService } from '../services/training.service';
@@ -26,9 +27,20 @@ interface StoreSummary {
   completionRate: number;
 }
 
+interface TrainingStats {
+  total: number;
+  programadas: number;
+  enCurso: number;
+  completadas: number;
+  noCompletadas: number;
+  completionRate: number;
+}
+
 interface TrainingListRow extends TrainingResponse {
   groupSize: number;
 }
+
+type GerenteTab = 'created' | 'todo';
 
 @Component({
   selector: 'app-training-list',
@@ -38,8 +50,10 @@ interface TrainingListRow extends TrainingResponse {
 })
 export class TrainingList implements OnInit {
   private readonly authSvc = inject(AuthService);
+  private readonly role = inject(RoleContext);
   readonly trainingSvc = inject(TrainingService);
   private readonly settingsSvc = inject(SettingsService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   readonly loading = this.trainingSvc.loading;
@@ -49,13 +63,15 @@ export class TrainingList implements OnInit {
   readonly levels = TRAINING_LEVELS;
   readonly statuses: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO', 'COMPLETADA', 'NO_COMPLETADA'];
 
-  readonly isAdmin = computed(() => this.authSvc.hasRole('ADMIN'));
-  readonly isGerente = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
-  readonly isEjecutador = computed(() => !this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
+  readonly isAdmin = this.role.isAdmin;
+  readonly isGerente = this.role.isGerente;
+  readonly isOnlyGerente = this.role.isOnlyGerente;
+  readonly isEjecutador = this.role.isEjecutador;
 
   filterStatus = signal<string>('');
   filterLevel = signal<string>('');
   filterStore = signal<string>(''); // solo ADMIN
+  gerenteTab = signal<GerenteTab>('created');
 
   readonly storeNames = computed(() => {
     const map = new Map<string, string>();
@@ -65,9 +81,36 @@ export class TrainingList implements OnInit {
     return map;
   });
 
+  readonly gerenteCreatedTrainings = computed<TrainingListRow[]>(() => {
+    if (!this.isOnlyGerente()) return [];
+    const currentUser = this.authSvc.currentUser();
+    if (!currentUser) return [];
+    const createdByMe = this.trainingSvc.trainings().filter(training =>
+      training.createdBy === currentUser.numeroUsuario
+    );
+    return this.groupTrainings(createdByMe);
+  });
+
+  readonly gerenteToDoTrainings = computed<TrainingListRow[]>(() => {
+    if (!this.isOnlyGerente()) return [];
+    return this.groupTrainings(this.trainingSvc.myTrainings());
+  });
+
+  readonly gerenteTeamTrainings = computed<TrainingListRow[]>(() => {
+    if (!this.isOnlyGerente()) return [];
+    const myIds = new Set(this.trainingSvc.myTrainings().map(training => training.id));
+    const teamTrainings = this.trainingSvc.trainings().filter(training => !myIds.has(training.id));
+    return this.groupTrainings(teamTrainings);
+  });
+
   readonly dashboardTrainings = computed<TrainingListRow[]>(() => {
-    if (this.isGerente()) {
+    if (this.isAdmin()) {
       return this.groupTrainings(this.trainingSvc.trainings());
+    }
+    if (this.isOnlyGerente()) {
+      return this.gerenteTab() === 'created'
+        ? this.gerenteCreatedTrainings()
+        : this.gerenteToDoTrainings();
     }
     return this.trainingSvc.trainings().map(training => ({ ...training, groupSize: 1 }));
   });
@@ -84,14 +127,7 @@ export class TrainingList implements OnInit {
   });
 
   readonly globalStats = computed(() => {
-    const all = this.dashboardTrainings();
-    return {
-      total: all.length,
-      programadas: all.filter(training => training.status === 'PROGRAMADA').length,
-      enCurso: all.filter(training => training.status === 'EN_CURSO').length,
-      completadas: all.filter(training => training.status === 'COMPLETADA').length,
-      noCompletadas: all.filter(training => training.status === 'NO_COMPLETADA').length,
-    };
+    return this.buildStats(this.dashboardTrainings());
   });
 
   readonly storeSummaries = computed((): StoreSummary[] => {
@@ -126,15 +162,10 @@ export class TrainingList implements OnInit {
   );
 
   readonly storeStats = computed(() => {
-    const all = this.dashboardTrainings();
-    return {
-      total: all.length,
-      programadas: all.filter(training => training.status === 'PROGRAMADA').length,
-      enCurso: all.filter(training => training.status === 'EN_CURSO').length,
-      completadas: all.filter(training => training.status === 'COMPLETADA').length,
-      noCompletadas: all.filter(training => training.status === 'NO_COMPLETADA').length,
-    };
+    return this.buildStats(this.dashboardTrainings());
   });
+
+  readonly gerenteTeamStats = computed(() => this.buildStats(this.gerenteTeamTrainings()));
 
   readonly alerts = computed(() => {
     const now = new Date();
@@ -145,26 +176,53 @@ export class TrainingList implements OnInit {
   });
 
   ngOnInit(): void {
+    const queryTab = this.route.snapshot.queryParamMap.get('tab');
+    if (this.isOnlyGerente() && (queryTab === 'created' || queryTab === 'todo')) {
+      this.gerenteTab.set(queryTab);
+    }
+
     if (this.isGerente() && this.settingsSvc.stores().length === 0) {
       this.settingsSvc.loadAll();
     }
 
     if (this.isAdmin()) {
       this.trainingSvc.loadAll();
-    } else if (this.isGerente()) {
+    } else if (this.isOnlyGerente()) {
       const storeId = this.authSvc.currentUser()?.storeId;
       if (storeId) this.trainingSvc.loadByStore(storeId);
+      this.trainingSvc.listMyTrainings().catch(() => {});
     } else {
       this.trainingSvc.loadMyTrainings();
     }
   }
 
   goToDetail(training: Pick<TrainingResponse, 'id'>): void {
-    this.router.navigate(['/training', training.id]);
+    const tab = this.isOnlyGerente() ? this.gerenteTab() : null;
+    if (this.isOnlyGerente() && this.gerenteTab() === 'todo') {
+      this.router.navigate(['/training', training.id], {
+        queryParams: { view: 'learner', tab: 'todo' },
+      });
+      return;
+    }
+    this.router.navigate(['/training', training.id], {
+      queryParams: tab ? { tab } : undefined,
+    });
   }
 
   filterByStore(storeId: string): void {
     this.filterStore.set(this.filterStore() === storeId ? '' : storeId);
+  }
+
+  setGerenteTab(tab: GerenteTab): void {
+    this.gerenteTab.set(tab);
+    if (this.isOnlyGerente()) {
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
   }
 
   statusBadgeClass(status: TrainingStatus): string {
@@ -201,6 +259,23 @@ export class TrainingList implements OnInit {
     return training.assignedUserName || training.position || training.assignedUserId;
   }
 
+  private buildStats(list: Pick<TrainingResponse, 'status'>[]): TrainingStats {
+    const total = list.length;
+    const programadas = list.filter(training => training.status === 'PROGRAMADA').length;
+    const enCurso = list.filter(training => training.status === 'EN_CURSO').length;
+    const completadas = list.filter(training => training.status === 'COMPLETADA').length;
+    const noCompletadas = list.filter(training => training.status === 'NO_COMPLETADA').length;
+    const terminadas = completadas + noCompletadas;
+    return {
+      total,
+      programadas,
+      enCurso,
+      completadas,
+      noCompletadas,
+      completionRate: terminadas > 0 ? Math.round((completadas / terminadas) * 100) : 0,
+    };
+  }
+
   private groupTrainings(list: TrainingResponse[]): TrainingListRow[] {
     const groups = new Map<string, TrainingResponse[]>();
     for (const training of list) {
@@ -225,7 +300,11 @@ export class TrainingList implements OnInit {
     const groupSize = group.length;
 
     if (groupSize === 1) {
-      return { ...representative, groupSize: 1 };
+      return {
+        ...representative,
+        status: this.normalizeTrainingStatus(representative),
+        groupSize: 1,
+      };
     }
 
     const averageProgress = Math.round(
@@ -244,7 +323,7 @@ export class TrainingList implements OnInit {
   }
 
   private resolveGroupStatus(group: TrainingResponse[]): TrainingStatus {
-    const statuses = group.map(training => training.status);
+    const statuses = group.map(training => this.normalizeTrainingStatus(training));
     if (statuses.every(status => status === 'COMPLETADA')) return 'COMPLETADA';
     if (statuses.every(status => status === 'NO_COMPLETADA')) return 'NO_COMPLETADA';
     if (statuses.every(status => status === 'PROGRAMADA')) return 'PROGRAMADA';
@@ -253,5 +332,8 @@ export class TrainingList implements OnInit {
     if (statuses.some(status => status === 'NO_COMPLETADA')) return 'EN_CURSO';
     return 'PROGRAMADA';
   }
-}
 
+  private normalizeTrainingStatus(training: Pick<TrainingResponse, 'status' | 'percentage'>): TrainingStatus {
+    return training.status;
+  }
+}

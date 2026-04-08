@@ -100,6 +100,31 @@ export class NotificationService {
     );
   }
 
+  /** Inserta una notificación local (cliente) al inbox de alertas. */
+  pushLocal(input: {
+    title: string;
+    body: string;
+    severity?: AppNotification['severity'];
+    type?: AppNotification['type'];
+    storeId?: string;
+  }): void {
+    const timestamp = new Date().toISOString();
+    const notification: AppNotification = {
+      id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      type: input.type ?? 'TASK_DEADLINE_WARNING',
+      severity: input.severity ?? 'warning',
+      title: input.title,
+      body: input.body,
+      taskId: null,
+      incidentId: null,
+      storeId: input.storeId ?? '',
+      timestamp,
+      read: false,
+      timeAgo: 'Ahora mismo',
+    };
+    this._notifications.update(list => [notification, ...list].slice(0, 50));
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   private scheduleReconnect(): void {
