@@ -32,14 +32,14 @@
     <!-- ── Header del Usuario y Acciones ──────────────────────────────────── -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div class="w-16 h-16 rounded-full bg-teal-100 flex shrink-0 items-center justify-center text-teal-700 font-bold text-2xl">
+        <div class="w-16 h-16 rounded-full bg-brand-100 flex shrink-0 items-center justify-center text-brand-700 font-bold text-2xl">
           {{ u.nombre.substring(0,2).toUpperCase() }}
         </div>
         <div>
           <div class="flex flex-wrap items-center gap-3 mb-1">
             <h2 class="text-xl font-bold text-stone-900">{{ u.nombre }}</h2>
             @if (u.activo) {
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-700 shrink-0">Activo</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-brand-100 text-brand-700 shrink-0">Activo</span>
             } @else {
               <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 text-stone-500 shrink-0">Inactivo</span>
             }
@@ -50,7 +50,7 @@
             <div class="flex gap-1">
               @for (rol of u.roles; track rol) {
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-stone-100 text-stone-700 border border-stone-200">
-                  <svg class="w-3 h-3 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <svg class="w-3 h-3 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   {{ rolLabels[rol] ?? rol }}
                 </span>
               }
@@ -63,7 +63,7 @@
       @if (!editMode() && isGerente() && u.activo) {
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
           <button type="button" (click)="enterEditMode()"
-                  class="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-teal-500 rounded-lg hover:bg-teal-600 transition-colors shadow-sm">
+                  class="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             Editar
           </button>
@@ -74,9 +74,9 @@
             {{ downloadingCard() ? 'Generando...' : 'Descargar' }}
           </button>
 
-          @if (isAdmin()) {
+          @if (canDeleteUser()) {
             <button type="button" (click)="confirmDelete.set(true)"
-                    class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors sm:ml-2">
+                    class="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-50 rounded-lg transition-colors sm:ml-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Eliminar
             </button>
@@ -93,7 +93,7 @@
           <!-- Columna Credenciales -->
           <div class="p-6 md:p-8">
             <h3 class="text-base font-bold text-stone-900 mb-6 flex items-center gap-2">
-              <div class="p-1.5 bg-teal-50 rounded-lg text-teal-600">
+              <div class="p-1.5 bg-brand-50 rounded-lg text-brand-600">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
               </div>
               Credenciales
@@ -108,39 +108,33 @@
                 </div>
               </div>
 
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <p class="text-[11px] font-medium text-stone-500">Contraseña</p>
-                  @if (isAdmin()) {
-                    <button type="button" (click)="toggleCurrentPassword()" class="flex items-center gap-1 text-[11px] font-bold text-teal-600 hover:text-teal-700 transition-colors">
-                      @if (showCurrentPassword()) {
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3m3.11 3.11l4.242 4.242"/></svg>
-                        Ocultar
-                      } @else {
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        Mostrar
-                      }
-                    </button>
-                  }
+              @if (isAdmin()) {
+                <div class="rounded-xl border border-brand-100 bg-brand-50/60 p-4">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-white border border-brand-100 text-brand-600 flex items-center justify-center shrink-0">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-bold text-stone-900">Regenerar contraseña</p>
+                      <p class="text-xs text-stone-500 mt-1">Requiere confirmar tu contraseña de administrador.</p>
+                      <button type="button"
+                              (click)="openResetPasswordModal()"
+                              class="mt-3 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v6h6M20 20v-6h-6M5 19A9 9 0 0019 5M19 5h-5m5 0v5"/></svg>
+                        Generar nueva contraseña
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg px-4 py-3">
-                  <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                  <p class="font-mono text-sm font-medium text-stone-800 tracking-wider">
-                    @if (isAdmin() && showCurrentPassword()) {
-                      {{ u.password || 'No disponible' }}
-                    } @else {
-                      ••••••••
-                    }
-                  </p>
-                </div>
-              </div>
+              }
+
             </div>
           </div>
 
           <!-- Columna Información General -->
           <div class="p-6 md:p-8">
             <h3 class="text-base font-bold text-stone-900 mb-6 flex items-center gap-2">
-              <div class="p-1.5 bg-teal-50 rounded-lg text-teal-600">
+              <div class="p-1.5 bg-brand-50 rounded-lg text-brand-600">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
               Información General
@@ -148,7 +142,7 @@
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-4">
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                 </div>
                 <div>
@@ -158,7 +152,7 @@
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -168,7 +162,7 @@
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
                 <div>
@@ -178,7 +172,7 @@
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div>
@@ -188,7 +182,7 @@
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 </div>
                 <div class="break-all">
@@ -198,7 +192,7 @@
               </div>
 
               <div class="flex items-start gap-3">
-                <div class="p-2 bg-stone-50 rounded-lg border border-stone-100 text-teal-600 shrink-0">
+                <div class="p-2 bg-brand-50 rounded-lg border border-brand-100 text-brand-600 shrink-0">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 </div>
                 <div>
@@ -269,40 +263,13 @@
                 @for (rol of roles; track rol) {
                   <button type="button"
                           [class]="isRolSelected(rol)
-                            ? 'px-4 py-2 rounded-lg text-sm font-bold bg-teal-600 text-white shadow-sm transition-all'
+                            ? 'px-4 py-2 rounded-lg text-sm font-bold bg-brand-600 text-white shadow-sm transition-all'
                             : 'px-4 py-2 rounded-lg text-sm font-semibold bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition-all'"
                           (click)="toggleRol(rol)">
                     {{ rolLabels[rol] }}
                   </button>
                 }
               </div>
-            </div>
-            
-            <div class="pt-4 border-t border-stone-100">
-              <label class="block text-sm font-semibold text-stone-700 mb-2">Cambiar contraseña (opcional)</label>
-              <div class="relative max-w-sm">
-                <input formControlName="password"
-                       [type]="showPassword() ? 'text' : 'password'"
-                       placeholder="Ingresa una nueva contraseña"
-                       class="w-full border border-stone-200 rounded-lg px-4 py-3 pr-10 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-50 focus:bg-white transition-colors">
-                <button type="button" (click)="togglePassword()"
-                        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors">
-                  @if (showPassword()) {
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                  } @else {
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3m3.11 3.11l4.242 4.242"/>
-                    </svg>
-                  }
-                </button>
-              </div>
-              <p class="text-xs text-stone-500 mt-2 flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Deja este campo vacío si no deseas cambiar la contraseña actual.
-              </p>
             </div>
           }
 
@@ -314,7 +281,7 @@
             </button>
             <button type="submit"
                     [disabled]="editForm.invalid || saving()"
-                    class="px-5 py-2.5 text-sm font-bold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                    class="px-5 py-2.5 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2">
               @if (saving()) {
                 <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -335,7 +302,7 @@
     <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden mt-6">
       <div class="px-6 py-5 border-b border-stone-200">
         <h3 class="text-base font-bold text-stone-900 flex items-center gap-2">
-          <div class="p-1.5 bg-teal-50 rounded-lg text-teal-600">
+          <div class="p-1.5 bg-brand-50 rounded-lg text-brand-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
           </div>
           Indicadores de Desempeño
@@ -354,34 +321,34 @@
           <!-- KPI cards (Top row) -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <!-- Over-all -->
-            <div class="rounded-xl border border-rose-100 bg-rose-50/50 p-3 sm:p-4 relative">
-              <svg class="w-4 h-4 text-rose-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            <div class="rounded-xl border border-brand-100 bg-brand-50/50 p-3 sm:p-4 relative">
+              <svg class="w-4 h-4 text-brand-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
               <p class="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1 sm:mb-2 truncate pr-4">Overall</p>
-              <p class="text-xl sm:text-2xl font-bold text-rose-600 mb-0.5">{{ kpi.igeo.toFixed(1) }}</p>
+              <p class="text-xl sm:text-2xl font-bold text-brand-700 mb-0.5">{{ kpi.igeo.toFixed(1) }}</p>
               <p class="text-[10px] sm:text-[11px] text-stone-400 truncate">Índice global</p>
             </div>
 
             <!-- On-Time Rate -->
-            <div class="rounded-xl border border-rose-100 bg-rose-50/50 p-3 sm:p-4 relative">
-              <svg class="w-4 h-4 text-rose-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="rounded-xl border border-brand-100 bg-brand-50/50 p-3 sm:p-4 relative">
+              <svg class="w-4 h-4 text-brand-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <p class="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1 sm:mb-2 truncate pr-4">On-Time</p>
-              <p class="text-xl sm:text-2xl font-bold text-rose-600 mb-0.5">{{ kpi.onTimeRate.toFixed(1) }}%</p>
+              <p class="text-xl sm:text-2xl font-bold text-brand-700 mb-0.5">{{ kpi.onTimeRate.toFixed(1) }}%</p>
               <p class="text-[10px] sm:text-[11px] text-stone-400 truncate">A tiempo</p>
             </div>
 
             <!-- Re-trabajo -->
-            <div class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 sm:p-4 relative">
-              <svg class="w-4 h-4 text-emerald-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <div class="rounded-xl border border-brand-100 bg-brand-50/50 p-3 sm:p-4 relative">
+              <svg class="w-4 h-4 text-brand-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               <p class="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1 sm:mb-2 truncate pr-4">Re-trabajo</p>
-              <p class="text-xl sm:text-2xl font-bold text-emerald-600 mb-0.5">{{ kpi.reworkRate.toFixed(1) }}%</p>
+              <p class="text-xl sm:text-2xl font-bold text-brand-700 mb-0.5">{{ kpi.reworkRate.toFixed(1) }}%</p>
               <p class="text-[10px] sm:text-[11px] text-stone-400 truncate">Tasa de fallo</p>
             </div>
 
             <!-- Ranking -->
-            <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:p-4 relative">
-              <svg class="w-4 h-4 text-blue-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            <div class="rounded-xl border border-brand-100 bg-brand-50/50 p-3 sm:p-4 relative">
+              <svg class="w-4 h-4 text-brand-500 absolute top-3 sm:top-4 right-3 sm:right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
               <p class="text-[9px] sm:text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1 sm:mb-2 truncate pr-4">Ranking</p>
-              <p class="text-xl sm:text-2xl font-bold text-blue-600 mb-0.5">#{{ kpi.rank }}</p>
+              <p class="text-xl sm:text-2xl font-bold text-brand-700 mb-0.5">#{{ kpi.rank }}</p>
               <p class="text-[10px] sm:text-[11px] text-stone-400 truncate">En sucursal</p>
             </div>
           </div>
@@ -398,23 +365,23 @@
               </div>
             </div>
 
-            <div class="rounded-lg bg-emerald-50 border border-emerald-100 p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-emerald-100 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="rounded-lg bg-brand-50 border border-brand-100 p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-brand-100 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
               <div>
-                <p class="text-lg sm:text-xl font-bold text-emerald-700 leading-none">{{ kpi.completedTasks }}</p>
-                <p class="text-[9px] sm:text-[10px] text-emerald-600 mt-1 truncate">Completadas</p>
+                <p class="text-lg sm:text-xl font-bold text-brand-700 leading-none">{{ kpi.completedTasks }}</p>
+                <p class="text-[9px] sm:text-[10px] text-brand-600 mt-1 truncate">Completadas</p>
               </div>
             </div>
 
-            <div class="rounded-lg bg-rose-50 border border-rose-100 p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-rose-100 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="rounded-lg bg-brand-50 border border-brand-100 p-2 sm:p-3 flex items-center gap-2 sm:gap-3">
+              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white border border-brand-100 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
               <div>
-                <p class="text-lg sm:text-xl font-bold text-rose-600 leading-none">{{ kpi.failedTasks }}</p>
-                <p class="text-[9px] sm:text-[10px] text-rose-500 mt-1 truncate">Fallidas</p>
+                <p class="text-lg sm:text-xl font-bold text-brand-700 leading-none">{{ kpi.failedTasks }}</p>
+                <p class="text-[9px] sm:text-[10px] text-brand-600 mt-1 truncate">Fallidas</p>
               </div>
             </div>
 
@@ -441,14 +408,138 @@
       </div>
     </div>
 
+    <!-- ── Modal regenerar contraseña ───────────────────────────────────── -->
+    @if (resetPasswordModal() && isAdmin()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+           (click)="closeResetPasswordModal()">
+        <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md mx-4 p-6"
+             (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-brand-100 mx-auto mb-4">
+            <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+            </svg>
+          </div>
+          @if (resetPasswordSuccess()) {
+            <div class="py-6 text-center">
+              <h3 class="text-lg font-bold text-stone-900 mb-2">Contraseña actualizada correctamente.</h3>
+              <p class="text-sm text-stone-500">El popup se cerrará automáticamente.</p>
+            </div>
+          } @else {
+            <h3 class="text-lg font-bold text-stone-900 text-center mb-1">Generar nueva contraseña</h3>
+            <p class="text-sm text-stone-500 text-center mb-5">
+              @if (resetPasswordStep() === 'verify') {
+                Confirma tu contraseña de administrador para continuar.
+              } @else {
+                Captura la nueva contraseña de
+                <span class="font-semibold text-stone-800">{{ u.nombre }}</span>.
+              }
+            </p>
+
+            @if (resetPasswordError()) {
+              <div class="mb-4 p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+                {{ resetPasswordError() }}
+              </div>
+            }
+
+            <form [formGroup]="resetPasswordForm" (ngSubmit)="resetPasswordStep() === 'verify' ? onVerifyAdminPassword() : onResetPassword()" class="space-y-4">
+              @if (resetPasswordStep() === 'verify') {
+                <div>
+                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Tu contraseña de administrador</label>
+                  <div class="relative">
+                    <input formControlName="adminPassword"
+                           [type]="showAdminPassword() ? 'text' : 'password'"
+                           class="w-full border border-stone-200 rounded-lg px-4 py-3 pr-11 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-50 focus:bg-white transition-colors">
+                    <button type="button"
+                            (click)="togglePasswordVisibility('admin')"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-brand-600 transition-colors">
+                      @if (showAdminPassword()) {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3"/></svg>
+                      } @else {
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+              }
+
+              @if (resetPasswordStep() === 'reset') {
+              <div>
+                <label class="block text-sm font-semibold text-stone-700 mb-1.5">Nueva contraseña</label>
+                <div class="relative">
+                  <input formControlName="newPassword"
+                         [type]="showNewPassword() ? 'text' : 'password'"
+                         class="w-full border border-stone-200 rounded-lg px-4 py-3 pr-11 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-50 focus:bg-white transition-colors">
+                  <button type="button"
+                          (click)="togglePasswordVisibility('new')"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-brand-600 transition-colors">
+                    @if (showNewPassword()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3"/></svg>
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    }
+                  </button>
+                </div>
+                <p class="mt-1 text-xs text-stone-500">Mínimo 6 caracteres.</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-stone-700 mb-1.5">Confirmar nueva contraseña</label>
+                <div class="relative">
+                  <input formControlName="confirmPassword"
+                         [type]="showConfirmPassword() ? 'text' : 'password'"
+                         class="w-full border rounded-lg px-4 py-3 pr-11 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-50 focus:bg-white transition-colors"
+                         [class.border-red-300]="passwordsMismatch()"
+                         [class.border-stone-200]="!passwordsMismatch()">
+                  <button type="button"
+                          (click)="togglePasswordVisibility('confirm')"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-brand-600 transition-colors">
+                    @if (showConfirmPassword()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L6.11 6.11m3.768 3.768l4.242 4.242m0 0l3.768 3.768M6.11 6.11L3 3"/></svg>
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    }
+                  </button>
+                </div>
+                @if (passwordsMismatch()) {
+                  <p class="mt-1 text-xs font-semibold text-red-600">Las contraseñas no coinciden.</p>
+                }
+              </div>
+              }
+
+              <div class="flex gap-3 pt-3">
+                <button type="button"
+                        (click)="closeResetPasswordModal()"
+                        class="flex-1 px-4 py-2.5 text-sm font-bold text-stone-700 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                  Cerrar
+                </button>
+                <button type="submit"
+                        [disabled]="resetPasswordStep() === 'verify'
+                          ? !resetPasswordForm.get('adminPassword')?.value || saving()
+                          : resetPasswordForm.invalid || passwordsMismatch() || saving()"
+                        class="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  @if (saving()) {
+                    Validando...
+                  } @else if (resetPasswordStep() === 'verify') {
+                    Continuar
+                  } @else {
+                    Actualizar
+                  }
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    }
+
     <!-- ── Modal confirmación eliminar ───────────────────────────────────── -->
     @if (confirmDelete()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
            (click)="confirmDelete.set(false)">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-sm mx-4 p-6"
              (click)="$event.stopPropagation()">
-          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
-            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-brand-100 mx-auto mb-4">
+            <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
@@ -468,7 +559,7 @@
             <button type="button"
                     (click)="onDelete()"
                     [disabled]="saving()"
-                    class="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
+                    class="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
               @if (saving()) { Eliminando... } @else { Sí, eliminar }
             </button>
           </div>

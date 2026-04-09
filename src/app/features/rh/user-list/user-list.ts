@@ -27,7 +27,7 @@ export class UserList implements OnInit {
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   filterTurno  = signal<string>('');
-  filterRol    = signal<string>('EJECUTADOR');
+  filterRol    = signal<string>('');
   filterStore  = signal<string>('');
 
   readonly isOnlyGerente = computed(() =>
@@ -41,16 +41,15 @@ export class UserList implements OnInit {
     const store = this.filterStore();
     if (this.isOnlyGerente()) {
       list = list.filter(u => u.roles.includes('EJECUTADOR') || u.roles.includes('ROLE_EJECUTADOR'));
+    } else if (rol) {
+      list = list.filter(u => u.roles.includes(rol));
     }
     if (store) list = list.filter(u => u.storeId === store);
     if (turno) list = list.filter(u => u.turno === turno);
-    if (rol)   list = list.filter(u => u.roles.includes(rol));
     return list;
   });
 
-  readonly isAdmin   = computed(() =>
-    this.authSvc.hasRole('ADMIN') && !this.authSvc.hasRole('GERENTE')
-  );
+  readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
   readonly isGerente = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
 
   ngOnInit(): void {

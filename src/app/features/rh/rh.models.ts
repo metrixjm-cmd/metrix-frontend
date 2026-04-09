@@ -12,7 +12,6 @@ export interface UserProfile {
   fechaNacimiento?: string;  // ISO date: yyyy-MM-dd
   createdAt: string;
   updatedAt: string;
-  password?: string;
 }
 
 /** Payload para crear un colaborador (POST /api/v1/users) */
@@ -35,9 +34,20 @@ export interface UpdateUserRequest {
   storeId?: string;
   turno?: string;
   roles?: string[];
-  password?: string;
   email?: string;
   fechaNacimiento?: string;
+}
+
+/** Payload para regenerar la contraseña de un colaborador (solo ADMIN). */
+export interface ResetUserPasswordRequest {
+  adminPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+/** Payload para validar la contraseña del administrador autenticado. */
+export interface VerifyAdminPasswordRequest {
+  adminPassword: string;
 }
 
 export const TURNOS = ['MATUTINO', 'VESPERTINO', 'NOCTURNO'] as const;
