@@ -112,7 +112,7 @@ export class TrainingList implements OnInit {
         ? this.gerenteCreatedTrainings()
         : this.gerenteToDoTrainings();
     }
-    return this.trainingSvc.trainings().map(training => ({ ...training, groupSize: 1 }));
+    return this.trainingSvc.myTrainings().map(training => ({ ...training, groupSize: 1 }));
   });
 
   readonly filteredTrainings = computed(() => {
@@ -333,7 +333,16 @@ export class TrainingList implements OnInit {
     return 'PROGRAMADA';
   }
 
-  private normalizeTrainingStatus(training: Pick<TrainingResponse, 'status' | 'percentage'>): TrainingStatus {
+  private normalizeTrainingStatus(training: Pick<TrainingResponse, 'status' | 'dueAt'>): TrainingStatus {
+    if (training.status === 'COMPLETADA' || training.status === 'NO_COMPLETADA') {
+      return training.status;
+    }
+    if (training.dueAt) {
+      const dueMs = new Date(training.dueAt).getTime();
+      if (!Number.isNaN(dueMs) && dueMs < Date.now()) {
+        return 'NO_COMPLETADA';
+      }
+    }
     return training.status;
   }
 }

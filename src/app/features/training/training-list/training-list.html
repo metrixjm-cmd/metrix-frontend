@@ -131,30 +131,6 @@
         </div>
       }
 
-      <!-- Alertas globales -->
-      @if (alerts().length > 0) {
-        <div class="bg-red-50 border border-red-200 rounded-xl p-4">
-          <div class="flex items-center gap-2 mb-3">
-            <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            <span class="text-sm font-semibold text-red-700">{{ alerts().length }} capacitación(es) requieren atención</span>
-          </div>
-          <div class="space-y-1">
-            @for (t of alerts().slice(0, 4); track t.id) {
-              <div class="flex items-center justify-between text-xs cursor-pointer hover:underline"
-                   (click)="goToDetail(t)">
-                <span class="text-red-700 font-medium">{{ t.title }}</span>
-                <span class="text-red-500">{{ storeLabel(t.storeId) }} · {{ t.status === 'NO_COMPLETADA' ? 'No completada' : 'Vencida' }}</span>
-              </div>
-            }
-            @if (alerts().length > 4) {
-              <p class="text-xs text-red-400 mt-1">... y {{ alerts().length - 4 }} más</p>
-            }
-          </div>
-        </div>
-      }
     }
 
     <!-- ══════════════════════════════════════════════════════
@@ -226,18 +202,6 @@
         </button>
       </div>
 
-      <!-- Alertas de la sucursal -->
-      @if (alerts().length > 0) {
-        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3">
-          <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-          </svg>
-          <span class="text-sm text-amber-800">
-            <strong>{{ alerts().length }}</strong> capacitación(es) con problema — revísalas en la tabla
-          </span>
-        </div>
-      }
     }
 
     <!-- ══════════════════════════════════════════════════════
@@ -245,17 +209,36 @@
     ══════════════════════════════════════════════════════════ -->
     @if (isEjecutador()) {
       <div class="space-y-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+            <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
+            <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
+          </div>
+          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+            <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
+            <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
+          </div>
+          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+            <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
+            <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
+          </div>
+          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
+            <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
+            <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
+          </div>
+        </div>
+
         <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 class="text-lg font-bold text-stone-900">Mi ruta de capacitación</h2>
             <p class="text-sm text-stone-500">Revisa tu avance, continúa tus módulos activos y completa tus asignaciones a tiempo.</p>
           </div>
-          @if (trainingSvc.trainings().length > 0) {
-            <span class="text-xs font-medium text-stone-500">{{ trainingSvc.trainings().length }} capacitación(es) asignada(s)</span>
+          @if (dashboardTrainings().length > 0) {
+            <span class="text-xs font-medium text-stone-500">{{ dashboardTrainings().length }} capacitación(es) asignada(s)</span>
           }
         </div>
 
-        @if (trainingSvc.trainings().length === 0) {
+        @if (dashboardTrainings().length === 0) {
           <div class="bg-white border border-stone-200 rounded-2xl p-12 text-center shadow-card">
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100">
               <svg class="w-7 h-7 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +251,7 @@
           </div>
         } @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            @for (t of trainingSvc.trainings(); track t.id) {
+            @for (t of dashboardTrainings(); track t.id) {
               <div class="bg-white border border-stone-200 rounded-2xl p-5 shadow-card cursor-pointer hover:border-brand-300 hover:shadow-md transition-all flex flex-col gap-4"
                    (click)="goToDetail(t)">
                 <div class="flex items-start justify-between gap-3">
