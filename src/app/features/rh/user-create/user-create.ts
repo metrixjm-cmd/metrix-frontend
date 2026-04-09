@@ -145,6 +145,10 @@ export class UserCreate implements OnInit {
 
     try {
       await this.rhSvc.createUser(req);
+      const currentUser = this.authSvc.currentUser();
+      if (!this.isAdmin() && currentUser?.storeId) {
+        this.rhSvc.loadUsersByStore(currentUser.storeId);
+      }
       this.router.navigate(['/banco-info/usuarios']);
     } catch {
       // error ya seteado en rhSvc._error

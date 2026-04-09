@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CreateUserRequest, UpdateUserRequest, UserProfile } from '../rh.models';
+import { CreateUserRequest, ResetUserPasswordRequest, UpdateUserRequest, UserProfile, VerifyAdminPasswordRequest } from '../rh.models';
 import { AuthService } from '../../auth/services/auth.service';
 
 /**
@@ -104,6 +104,42 @@ export class RhService {
           this._users.update(list => list.map(u => u.id === id ? user : u));
           this._saving.set(false);
           resolve(user);
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
+  resetUserPassword(id: string, req: ResetUserPasswordRequest): Promise<void> {
+    this._saving.set(true);
+    this._error.set(null);
+    return new Promise((resolve, reject) => {
+      this.http.patch<void>(`${this.apiUrl}/${id}/password`, req).subscribe({
+        next: () => {
+          this._saving.set(false);
+          resolve();
+        },
+        error: err => {
+          this._error.set(this.extractMessage(err));
+          this._saving.set(false);
+          reject(err);
+        },
+      });
+    });
+  }
+
+  verifyAdminPassword(req: VerifyAdminPasswordRequest): Promise<void> {
+    this._saving.set(true);
+    this._error.set(null);
+    return new Promise((resolve, reject) => {
+      this.http.post<void>(`${this.apiUrl}/password/verify-admin`, req).subscribe({
+        next: () => {
+          this._saving.set(false);
+          resolve();
         },
         error: err => {
           this._error.set(this.extractMessage(err));

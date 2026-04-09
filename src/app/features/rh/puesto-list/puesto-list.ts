@@ -31,14 +31,12 @@ export class PuestoList implements OnInit {
   readonly showCreateForm = signal(false);
   readonly createForm = this.fb.group({
     value: ['', [Validators.required, Validators.minLength(2)]],
-    label: [''],
   });
 
   // ── Inline edit state ────────────────────────────────────────────────
   readonly editingId   = signal<string | null>(null);
   readonly editForm    = this.fb.group({
     value: ['', [Validators.required, Validators.minLength(2)]],
-    label: [''],
   });
 
   // ── Delete confirm ───────────────────────────────────────────────────
@@ -90,7 +88,7 @@ export class PuestoList implements OnInit {
 
   startEdit(entry: CatalogEntry): void {
     this.editingId.set(entry.id);
-    this.editForm.patchValue({ value: entry.value, label: entry.label });
+    this.editForm.patchValue({ value: entry.value });
     this.error.set(null);
   }
 
@@ -121,7 +119,7 @@ export class PuestoList implements OnInit {
     try {
       await this.http.put(
         `${environment.apiUrl}/catalogs/PUESTO/${id}`,
-        { value: newValue, label: v.label || newValue }
+        { value: newValue }
       ).toPromise();
       this.catalogSvc.loadPuestos();
       this.editingId.set(null);
