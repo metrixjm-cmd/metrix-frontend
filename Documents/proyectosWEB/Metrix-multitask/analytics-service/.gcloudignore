@@ -1,9 +1,0 @@
-.gcloudignore
-.git
-.gitignore
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.md
-seed_data.py
