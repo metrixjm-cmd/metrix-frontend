@@ -119,7 +119,7 @@ body {
   }
 
   .input-error {
-    @apply border-red-300 focus:ring-red-400 focus:border-red-400;
+    @apply border-red-200 focus:ring-red-300 focus:border-red-300;
   }
 }
 

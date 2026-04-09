@@ -11,7 +11,7 @@
         <p class="text-sm text-stone-500 mt-0.5">Gestión de colaboradores por sucursal</p>
       </div>
     </div>
-    @if (isAdmin()) {
+    @if (isGerente()) {
       <a routerLink="/banco-info/usuarios/create"
          class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,14 +44,20 @@
       }
     </select>
 
-    <select [(ngModel)]="filterRol"
-            (ngModelChange)="filterRol.set($event)"
-            class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
-      <option value="">Todos los roles</option>
-      @for (entry of rolLabels | keyvalue; track entry.key) {
-        <option [value]="entry.key">{{ entry.value }}</option>
-      }
-    </select>
+    @if (!isOnlyGerente()) {
+      <select [(ngModel)]="filterRol"
+              (ngModelChange)="filterRol.set($event)"
+              class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <option value="">Todos los roles</option>
+        @for (entry of rolLabels | keyvalue; track entry.key) {
+          <option [value]="entry.key">{{ entry.value }}</option>
+        }
+      </select>
+    } @else {
+      <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-brand-50 text-brand-700 border border-brand-200">
+        Mostrando solo ejecutadores
+      </span>
+    }
   </div>
 
   <!-- ── Loading skeleton ───────────────────────────────────────────────── -->

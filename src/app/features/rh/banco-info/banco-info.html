@@ -40,12 +40,12 @@
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/usuarios"
-               class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
               Ver todos
             </a>
-            @if (isAdmin()) {
+            @if (isManager()) {
               <a routerLink="/banco-info/usuarios/create"
-                 class="flex-1 text-center text-sm font-medium bg-orange-600 text-white rounded-lg py-2 hover:bg-orange-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nuevo
               </a>
             }
@@ -80,11 +80,11 @@
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/sucursales"
-                 class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
                 Ver todas
               </a>
               <a routerLink="/banco-info/sucursales/create"
-                 class="flex-1 text-center text-sm font-medium bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             </div>
@@ -115,11 +115,11 @@
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/puestos"
-                 class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
                 Ver puestos
               </a>
               <a routerLink="/banco-info/puestos"
-                 class="flex-1 text-center text-sm font-medium bg-orange-600 text-white rounded-lg py-2 hover:bg-orange-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nuevo
               </a>
             </div>
@@ -167,12 +167,12 @@
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/categorias"
-               class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
               Ver todas
             </a>
             @if (isManager()) {
               <a routerLink="/banco-info/categorias"
-                 class="flex-1 text-center text-sm font-medium bg-emerald-600 text-white rounded-lg py-2 hover:bg-emerald-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             }
@@ -210,12 +210,12 @@
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/plantillas"
-               class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
               Ver plantillas
             </a>
             @if (isManager()) {
               <a routerLink="/banco-info/plantillas"
-                 class="flex-1 text-center text-sm font-medium bg-indigo-600 text-white rounded-lg py-2 hover:bg-indigo-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             }
@@ -250,12 +250,12 @@
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/materiales"
-               class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
               Ver materiales
             </a>
             @if (isManager()) {
               <a routerLink="/banco-info/materiales"
-                 class="flex-1 text-center text-sm font-medium bg-teal-600 text-white rounded-lg py-2 hover:bg-teal-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Agregar
               </a>
             }
@@ -285,12 +285,12 @@
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/training"
-               class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
               Ver todas
             </a>
             @if (isManager()) {
               <a routerLink="/training/create"
-                 class="flex-1 text-center text-sm font-medium bg-teal-600 text-white rounded-lg py-2 hover:bg-teal-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             }
@@ -330,11 +330,11 @@
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/banco-preguntas"
-                 class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
                 Ver banco
               </a>
               <a routerLink="/banco-info/banco-preguntas"
-                 class="flex-1 text-center text-sm font-medium bg-indigo-600 text-white rounded-lg py-2 hover:bg-indigo-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             </div>
@@ -364,11 +364,11 @@
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/plantillas-examen"
-                 class="flex-1 text-center text-sm font-medium text-stone-700 border border-stone-200 rounded-lg py-2 hover:bg-stone-100 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
                 Ver plantillas
               </a>
               <a routerLink="/banco-info/plantillas-examen"
-                 class="flex-1 text-center text-sm font-medium bg-violet-600 text-white rounded-lg py-2 hover:bg-violet-700 transition-colors">
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
                 + Nueva
               </a>
             </div>
