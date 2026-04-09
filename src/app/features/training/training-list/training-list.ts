@@ -112,7 +112,19 @@ export class TrainingList implements OnInit {
         ? this.gerenteCreatedTrainings()
         : this.gerenteToDoTrainings();
     }
-    return this.trainingSvc.myTrainings().map(training => ({ ...training, groupSize: 1 }));
+    return this.learnerTrainings();
+  });
+
+  readonly learnerTrainings = computed<TrainingListRow[]>(() => {
+    if (!this.isEjecutador()) return [];
+    return this.trainingSvc.myTrainings()
+      .map(training => ({
+        ...training,
+        status: this.normalizeTrainingStatus(training),
+        groupSize: 1,
+      }))
+      .sort((a, b) => this.learnerPriority(a) - this.learnerPriority(b)
+        || new Date(a.dueAt ?? a.createdAt).getTime() - new Date(b.dueAt ?? b.createdAt).getTime());
   });
 
   readonly filteredTrainings = computed(() => {
@@ -344,5 +356,15 @@ export class TrainingList implements OnInit {
       }
     }
     return training.status;
+  }
+
+  private learnerPriority(training: Pick<TrainingResponse, 'status'>): number {
+    const map: Record<TrainingStatus, number> = {
+      EN_CURSO: 0,
+      PROGRAMADA: 1,
+      NO_COMPLETADA: 2,
+      COMPLETADA: 3,
+    };
+    return map[training.status] ?? 4;
   }
 }

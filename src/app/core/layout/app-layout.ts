@@ -40,7 +40,6 @@ export class AppLayout implements OnInit, OnDestroy {
 
   showNotifs  = signal(false);
   showProfile = signal(false);
-  searchQuery = signal('');
 
   // ── Clase dinámica del sidebar ─────────────────────────────────────────
   /**
