@@ -46,6 +46,7 @@ export class TrainingService {
   private readonly _error          = signal<string | null>(null);
   private readonly _templates      = signal<TrainingTemplateSummary[]>([]);
   private readonly _lastLoadScope  = signal<LoadScope | null>(null);
+  private _scopeUserKey: string | null = null;
 
   // ── Readonly exports ──────────────────────────────────────────────────
   readonly loading   = this._loading.asReadonly();
@@ -123,6 +124,7 @@ export class TrainingService {
 
   /** Solo ADMIN — todas las sucursales. */
   loadAll(): void {
+    this.ensureUserScope();
     this._loading.set(true);
     this._error.set(null);
     const scope: LoadScope = { type: 'all' };
@@ -130,7 +132,7 @@ export class TrainingService {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: list => {
-          this.replaceCache(list);
+          this.replaceCache(list, false);
           this._myTrainingIds.set(new Set());
           this._lastLoadScope.set(scope);
           this._loading.set(false);
@@ -140,6 +142,7 @@ export class TrainingService {
   }
 
   loadMyTrainings(): void {
+    this.ensureUserScope();
     this._loading.set(true);
     this._error.set(null);
     const scope: LoadScope = { type: 'my' };
@@ -147,8 +150,8 @@ export class TrainingService {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: list => {
-          this.replaceCache(list);
           this._myTrainingIds.set(new Set(list.map(t => t.id)));
+          this.replaceCache(list, false);
           this._lastLoadScope.set(scope);
           this._loading.set(false);
         },
@@ -158,11 +161,12 @@ export class TrainingService {
 
   /** Obtiene mis capacitaciones sin reemplazar el cache global. */
   listMyTrainings(): Promise<TrainingResponse[]> {
+    this.ensureUserScope();
     return new Promise((resolve, reject) => {
       this.http.get<TrainingResponse[]>(`${this.apiUrl}/my`).subscribe({
         next: list => {
-          this.upsertMany(list);
           this._myTrainingIds.set(new Set(list.map(t => t.id)));
+          this.upsertMany(list);
           resolve(list);
         },
         error: err => reject(err),
@@ -171,6 +175,7 @@ export class TrainingService {
   }
 
   loadByStore(storeId: string): void {
+    this.ensureUserScope();
     this._loading.set(true);
     this._error.set(null);
     const scope: LoadScope = { type: 'store', storeId };
@@ -178,7 +183,7 @@ export class TrainingService {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: list => {
-          this.replaceCache(list);
+          this.replaceCache(list, true);
           this._lastLoadScope.set(scope);
           this._loading.set(false);
         },
@@ -187,6 +192,7 @@ export class TrainingService {
   }
 
   loadById(id: string): void {
+    this.ensureUserScope();
     this._selectedId.set(id);
     this._loading.set(true);
     this._error.set(null);
@@ -202,6 +208,7 @@ export class TrainingService {
   }
 
   getByAssignmentGroup(groupId: string): Promise<TrainingResponse[]> {
+    this.ensureUserScope();
     return new Promise((resolve, reject) => {
       this.http.get<TrainingResponse[]>(`${this.apiUrl}/group/${groupId}`).subscribe({
         next: list => resolve(list),
@@ -213,6 +220,7 @@ export class TrainingService {
   // ── Commands (mutaciones) ─────────────────────────────────────────────
 
   async create(req: CreateTrainingRequest): Promise<TrainingResponse> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -228,6 +236,7 @@ export class TrainingService {
   }
 
   async update(id: string, req: UpdateTrainingRequest): Promise<TrainingResponse> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -243,6 +252,7 @@ export class TrainingService {
   }
 
   async delete(id: string): Promise<void> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -271,6 +281,7 @@ export class TrainingService {
   }
 
   async updateProgress(id: string, req: UpdateTrainingProgressRequest): Promise<TrainingResponse> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -289,6 +300,7 @@ export class TrainingService {
   }
 
   loadTemplateSummaries(): void {
+    this.ensureUserScope();
     this.http.get<TrainingTemplateSummary[]>(
       `${environment.apiUrl}/training-templates/summaries`
     ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -298,6 +310,7 @@ export class TrainingService {
   }
 
   async createFromTemplate(templateId: string, req: CreateFromTemplateRequest): Promise<TrainingResponse> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -315,6 +328,7 @@ export class TrainingService {
   }
 
   async markMaterialViewed(trainingId: string, materialId: string): Promise<TrainingResponse> {
+    this.ensureUserScope();
     this._saving.set(true);
     this._error.set(null);
     try {
@@ -339,6 +353,7 @@ export class TrainingService {
 
   /** Recarga el último scope para refrescar datos. */
   reload(): void {
+    this.ensureUserScope();
     const scope = this._lastLoadScope();
     if (!scope) return;
     switch (scope.type) {
@@ -358,19 +373,39 @@ export class TrainingService {
     }
   }
 
-  private replaceCache(list: TrainingResponse[]): void {
+  private replaceCache(list: TrainingResponse[], preserveMyFromCache: boolean): void {
     const next = new Map<string, TrainingResponse>();
     list.forEach(t => next.set(t.id, t));
-    // Conserva mis capacitaciones ya cargadas por /my para evitar perderlas
-    // cuando una carga por sucursal termina después (race condition).
-    const previous = this._cache();
-    this._myTrainingIds().forEach(id => {
-      const existing = previous.get(id);
-      if (existing && !next.has(id)) {
-        next.set(id, existing);
-      }
-    });
+    // Solo en carga por sucursal preservamos "mis" capacitaciones ya conocidas,
+    // para evitar race conditions entre /store y /my.
+    if (preserveMyFromCache) {
+      const previous = this._cache();
+      this._myTrainingIds().forEach(id => {
+        const existing = previous.get(id);
+        if (existing && !next.has(id)) {
+          next.set(id, existing);
+        }
+      });
+    }
     this._cache.set(next);
+  }
+
+  private ensureUserScope(): void {
+    const user = this.authSvc.currentUser();
+    const key = user
+      ? `${user.numeroUsuario}|${user.storeId ?? ''}|${user.roles.join(',')}`
+      : null;
+    if (this._scopeUserKey === key) return;
+    this._scopeUserKey = key;
+    this.clearStoreState();
+  }
+
+  private clearStoreState(): void {
+    this._cache.set(new Map());
+    this._myTrainingIds.set(new Set());
+    this._selectedId.set(null);
+    this._error.set(null);
+    this._lastLoadScope.set(null);
   }
 
   // ── Helper ────────────────────────────────────────────────────────────
