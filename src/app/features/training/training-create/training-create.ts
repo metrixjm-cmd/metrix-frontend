@@ -96,7 +96,7 @@ export class TrainingCreate implements OnInit {
     dueTime:         ['', Validators.required],
   });
 
-  // ── Formulario mínimo (desde plantilla) ───────────────────────────────────
+  // ── Formulario mínimo (reutilizar operación) ──────────────────────────────
   readonly templateForm = this.fb.group({
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
@@ -385,7 +385,7 @@ export class TrainingCreate implements OnInit {
     } catch { /* error en service */ }
   }
 
-  // ── Submit desde plantilla ────────────────────────────────────────────────
+  // ── Submit reutilizar operación ───────────────────────────────────────────
 
   async onSubmitFromTemplate(): Promise<void> {
     const tmpl = this.selectedTemplate();
