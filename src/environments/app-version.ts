@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────
 // AUTO-GENERADO por scripts/set-version.js — NO EDITAR A MANO
 // Fuente: package.json → version: "1.0.0"
-// Generado: 2026-04-09T09:28:50.548Z
+// Generado: 2026-04-09T08:23:35.295Z
 // ─────────────────────────────────────────────────────────────
 export const APP_VERSION = {
   version:        '1.0.0',
