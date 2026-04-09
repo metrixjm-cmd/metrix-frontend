@@ -1,0 +1,11 @@
+<svg width="512" height="512" viewBox="96 96 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="transparent"/>
+
+  <!-- METRIX mark: clean faceted X, no background, no strokes, no shadows. -->
+  <path d="M126 118H196L256 213L316 118H386L295 256L386 394H316L256 299L196 394H126L217 256L126 118Z" fill="#2F72FF"/>
+  <path d="M126 118H196L256 213L217 256L126 118Z" fill="#31D7FF"/>
+  <path d="M386 118L295 256L256 213L316 118H386Z" fill="#6E5BFF"/>
+  <path d="M217 256L256 299L196 394H126L217 256Z" fill="#4358F5"/>
+  <path d="M295 256L386 394H316L256 299L295 256Z" fill="#9A5BFF"/>
+  <path d="M217 256L256 213L295 256L256 299L217 256Z" fill="#5A7CFF"/>
+</svg>
