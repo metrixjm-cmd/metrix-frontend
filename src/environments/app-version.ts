@@ -6,5 +6,5 @@
 export const APP_VERSION = {
   version:        '1.0.0',
   buildDate:      '2026-04-09',
-  buildTimestamp: 1775723015294,
+  buildTimestamp: 1775726930547,
 } as const;

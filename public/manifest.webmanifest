@@ -2,7 +2,7 @@
   "name": "METRIX Restaurantes",
   "short_name": "METRIX",
   "description": "Sistema Integral de Gestión de Tareas para Cadenas de Restaurantes",
-  "theme_color": "#ea580c",
+  "theme_color": "#160a3d",
   "background_color": "#fafaf9",
   "display": "standalone",
   "scope": "/",
@@ -10,51 +10,51 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/IconoMetrix.png",
-      "sizes": "345x261",
-      "type": "image/png",
+      "src": "icons/metrix-x-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     }
   ],
