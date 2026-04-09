@@ -27,21 +27,30 @@ export class UserList implements OnInit {
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   filterTurno  = signal<string>('');
-  filterRol    = signal<string>('');
+  filterRol    = signal<string>('EJECUTADOR');
   filterStore  = signal<string>('');
+
+  readonly isOnlyGerente = computed(() =>
+    this.authSvc.hasRole('GERENTE') && !this.authSvc.hasRole('ADMIN')
+  );
 
   readonly filteredUsers = computed(() => {
     let list = this.rhSvc.users();
     const turno = this.filterTurno();
     const rol   = this.filterRol();
     const store = this.filterStore();
+    if (this.isOnlyGerente()) {
+      list = list.filter(u => u.roles.includes('EJECUTADOR') || u.roles.includes('ROLE_EJECUTADOR'));
+    }
     if (store) list = list.filter(u => u.storeId === store);
     if (turno) list = list.filter(u => u.turno === turno);
     if (rol)   list = list.filter(u => u.roles.includes(rol));
     return list;
   });
 
-  readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
+  readonly isAdmin   = computed(() =>
+    this.authSvc.hasRole('ADMIN') && !this.authSvc.hasRole('GERENTE')
+  );
   readonly isGerente = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
 
   ngOnInit(): void {

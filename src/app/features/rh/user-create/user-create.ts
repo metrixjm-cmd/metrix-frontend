@@ -45,6 +45,15 @@ export class UserCreate implements OnInit {
   readonly rolLabels = ROL_LABELS;
 
   readonly isAdmin = computed(() => this.authSvc.hasRole('ADMIN'));
+  readonly visibleRoles = computed(() =>
+    this.isAdmin() ? [...this.roles] : ['EJECUTADOR']
+  );
+  readonly currentStoreName = computed(() => {
+    const user = this.authSvc.currentUser();
+    if (!user?.storeId) return 'Sucursal no disponible';
+    const fromCatalog = this.settingsSvc.stores().find(s => s.id === user.storeId)?.nombre;
+    return fromCatalog ?? user.storeName ?? user.storeId;
+  });
 
   readonly showPassword        = signal(false);
   readonly showConfirmPassword = signal(false);
@@ -128,7 +137,7 @@ export class UserCreate implements OnInit {
       storeId:         v.storeId!,
       turno:           v.turno!,
       password:        v.password!,
-      roles:           (v.roles as string[]) ?? ['EJECUTADOR'],
+      roles:           this.isAdmin() ? ((v.roles as string[]) ?? ['EJECUTADOR']) : ['EJECUTADOR'],
       // numeroUsuario omitido — el backend lo auto-genera con la secuencia
       ...(v.email           ? { email:           v.email }           : {}),
       ...(v.fechaNacimiento ? { fechaNacimiento: v.fechaNacimiento } : {}),

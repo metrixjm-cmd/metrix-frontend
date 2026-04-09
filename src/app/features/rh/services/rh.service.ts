@@ -1,9 +1,10 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { DestroyRef, effect, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
 import { CreateUserRequest, UpdateUserRequest, UserProfile } from '../rh.models';
+import { AuthService } from '../../auth/services/auth.service';
 
 /**
  * Servicio del módulo RH — Sprint 9.
@@ -13,7 +14,9 @@ import { CreateUserRequest, UpdateUserRequest, UserProfile } from '../rh.models'
 export class RhService {
   private readonly http       = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly authSvc    = inject(AuthService);
   private readonly apiUrl     = `${environment.apiUrl}/users`;
+  private readonly _scopeUserKey = signal<string | null>(null);
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
   private readonly _users        = signal<UserProfile[]>([]);
@@ -27,6 +30,15 @@ export class RhService {
   readonly loading      = this._loading.asReadonly();
   readonly saving       = this._saving.asReadonly();
   readonly error        = this._error.asReadonly();
+
+  constructor() {
+    effect(() => {
+      const key = this.authSvc.currentUser()?.numeroUsuario ?? null;
+      if (this._scopeUserKey() === key) return;
+      this._scopeUserKey.set(key);
+      this.resetSessionState();
+    });
+  }
 
   // ── Métodos HTTP ──────────────────────────────────────────────────────────
 
@@ -145,6 +157,22 @@ export class RhService {
   // ── Helper ─────────────────────────────────────────────────────────────────
 
   private extractMessage(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      const body = err.error as unknown;
+      if (body && typeof body === 'object') {
+        const payload = body as { error?: string; message?: string; details?: Record<string, string> };
+        if (payload.error) return payload.error;
+        if (payload.message) return payload.message;
+        if (payload.details) {
+          const first = Object.values(payload.details)[0];
+          if (first) return first;
+        }
+      }
+      if (typeof body === 'string' && body.trim().length > 0) return body;
+      if (err.status === 0) return 'No se pudo conectar con el servidor.';
+      if (err.statusText) return `Error ${err.status}: ${err.statusText}`;
+    }
+
     if (err && typeof err === 'object' && 'error' in err) {
       const body = (err as { error?: { error?: string; message?: string } }).error;
       if (typeof body === 'string') return body;
@@ -152,5 +180,13 @@ export class RhService {
       if (body?.message) return body.message;
     }
     return 'Error al procesar la solicitud';
+  }
+
+  private resetSessionState(): void {
+    this._users.set([]);
+    this._selectedUser.set(null);
+    this._loading.set(false);
+    this._saving.set(false);
+    this._error.set(null);
   }
 }

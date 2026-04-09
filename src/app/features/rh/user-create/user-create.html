@@ -58,7 +58,7 @@
     <div>
       <label class="block text-sm font-medium text-stone-700 mb-2">Perfil App *</label>
       <div class="flex flex-wrap gap-2">
-        @for (rol of roles; track rol) {
+        @for (rol of visibleRoles(); track rol) {
           <button type="button"
                   [class]="isRolSelected(rol)
                     ? 'px-3 py-1.5 rounded-lg text-sm font-medium bg-brand-600 text-white border border-brand-600 transition-colors'
@@ -70,7 +70,7 @@
         }
       </div>
       @if (!isAdmin()) {
-        <p class="text-xs text-stone-400 mt-1">Solo ADMIN puede asignar roles</p>
+        <p class="text-xs text-stone-400 mt-1">Como GERENTE solo puedes crear personal EJECUTADOR.</p>
       }
     </div>
 
@@ -121,7 +121,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
-            <span class="text-sm text-stone-700">{{ form.get('storeId')?.value }}</span>
+            <span class="text-sm text-stone-700">{{ currentStoreName() }}</span>
             <span class="ml-auto text-xs text-stone-400 bg-stone-100 px-2 py-0.5 rounded">Tu sucursal</span>
           </div>
         }
