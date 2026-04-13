@@ -31,16 +31,18 @@
       <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
       @if (collapsed()) {
         <div class="relative z-10 flex w-9 h-9 items-center justify-center shrink-0 overflow-hidden rounded-lg bg-white/10 transition-all duration-300">
-          <img src="icons/metrix-x-logo.svg" alt="Metrix" class="w-full h-full object-contain" />
+          <img
+            src="icons/metrix-logo-full.jpg"
+            alt="Metrix"
+            class="w-full h-full scale-[1.35] object-cover object-[center_24%]"
+          />
         </div>
       } @else {
-        <div class="relative z-10 flex h-[142px] w-[173px] flex-col items-center justify-center rounded-xl bg-white/10 px-2">
-          <img src="icons/metrix-x-logo.svg" alt="Metrix" class="h-[83px] w-[83px] -mt-1 object-contain" />
-          <span class="mt-1 block text-white font-bold text-[11px] tracking-[0.24em] leading-none">METRIX</span>
-          <span class="mt-1.5 block text-white/65 text-[7.5px] font-semibold tracking-[0.1em] uppercase leading-relaxed">
-            FOOD CHAINS OP<br />CONTROL
-          </span>
-        </div>
+        <img
+          src="icons/metrix-logo-full.jpg"
+          alt="Metrix"
+          class="relative z-10 h-[148px] w-[148px] rounded-xl object-cover"
+        />
       }
       <!-- Botón cerrar drawer (solo mobile) -->
       <button

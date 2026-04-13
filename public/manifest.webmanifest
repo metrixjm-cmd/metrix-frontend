@@ -10,51 +10,51 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     },
     {
-      "src": "icons/metrix-x-logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icons/metrix-logo-full.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg",
       "purpose": "maskable any"
     }
   ],
