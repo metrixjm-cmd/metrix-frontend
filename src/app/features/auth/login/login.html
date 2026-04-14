@@ -17,26 +17,27 @@
     </div>
 
     <!-- Logo + wordmark -->
-    <div class="relative z-10">
-      <img
-        src="icons/metrix-logo-full.jpg"
-        alt="Metrix"
-        class="h-auto w-[180px] rounded-xl object-cover"
-      />
+    <div class="relative z-10 mb-10">
+      <div class="flex h-[232px] w-[232px] items-center justify-center rounded-[2rem] bg-stone-950 p-2 shadow-2xl ring-1 ring-white/10">
+        <img
+          src="icons/metrix-icon-original.png"
+          alt="Icono de Metrix"
+          class="h-[84%] w-[84%] object-contain"
+        />
+      </div>
     </div>
 
     <!-- Headline central -->
-    <div class="relative z-10 flex-1 flex flex-col justify-center max-w-sm">
-      <h1 class="text-4xl font-extrabold text-white leading-tight mb-4 tracking-tight">
-        Sistema Integral para Gestión<br/>
-        <span class="text-brand-200">de Tareas Empresariales</span>
+    <div class="relative z-10 flex-1 flex flex-col max-w-sm">
+      <h1 class="text-4xl font-extrabold text-white leading-none mb-3 tracking-[0.22em]">
+        METRIX
       </h1>
-      <p class="text-brand-100 text-base leading-relaxed">
-        Organiza, delega y monitorea las actividades de tu equipo en tiempo real.
+      <p class="text-brand-100 text-base leading-relaxed uppercase tracking-[0.18em]">
+        Food Chains OP Control
       </p>
 
       <!-- Feature cards — sólidas, sin glassmorphism -->
-      <div class="grid grid-cols-2 gap-3 mt-10">
+      <div class="grid grid-cols-2 gap-3 mt-8">
         <div class="bg-brand-700 border border-brand-500 rounded-xl p-4">
           <div class="text-2xl mb-2">🏢</div>
           <p class="text-white font-semibold text-sm leading-tight">Multi-unidad</p>
@@ -61,7 +62,7 @@
     </div>
 
     <!-- ── SELECTOR DE TEMA ──────────────────────── -->
-    <div class="relative z-10">
+    <div class="relative z-10 pt-10">
 
       <div class="flex items-center gap-4">
         @for (theme of themeSvc.themes; track theme.id) {
@@ -107,11 +108,13 @@
 
       <!-- Logo mobile (solo visible en sm/md) -->
       <div class="mb-8 flex justify-center lg:hidden">
-        <img
-          src="icons/metrix-logo-full.jpg"
-          alt="Metrix"
-          class="h-auto w-[152px] rounded-xl object-cover"
-        />
+        <div class="flex h-[152px] w-[152px] items-center justify-center rounded-[1.5rem] bg-stone-950 p-2 shadow-lg ring-1 ring-stone-200">
+          <img
+            src="icons/metrix-icon-original.png"
+            alt="Icono de Metrix"
+            class="h-[84%] w-[84%] object-contain"
+          />
+        </div>
       </div>
 
       <!-- Encabezado del formulario -->
