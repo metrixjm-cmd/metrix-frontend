@@ -266,10 +266,9 @@
                 </thead>
                 <tbody class="divide-y divide-stone-100">
                   @for (t of filteredTrainings(); track t.id) {
-                    <tr class="hover:bg-stone-50 cursor-pointer transition-colors"
-                        [class.bg-red-50]="t.status === 'NO_COMPLETADA'"
+                    <tr [class]="trainingRowClass(t)"
                         (click)="goToDetail(t)">
-                      <td class="px-4 py-3">
+                      <td [class]="trainingFirstCellClass(t)">
                         <div class="font-medium text-stone-900">{{ t.title }}</div>
                         <div class="text-xs text-stone-400 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
                       </td>
@@ -364,10 +363,9 @@
               </thead>
               <tbody class="divide-y divide-stone-100">
                 @for (t of filteredTrainings(); track t.id) {
-                  <tr class="hover:bg-stone-50 cursor-pointer transition-colors"
-                      [class.bg-red-50]="t.status === 'NO_COMPLETADA'"
+                  <tr [class]="trainingRowClass(t)"
                       (click)="goToDetail(t)">
-                    <td class="px-4 py-3">
+                    <td [class]="trainingFirstCellClass(t)">
                       <div class="font-medium text-stone-900">{{ t.title }}</div>
                       <div class="text-xs text-stone-400 line-clamp-1 max-w-[360px]">
                         @if (t.groupSize > 1) {

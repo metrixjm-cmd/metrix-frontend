@@ -9,10 +9,12 @@ import { RhService } from '../../rh/services/rh.service';
 import { SettingsService } from '../../settings/services/settings.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { CatalogEntry } from '../../../core/services/catalog.models';
+import { TaskCategoriaService } from '../services/task-categoria.service';
+import { TaskCategoriaEntry } from '../models/task-categoria.models';
 import { AddCatalogDialog } from '../../../shared/components/add-catalog-dialog/add-catalog-dialog';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { DayTimePicker, DayTimeValue } from '../../../shared/components/day-time-picker/day-time-picker';
-import { TaskCategory, TaskShift, WEEK_DAYS, WeekDay, ProcessStepRequest, PROCESS_TAGS } from '../models/task.models';
+import { TaskCategory, WEEK_DAYS, WeekDay, ProcessStepRequest } from '../models/task.models';
 
 @Component({
   selector: 'app-task-create',
@@ -21,31 +23,162 @@ import { TaskCategory, TaskShift, WEEK_DAYS, WeekDay, ProcessStepRequest, PROCES
   templateUrl: './task-create.html',
 })
 export class TaskCreate implements OnInit {
-  readonly auth        = inject(AuthService);
-  readonly taskSvc     = inject(TaskService);
-  readonly rhSvc       = inject(RhService);
-  readonly settingsSvc = inject(SettingsService);
-  readonly catalogSvc  = inject(CatalogService);
-  readonly router      = inject(Router);
-  readonly fb          = inject(FormBuilder);
+  readonly auth            = inject(AuthService);
+  readonly taskSvc         = inject(TaskService);
+  readonly rhSvc           = inject(RhService);
+  readonly settingsSvc     = inject(SettingsService);
+  readonly catalogSvc      = inject(CatalogService);
+  readonly categoriaTaskSvc = inject(TaskCategoriaService);
+  readonly router          = inject(Router);
+  readonly fb              = inject(FormBuilder);
 
   submitting  = signal(false);
   submitError = signal<string | null>(null);
   submitted   = signal(false);
 
-  /** Secciones colapsables */
-  sectionOpen = signal({ definition: true, scheduling: true, assignment: true });
+  /** Secciones colapsables — orden: definition → assignment → scheduling */
+  sectionOpen = signal({ definition: true, assignment: true, scheduling: true });
 
-  toggleSection(section: 'definition' | 'scheduling' | 'assignment'): void {
+  toggleSection(section: 'definition' | 'assignment' | 'scheduling'): void {
     this.sectionOpen.update(s => ({ ...s, [section]: !s[section] }));
   }
 
-  /** Progreso del formulario */
-  readonly step1Done = computed(() => !!this.form.get('title')?.value && !!this.form.get('description')?.value);
-  readonly step2Done = computed(() => this.isRecurring() || !!this.form.get('shift')?.value);
-  readonly step3Done = computed(() => (this.form.get('assignedToIds')?.value?.length || 0) > 0);
+  /** Progreso del formulario
+   *  Paso 1 — Tarea:        título + descripción + categoría
+   *  Paso 2 — Responsables: sucursal + al menos un colaborador
+   *  Paso 3 — Ejecución:    si repetitiva → días + horas; si única → fechas completas
+   */
+  readonly step1Done = computed(() =>
+    !!this.form.get('title')?.value &&
+    !!this.form.get('description')?.value &&
+    !!this.form.get('category')?.value
+  );
+  readonly step2Done = computed(() =>
+    !!this.form.get('storeId')?.value &&
+    (this.form.get('assignedToIds')?.value?.length || 0) > 0
+  );
+  readonly step3Done = computed(() => {
+    if (this.isRecurring()) {
+      return this.selectedDays().size > 0 &&
+        !!this.form.get('recurrenceStartTime')?.value &&
+        !!this.form.get('recurrenceEndTime')?.value;
+    }
+    return !!this.form.get('startDay')?.value &&
+      !!this.form.get('startMonth')?.value &&
+      !!this.form.get('startTime')?.value &&
+      !!this.form.get('dueDay')?.value &&
+      !!this.form.get('dueMonth')?.value &&
+      !!this.form.get('dueTime')?.value;
+  });
 
-  /** Input inline para agregar proceso rápido */
+  // ── Combobox de categorias para tareas ──────────────────────────────────
+
+  /** Entrada seleccionada de categorias (null = modo manual) */
+  selectedTemplate = signal<TaskCategoriaEntry | null>(null);
+
+  /** Controla visibilidad del dropdown de resultados */
+  templateDropdownOpen = signal(false);
+
+  /** Acceso directo a los resultados y estado de búsqueda del servicio */
+  readonly templateResults  = this.categoriaTaskSvc.results;
+  readonly templateSearching = this.categoriaTaskSvc.searching;
+
+  /** Temporizador de debounce para no disparar una request por cada tecla */
+  private _searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * Se llama al escribir en el input de título.
+   * Después de 300ms de inactividad busca categorias que coincidan.
+   */
+  onTitleInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    this.form.get('title')?.setValue(query, { emitEvent: false });
+
+    // Si ya hay una entrada seleccionada y el usuario edita manualmente, la limpiamos
+    if (this.selectedTemplate() && query !== this.selectedTemplate()!.title) {
+      this.selectedTemplate.set(null);
+    }
+
+    // Debounce 300ms
+    if (this._searchTimer) clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => {
+      if (query.trim().length >= 1) {
+        this.categoriaTaskSvc.searchAndUpdate(query);
+        this.templateDropdownOpen.set(true);
+      } else {
+        this.categoriaTaskSvc.clearResults();
+        this.templateDropdownOpen.set(false);
+      }
+    }, 300);
+  }
+
+  /** Abre el dropdown con categorias (al hacer foco en el input vacío) */
+  onTitleFocus(): void {
+    const query = this.form.get('title')?.value ?? '';
+    if (!this.selectedTemplate() && this.templateResults().length === 0) {
+      this.categoriaTaskSvc.searchAndUpdate(query);
+    }
+    if (this.templateResults().length > 0) {
+      this.templateDropdownOpen.set(true);
+    }
+  }
+
+  async loadTaskTemplatePicker(): Promise<void> {
+    await this.categoriaTaskSvc.searchAndUpdate('');
+    this.templateDropdownOpen.set(true);
+  }
+
+  /**
+   * Aplica una entrada de categorias al formulario:
+   * rellena título, descripción, categoría y pasos de proceso.
+   */
+  selectTemplate(template: TaskCategoriaEntry): void {
+    this.selectedTemplate.set(template);
+    this.templateDropdownOpen.set(false);
+    this.categoriaTaskSvc.clearResults();
+
+    // Rellenar campos del formulario
+    this.form.get('title')?.setValue(template.title);
+    this.form.get('description')?.setValue(template.description);
+    this.form.get('category')?.setValue(template.category as TaskCategory);
+
+    // Rellenar pasos de proceso (el usuario puede editarlos antes de guardar)
+    if (template.steps && template.steps.length > 0) {
+      this.processSteps.set(
+        template.steps.map(s => ({
+          title: s.title,
+          description: s.description ?? '',
+          saved: true,
+        }))
+      );
+    }
+
+    // Marcar campos como touched para que las validaciones se muestren si hay error
+    this.form.get('title')?.markAsTouched();
+    this.form.get('description')?.markAsTouched();
+    this.form.get('category')?.markAsTouched();
+  }
+
+  /**
+   * Limpia la entrada seleccionada y vuelve al modo de creación manual.
+   * El título queda editable pero vacío para que el usuario lo reescriba.
+   */
+  clearTemplate(): void {
+    this.selectedTemplate.set(null);
+    this.form.get('title')?.setValue('');
+    this.form.get('description')?.setValue('');
+    this.form.get('category')?.setValue('');
+    this.processSteps.set([]);
+    this.categoriaTaskSvc.clearResults();
+    this.templateDropdownOpen.set(false);
+  }
+
+  /** Cierra el dropdown si el click fue fuera (llamado desde el host del documento) */
+  closeTemplateDropdown(): void {
+    this.templateDropdownOpen.set(false);
+  }
+
+  // ── Input inline para agregar proceso rápido ────────────────────────────
   newProcessTitle = signal('');
 
   addQuickProcess(): void {
@@ -65,8 +198,7 @@ export class TaskCreate implements OnInit {
   readonly targetRole = computed(() => this.isAdmin() ? 'GERENTE' : 'EJECUTADOR');
   readonly targetRoleLabel = computed(() => this.isAdmin() ? 'Gerente' : 'Ejecutador');
 
-  /** Usuarios disponibles en la sucursal seleccionada, filtrados por rol destino:
-   *  ADMIN → solo GERENTE | GERENTE → solo EJECUTADOR */
+  /** Usuarios disponibles en la sucursal seleccionada, filtrados por rol destino */
   filteredUsers = computed(() => {
     const role = this.targetRole();
     return this.rhSvc.users().filter(u => u.activo && u.roles.includes(role));
@@ -153,7 +285,6 @@ export class TaskCreate implements OnInit {
   editingStepDescription = signal('');
 
   addProcessStep(): void {
-    // Abrir formulario de nuevo paso
     this.editingStepIndex.set(-1); // -1 = nuevo
     this.editingStepTitle.set('');
     this.editingStepDescription.set('');
@@ -173,10 +304,8 @@ export class TaskCreate implements OnInit {
     const idx = this.editingStepIndex();
 
     if (idx === -1) {
-      // Nuevo paso
       this.processSteps.update(steps => [...steps, { title, description: desc, saved: true }]);
     } else if (idx !== null) {
-      // Editando existente
       this.processSteps.update(steps => steps.map((s, i) =>
         i === idx ? { ...s, title, description: desc } : s
       ));
@@ -204,7 +333,6 @@ export class TaskCreate implements OnInit {
     recurrenceEndTime:   [''],
     assignedToIds:[[] as string[], [Validators.required, Validators.minLength(1)]],
     storeId:     [this.auth.currentUser()?.storeId ?? '', Validators.required],
-    shift:       ['' as TaskShift | '', Validators.required],
     startDay:    ['' as string | number, Validators.required],
     startMonth:  ['' as string | number, Validators.required],
     startTime:   ['', Validators.required],
@@ -373,7 +501,6 @@ export class TaskCreate implements OnInit {
       isCritical:   v.isCritical ?? false,
       assignedToIds: v.assignedToIds as string[],
       storeId:      v.storeId!,
-      shift:        v.shift as TaskShift,
       dueAt,
       processes,
       isRecurring:         recurring,
@@ -384,6 +511,7 @@ export class TaskCreate implements OnInit {
       next: () => {
         this.submitted.set(true);
         this.submitting.set(false);
+        this.selectedTemplate.set(null);
       },
       error: err => {
         this.submitError.set(this.extractMsg(err));

@@ -54,12 +54,12 @@
 
         <!-- ── Sucursales ─────────────────────────────────────────────── -->
         @if (isAdmin()) {
-          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-blue-400/40 hover:shadow-lg flex flex-col">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
+          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-brand-400/40 hover:shadow-lg flex flex-col">
+            <div class="absolute inset-0 bg-gradient-to-br from-brand-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
             <!-- Header -->
             <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
@@ -134,7 +134,45 @@
       <h2 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Tareas</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
-        <!-- ── Categorías de tareas ───────────────────────────────────── -->
+        <!-- ── Modulo de tareas ───────────────────────────────────── -->
+        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-sky-400/40 hover:shadow-lg flex flex-col">
+          <div class="absolute inset-0 bg-gradient-to-br from-sky-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
+          <!-- Header -->
+          <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0 space-y-1">
+              <h3 class="font-semibold text-stone-900">Plantillas de tareas</h3>
+              <p class="text-sm text-stone-500 leading-relaxed">Bases reutilizables para crear tareas rapido</p>
+            </div>
+          </div>
+          <!-- Content -->
+          <div class="relative px-4 pb-2 flex-1">
+            <div class="mb-3">
+              <span class="text-2xl font-bold text-stone-900">{{ totalTaskTemplates() }}</span>
+              <span class="ml-2 text-sm text-stone-400">plantillas</span>
+            </div>
+          </div>
+          <!-- Footer -->
+          <div class="relative px-4 pb-4 flex gap-2">
+            <a routerLink="/banco-info/tareas"
+               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+              Ver plantillas
+            </a>
+            @if (isManager()) {
+              <a routerLink="/banco-info/tareas"
+                 [queryParams]="{ create: '1' }"
+                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
+                + Nueva
+              </a>
+            }
+          </div>
+        </div>
+
         <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-emerald-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
@@ -146,8 +184,8 @@
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Categorías de tareas</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Tipos de actividad que se asignan en el sistema</p>
+              <h3 class="font-semibold text-stone-900">Categorias</h3>
+              <p class="text-sm text-stone-500 leading-relaxed">Categorias disponibles en el sistema</p>
             </div>
           </div>
           <!-- Content -->
@@ -155,13 +193,6 @@
             <div class="mb-3">
               <span class="text-2xl font-bold text-stone-900">{{ totalCategorias() }}</span>
               <span class="ml-2 text-sm text-stone-400">registradas</span>
-            </div>
-            <div class="flex flex-wrap gap-1.5">
-              @for (cat of catalogSvc.categorias(); track cat.id) {
-                <span class="text-xs bg-emerald-50 text-emerald-700 font-medium rounded-full px-2.5 py-0.5 hover:bg-emerald-100 transition-colors">
-                  {{ cat.label || cat.value }}
-                </span>
-              }
             </div>
           </div>
           <!-- Footer -->

@@ -6,6 +6,7 @@ import { SettingsService } from '../../settings/services/settings.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { QuestionBankService } from '../../trainer/services/question-bank.service';
 import { ExamTemplateService } from '../../trainer/services/exam-template.service';
+import { TaskTemplateService } from '../../tasks/services/task-template.service';
 
 @Component({
   selector: 'app-banco-info',
@@ -20,6 +21,7 @@ export class BancoInfo implements OnInit {
   readonly catalogSvc          = inject(CatalogService);
   readonly bankSvc             = inject(QuestionBankService);
   readonly templateSvc         = inject(ExamTemplateService);
+  readonly taskTemplateSvc     = inject(TaskTemplateService);
 
   readonly isAdmin   = computed(() => this.auth.hasRole('ADMIN'));
   readonly isManager = computed(() => this.auth.hasAnyRole('ADMIN', 'GERENTE'));
@@ -29,6 +31,7 @@ export class BancoInfo implements OnInit {
   readonly activeUsers     = computed(() => this.rhSvc.users().filter(u => u.activo).length);
   readonly activeStores    = computed(() => this.settingsSvc.stores().filter(s => s.activo).length);
   readonly totalCategorias = computed(() => this.catalogSvc.categorias().length);
+  readonly totalTaskTemplates = computed(() => this.taskTemplateSvc.templates().length);
   readonly totalBankQs     = computed(() => this.bankSvc.questions().length);
   readonly totalTemplates  = computed(() => this.templateSvc.summaries().length);
 
@@ -36,6 +39,7 @@ export class BancoInfo implements OnInit {
     const user = this.auth.currentUser();
     if (user?.storeId) this.rhSvc.loadUsersByStore(user.storeId);
     if (this.isAdmin()) this.settingsSvc.loadAll();
+    this.taskTemplateSvc.loadAll().catch(() => undefined);
     this.catalogSvc.loadCategorias();
     this.bankSvc.loadQuestions({ storeId: user?.storeId });
     this.templateSvc.loadSummaries();

@@ -9,6 +9,7 @@ import { KpiService } from '../../kpi/services/kpi.service';
 import { ReportService } from '../../reports/services/report.service';
 import { SettingsService } from '../../settings/services/settings.service';
 import { ROL_LABELS, ROLES_DISPONIBLES, TURNOS, UpdateUserRequest } from '../rh.models';
+import { getTodayIsoDate, realBirthDateValidator } from '../../../shared/validators/birth-date.validators';
 
 @Component({
   selector: 'app-user-profile',
@@ -58,6 +59,7 @@ export class UserProfile implements OnInit {
   readonly resetPasswordError = signal<string | null>(null);
   readonly resetPasswordSuccess = signal(false);
   readonly resetPasswordStep = signal<'verify' | 'reset'>('verify');
+  readonly maxBirthDate = getTodayIsoDate();
 
   // ── KPI #7: datos de este colaborador ────────────────────────────────────
   readonly userKpi = computed(() => {
@@ -74,7 +76,7 @@ export class UserProfile implements OnInit {
     turno:  ['', Validators.required],
     roles:  [[] as string[]],
     email: [''],
-    fechaNacimiento: [''],
+    fechaNacimiento: ['', realBirthDateValidator],
   });
 
   readonly resetPasswordForm = this.fb.group({
