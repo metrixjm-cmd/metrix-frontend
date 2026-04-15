@@ -12,6 +12,11 @@ import { CatalogEntry } from '../../../core/services/catalog.models';
 import { AddCatalogDialog } from '../../../shared/components/add-catalog-dialog/add-catalog-dialog';
 import { SettingsService } from '../../settings/services/settings.service';
 import { environment } from '../../../../environments/environment';
+import {
+  getLatestBirthDateBeforeYears,
+  olderThanYearsValidator,
+  realBirthDateValidator,
+} from '../../../shared/validators/birth-date.validators';
 
 const passwordMatchValidator: ValidatorFn = (control: AbstractControl) => {
   const form = control as FormGroup;
@@ -59,6 +64,7 @@ export class UserCreate implements OnInit {
   readonly showConfirmPassword = signal(false);
   readonly puestoDialogOpen    = signal(false);
   readonly nextFolio           = signal<string>('Selecciona un puesto...');
+  readonly maxBirthDate        = getLatestBirthDateBeforeYears(12);
 
   readonly form = this.fb.group({
     nombre:          ['', [Validators.required, Validators.minLength(2)]],
@@ -66,7 +72,7 @@ export class UserCreate implements OnInit {
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     turno:           ['MATUTINO', Validators.required],
     email:           ['', Validators.email],
-    fechaNacimiento: [''],
+    fechaNacimiento: ['', [realBirthDateValidator, olderThanYearsValidator(12)]],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
     roles:           [['EJECUTADOR'], Validators.required],
@@ -82,6 +88,8 @@ export class UserCreate implements OnInit {
     if (this.isAdmin()) {
       this.settingsSvc.loadAll();
     }
+    this.form.get('nombre')?.valueChanges.subscribe(() => this.clearControlError('nombre', 'duplicate'));
+    this.form.get('email')?.valueChanges.subscribe(() => this.clearControlError('email', 'duplicate'));
     // Actualizar preview del ID Usuario cuando cambia rol O puesto
     const refreshFolio = () => {
       const roles: string[] = this.form.get('roles')?.value ?? [];
@@ -129,6 +137,8 @@ export class UserCreate implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.form.invalid || this.saving()) return;
+    this.clearControlError('nombre', 'duplicate');
+    this.clearControlError('email', 'duplicate');
 
     const v = this.form.getRawValue();
     const req: CreateUserRequest = {
@@ -151,7 +161,28 @@ export class UserCreate implements OnInit {
       }
       this.router.navigate(['/banco-info/usuarios']);
     } catch {
+      this.applyDuplicateFieldErrors();
       // error ya seteado en rhSvc._error
     }
+  }
+
+  private applyDuplicateFieldErrors(): void {
+    const errorMessage = this.error()?.toLowerCase() ?? '';
+    if (errorMessage.includes('nombre')) {
+      this.form.get('nombre')?.setErrors({ ...(this.form.get('nombre')?.errors ?? {}), duplicate: true });
+      this.form.get('nombre')?.markAsTouched();
+    }
+    if (errorMessage.includes('correo')) {
+      this.form.get('email')?.setErrors({ ...(this.form.get('email')?.errors ?? {}), duplicate: true });
+      this.form.get('email')?.markAsTouched();
+    }
+  }
+
+  private clearControlError(controlName: 'nombre' | 'email', errorKey: string): void {
+    const control = this.form.get(controlName);
+    if (!control?.errors?.[errorKey]) return;
+
+    const { [errorKey]: _removed, ...rest } = control.errors;
+    control.setErrors(Object.keys(rest).length > 0 ? rest : null);
   }
 }

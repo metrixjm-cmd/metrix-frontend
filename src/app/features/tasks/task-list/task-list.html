@@ -71,9 +71,9 @@
     </button>
     <button (click)="filterByStatus('IN_PROGRESS')"
       class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
-      [class]="selectedStatus() === 'IN_PROGRESS' ? 'border-blue-400 ring-1 ring-blue-200' : 'border-stone-200'">
+      [class]="selectedStatus() === 'IN_PROGRESS' ? 'border-brand-400 ring-1 ring-brand-200' : 'border-stone-200'">
       <p class="text-xs text-stone-400 font-semibold uppercase tracking-wide mb-1">En Progreso</p>
-      <p class="text-2xl font-bold text-blue-600">{{ filteredInProgress() }}</p>
+      <p class="text-2xl font-bold text-brand-600">{{ filteredInProgress() }}</p>
     </button>
     <button (click)="filterByStatus('COMPLETED')"
       class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
@@ -226,10 +226,12 @@
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                       {{ task.assignedToName }}
                     </span>
-                    <span class="flex items-center gap-1.5">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                      {{ shiftLabels[task.shift] }}
-                    </span>
+                    @if (task.shift) {
+                      <span class="flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        {{ shiftLabels[task.shift] }}
+                      </span>
+                    }
                     @if (!task.isRecurring) {
                       <span class="flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -398,17 +400,17 @@
 
             <!-- ═══ MODAL CONFIRMACIÓN COMPLETAR ═══ -->
             @if (confirmCompleteId() === task.id) {
-              <div class="border-t border-blue-100 bg-blue-50 px-4 py-4 flex items-center gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100">
-                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div class="border-t border-brand-100 bg-brand-50 px-4 py-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100">
+                  <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div class="flex-1">
-                  <p class="text-blue-800 text-sm font-semibold">¿Confirmas que terminaste esta tarea?</p>
-                  <p class="text-blue-600 text-xs mt-0.5">Esta acción marcará la tarea como completada.</p>
+                  <p class="text-brand-800 text-sm font-semibold">¿Confirmas que terminaste esta tarea?</p>
+                  <p class="text-brand-600 text-xs mt-0.5">Esta acción marcará la tarea como completada.</p>
                 </div>
                 <button (click)="cancelComplete()" class="px-3 py-1.5 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-white">Cancelar</button>
                 <button (click)="confirmAndComplete(task)" [disabled]="completingTaskId() === task.id"
-                  class="px-4 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                  class="px-4 py-1.5 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50">
                   @if (completingTaskId() === task.id) { Completando... } @else { Sí, terminar }
                 </button>
               </div>
@@ -461,15 +463,17 @@
                           <p class="text-sm font-medium text-stone-700 truncate">{{ task.position }}</p>
                         </div>
                       </div>
-                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                          <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                      @if (task.shift) {
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
+                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
+                            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Turno</p>
+                            <span class="inline-flex mt-0.5 px-2.5 py-0.5 bg-brand-100 text-brand-700 rounded-full text-xs font-semibold">{{ shiftLabels[task.shift] }}</span>
+                          </div>
                         </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Turno</p>
-                          <span class="inline-flex mt-0.5 px-2.5 py-0.5 bg-brand-100 text-brand-700 rounded-full text-xs font-semibold">{{ shiftLabels[task.shift] }}</span>
-                        </div>
-                      </div>
+                      }
                       <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
                           <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -515,8 +519,8 @@
                         <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Estado actual</p>
                         <div class="mt-2 flex items-center gap-2.5">
                           @if (task.status === 'IN_PROGRESS') {
-                            <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500"></span></span>
-                            <p class="text-base font-semibold text-blue-700">En progreso</p>
+                            <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-500"></span></span>
+                            <p class="text-base font-semibold text-brand-700">En progreso</p>
                           } @else if (task.status === 'COMPLETED') {
                             <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                             <p class="text-base font-semibold text-emerald-700">Completada</p>
@@ -638,9 +642,9 @@
                 <!-- Acciones -->
                 @if (canStartTask(task) || canCompleteTask(task) || canFailTask(task)) {
                   <div class="rounded-lg border p-4"
-                    [class]="task.status === 'IN_PROGRESS' ? 'bg-blue-50 border-blue-100' : 'bg-amber-50 border-amber-100'">
+                    [class]="task.status === 'IN_PROGRESS' ? 'bg-brand-50 border-brand-100' : 'bg-amber-50 border-amber-100'">
                     <h4 class="text-xs font-semibold uppercase tracking-wide mb-2"
-                      [class]="task.status === 'IN_PROGRESS' ? 'text-blue-700' : 'text-amber-700'">
+                      [class]="task.status === 'IN_PROGRESS' ? 'text-brand-700' : 'text-amber-700'">
                       Acciones
                     </h4>
 
@@ -658,7 +662,7 @@
                         <p class="text-sm text-stone-500 mb-3">La tarea está en progreso. ¿Deseas finalizarla?</p>
                         <div class="flex flex-wrap gap-2">
                           <button (click)="askCompleteTask(task.id)" [disabled]="completingTaskId() === task.id"
-                            class="flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+                            class="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                             @if (completingTaskId() === task.id) {
                               <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                             } @else {

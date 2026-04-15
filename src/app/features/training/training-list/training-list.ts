@@ -262,6 +262,28 @@ export class TrainingList implements OnInit {
     return 'bg-red-400';
   }
 
+  trainingRowClass(training: Pick<TrainingResponse, 'status'>): string {
+    const base = 'cursor-pointer transition-colors';
+    const map: Record<TrainingStatus, string> = {
+      PROGRAMADA: 'bg-amber-50/50 hover:bg-amber-100/70',
+      EN_CURSO: 'bg-blue-50/50 hover:bg-blue-100/70',
+      COMPLETADA: 'bg-emerald-50/50 hover:bg-emerald-100/70',
+      NO_COMPLETADA: 'bg-red-50 hover:bg-red-100',
+    };
+    return `${base} ${map[training.status as TrainingStatus] ?? 'hover:bg-stone-50'}`;
+  }
+
+  trainingFirstCellClass(training: Pick<TrainingResponse, 'status'>): string {
+    const base = 'px-4 py-3 border-l-4';
+    const map: Record<TrainingStatus, string> = {
+      PROGRAMADA: 'border-amber-400',
+      EN_CURSO: 'border-blue-400',
+      COMPLETADA: 'border-emerald-400',
+      NO_COMPLETADA: 'border-red-400',
+    };
+    return `${base} ${map[training.status as TrainingStatus] ?? 'border-transparent'}`;
+  }
+
   storeLabel(storeId: string): string {
     return this.storeNames().get(storeId) ?? storeId;
   }
@@ -340,31 +362,26 @@ export class TrainingList implements OnInit {
     if (statuses.every(status => status === 'NO_COMPLETADA')) return 'NO_COMPLETADA';
     if (statuses.every(status => status === 'PROGRAMADA')) return 'PROGRAMADA';
     if (statuses.some(status => status === 'EN_CURSO')) return 'EN_CURSO';
-    if (statuses.some(status => status === 'COMPLETADA')) return 'EN_CURSO';
-    if (statuses.some(status => status === 'NO_COMPLETADA')) return 'EN_CURSO';
+    if (statuses.some(status => status === 'NO_COMPLETADA')) return 'NO_COMPLETADA';
     return 'PROGRAMADA';
   }
 
-  private normalizeTrainingStatus(training: Pick<TrainingResponse, 'status' | 'dueAt'>): TrainingStatus {
-    if (training.status === 'COMPLETADA' || training.status === 'NO_COMPLETADA') {
-      return training.status;
-    }
-    if (training.dueAt) {
-      const dueMs = new Date(training.dueAt).getTime();
-      if (!Number.isNaN(dueMs) && dueMs < Date.now()) {
-        return 'NO_COMPLETADA';
-      }
-    }
-    return training.status;
+  /** Normaliza el status de un training individual (pasaporte directo del servidor). */
+  private normalizeTrainingStatus(training: TrainingResponse): TrainingStatus {
+    const valid: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO', 'COMPLETADA', 'NO_COMPLETADA'];
+    return valid.includes(training.status as TrainingStatus)
+      ? (training.status as TrainingStatus)
+      : 'PROGRAMADA';
   }
 
-  private learnerPriority(training: Pick<TrainingResponse, 'status'>): number {
-    const map: Record<TrainingStatus, number> = {
-      EN_CURSO: 0,
-      PROGRAMADA: 1,
+  /** Orden de prioridad para el learner: activas primero, luego pendientes, luego el resto. */
+  private learnerPriority(training: TrainingListRow): number {
+    const order: Record<TrainingStatus, number> = {
+      EN_CURSO:      0,
+      PROGRAMADA:    1,
       NO_COMPLETADA: 2,
-      COMPLETADA: 3,
+      COMPLETADA:    3,
     };
-    return map[training.status] ?? 4;
+    return order[training.status as TrainingStatus] ?? 4;
   }
 }

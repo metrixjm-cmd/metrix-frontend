@@ -92,7 +92,7 @@ export interface CreateTaskRequest {
 
   assignedToIds: string[];
   storeId:      string;
-  shift:        TaskShift;
+  shift?:       TaskShift;
   dueAt:        string; // ISO-8601
 
   processes?:           ProcessStepRequest[];

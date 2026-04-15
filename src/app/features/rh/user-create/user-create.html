@@ -34,9 +34,12 @@
       @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
         <p class="text-xs text-red-600 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
       }
+      @if (form.get('nombre')?.hasError('duplicate') && form.get('nombre')?.touched) {
+        <p class="text-xs text-red-600 mt-1">Ya existe un usuario con ese nombre</p>
+      }
     </div>
 
-    <!-- Email y Fecha de Nacimiento en fila -->
+        <!-- Email y Fecha de Nacimiento en fila -->
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-stone-700 mb-1">Correo electrónico</label>
@@ -46,16 +49,28 @@
         @if (form.get('email')?.invalid && form.get('email')?.touched) {
           <p class="text-xs text-red-600 mt-1">El formato del correo no es válido</p>
         }
+        @if (form.get('email')?.hasError('duplicate') && form.get('email')?.touched) {
+          <p class="text-xs text-red-600 mt-1">Ya existe un usuario con ese correo electrónico</p>
+        }
       </div>
       <div>
         <label class="block text-sm font-medium text-stone-700 mb-1">Fecha de nacimiento</label>
         <input formControlName="fechaNacimiento" type="date"
+               [max]="maxBirthDate"
                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+        @if (form.get('fechaNacimiento')?.hasError('futureBirthDate') && form.get('fechaNacimiento')?.touched) {
+          <p class="text-xs text-red-600 mt-1">La fecha de nacimiento no puede ser futura</p>
+        }
+        @if (form.get('fechaNacimiento')?.hasError('unrealisticBirthDate') && form.get('fechaNacimiento')?.touched) {
+          <p class="text-xs text-red-600 mt-1">Ingresa una fecha de nacimiento real</p>
+        }
+        @if (form.get('fechaNacimiento')?.hasError('minimumAge') && form.get('fechaNacimiento')?.touched) {
+          <p class="text-xs text-red-600 mt-1">Ingresa una fecha válida, debe tener más de 12 años cumplidos</p>
+        }
       </div>
     </div>
 
-    <!-- Roles (primero — define el prefijo del ID) -->
-    <div>
+    <!-- Roles (primero — define el prefijo del ID) -->    <div>
       <label class="block text-sm font-medium text-stone-700 mb-2">Perfil App *</label>
       <div class="flex flex-wrap gap-2">
         @for (rol of visibleRoles(); track rol) {
@@ -254,3 +269,4 @@
   [isOpen]="puestoDialogOpen()"
   (saved)="onPuestoAdded($event)"
   (closed)="puestoDialogOpen.set(false)"/>
+

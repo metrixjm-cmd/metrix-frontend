@@ -32,6 +32,10 @@ export const RH_ROUTES: Routes = [
     path: 'categorias',
     loadComponent: () => import('./categoria-list/categoria-list').then(m => m.CategoriaList),
   },
+  {
+    path: 'tareas',
+    loadComponent: () => import('./task-template-list/task-template-list').then(m => m.TaskTemplateList),
+  },
 
   // ── Plantillas de capacitación ───────────────────────────────────────
   {
