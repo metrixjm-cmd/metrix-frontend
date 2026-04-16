@@ -9,8 +9,12 @@
       </svg>
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-stone-900">Nuevo colaborador</h1>
-      <p class="text-sm text-stone-500">Registra un nuevo miembro del equipo</p>
+      <h1 class="text-2xl font-bold text-stone-900">
+        {{ isAdmin() ? 'Nuevo administrador / gerente' : 'Nuevo colaborador' }}
+      </h1>
+      <p class="text-sm text-stone-500">
+        {{ isAdmin() ? 'Registra un administrador o gerente de sucursal' : 'Registra un nuevo miembro del equipo' }}
+      </p>
     </div>
   </div>
 
@@ -255,7 +259,7 @@
             Guardando...
           </span>
         } @else {
-          Crear colaborador
+          {{ isAdmin() ? 'Crear administrador / gerente' : 'Crear colaborador' }}
         }
       </button>
     </div>
