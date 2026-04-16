@@ -51,7 +51,7 @@ export class UserCreate implements OnInit {
 
   readonly isAdmin = computed(() => this.authSvc.hasRole('ADMIN'));
   readonly visibleRoles = computed(() =>
-    this.isAdmin() ? [...this.roles] : ['EJECUTADOR']
+    this.isAdmin() ? ['ADMIN', 'GERENTE'] : ['EJECUTADOR']
   );
   readonly currentStoreName = computed(() => {
     const user = this.authSvc.currentUser();
@@ -75,7 +75,7 @@ export class UserCreate implements OnInit {
     fechaNacimiento: ['', [realBirthDateValidator, olderThanYearsValidator(12)]],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
-    roles:           [['EJECUTADOR'], Validators.required],
+    roles:           [this.isAdmin() ? ['GERENTE'] : ['EJECUTADOR'], Validators.required],
   }, { validators: passwordMatchValidator });
 
   // GERENTE no puede cambiar storeId ni asignar roles libremente
@@ -147,7 +147,7 @@ export class UserCreate implements OnInit {
       storeId:         v.storeId!,
       turno:           v.turno!,
       password:        v.password!,
-      roles:           this.isAdmin() ? ((v.roles as string[]) ?? ['EJECUTADOR']) : ['EJECUTADOR'],
+      roles:           this.isAdmin() ? ((v.roles as string[]) ?? ['GERENTE']) : ['EJECUTADOR'],
       // numeroUsuario omitido — el backend lo auto-genera con la secuencia
       ...(v.email           ? { email:           v.email }           : {}),
       ...(v.fechaNacimiento ? { fechaNacimiento: v.fechaNacimiento } : {}),
