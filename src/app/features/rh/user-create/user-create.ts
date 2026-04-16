@@ -63,8 +63,12 @@ export class UserCreate implements OnInit {
   readonly showPassword        = signal(false);
   readonly showConfirmPassword = signal(false);
   readonly puestoDialogOpen    = signal(false);
-  readonly nextFolio           = signal<string>('Selecciona un puesto...');
+  readonly nextFolio           = signal<string>('Selecciona rol y puesto...');
+  readonly selectedRole        = signal<string>(this.isAdmin() ? 'GERENTE' : 'EJECUTADOR');
   readonly maxBirthDate        = getLatestBirthDateBeforeYears(12);
+  readonly puestosDisponibles  = computed(() =>
+    this.catalogSvc.puestos().filter(p => p.role === this.selectedRole())
+  );
 
   readonly form = this.fb.group({
     nombre:          ['', [Validators.required, Validators.minLength(2)]],
@@ -78,37 +82,27 @@ export class UserCreate implements OnInit {
     roles:           [this.isAdmin() ? ['GERENTE'] : ['EJECUTADOR'], Validators.required],
   }, { validators: passwordMatchValidator });
 
-  // GERENTE no puede cambiar storeId ni asignar roles libremente
   get storeIdDisabled(): boolean {
     return !this.authSvc.hasRole('ADMIN');
   }
 
   ngOnInit(): void {
-    this.catalogSvc.loadPuestos();
+    void this.catalogSvc.loadPuestos().then(() => this.syncPuestoForRole());
     if (this.isAdmin()) {
       this.settingsSvc.loadAll();
     }
     this.form.get('nombre')?.valueChanges.subscribe(() => this.clearControlError('nombre', 'duplicate'));
     this.form.get('email')?.valueChanges.subscribe(() => this.clearControlError('email', 'duplicate'));
-    // Actualizar preview del ID Usuario cuando cambia rol O puesto
-    const refreshFolio = () => {
-      const roles: string[] = this.form.get('roles')?.value ?? [];
-      const puesto: string  = this.form.get('puesto')?.value ?? '';
-      const rol = roles[0] ?? '';
-      if (!rol && !puesto) {
-        this.nextFolio.set('Selecciona rol y puesto...');
-        return;
-      }
-      const params = new URLSearchParams();
-      if (rol)    params.set('rol', rol);
-      if (puesto) params.set('puesto', puesto);
-      this.http.get<{ numeroUsuario: string }>(
-        `${environment.apiUrl}/users/next-folio?${params.toString()}`
-      ).subscribe({ next: r => this.nextFolio.set(r.numeroUsuario), error: () => {} });
-    };
 
-    this.form.get('roles')?.valueChanges.subscribe(() => refreshFolio());
-    this.form.get('puesto')?.valueChanges.subscribe(() => refreshFolio());
+    this.form.get('roles')?.valueChanges.subscribe((roles) => {
+      const selected = (roles as string[] | null)?.[0] ?? '';
+      this.selectedRole.set(selected);
+      this.syncPuestoForRole();
+      this.refreshFolio();
+    });
+    this.form.get('puesto')?.valueChanges.subscribe(() => this.refreshFolio());
+
+    this.syncPuestoForRole();
   }
 
   togglePassword(): void {
@@ -131,8 +125,11 @@ export class UserCreate implements OnInit {
 
   onPuestoAdded(entry: CatalogEntry): void {
     this.puestoDialogOpen.set(false);
-    this.catalogSvc.loadPuestos();
-    this.form.get('puesto')?.setValue(entry.value);
+    void this.catalogSvc.loadPuestos().then(() => {
+      if (entry.role === this.selectedRole()) {
+        this.form.get('puesto')?.setValue(entry.value);
+      }
+    });
   }
 
   async onSubmit(): Promise<void> {
@@ -148,7 +145,6 @@ export class UserCreate implements OnInit {
       turno:           v.turno!,
       password:        v.password!,
       roles:           this.isAdmin() ? ((v.roles as string[]) ?? ['GERENTE']) : ['EJECUTADOR'],
-      // numeroUsuario omitido — el backend lo auto-genera con la secuencia
       ...(v.email           ? { email:           v.email }           : {}),
       ...(v.fechaNacimiento ? { fechaNacimiento: v.fechaNacimiento } : {}),
     };
@@ -162,7 +158,43 @@ export class UserCreate implements OnInit {
       this.router.navigate(['/banco-info/usuarios']);
     } catch {
       this.applyDuplicateFieldErrors();
-      // error ya seteado en rhSvc._error
+    }
+  }
+
+  private refreshFolio(): void {
+    const roles: string[] = this.form.get('roles')?.value ?? [];
+    const puesto: string  = this.form.get('puesto')?.value ?? '';
+    const rol = roles[0] ?? '';
+    if (!rol || !puesto) {
+      this.nextFolio.set('Selecciona rol y puesto...');
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set('rol', rol);
+    params.set('puesto', puesto);
+    this.http.get<{ numeroUsuario: string }>(
+      `${environment.apiUrl}/users/next-folio?${params.toString()}`
+    ).subscribe({ next: r => this.nextFolio.set(r.numeroUsuario), error: () => {} });
+  }
+
+  private syncPuestoForRole(): void {
+    const role = this.selectedRole();
+    const puestoControl = this.form.get('puesto');
+    if (!puestoControl) return;
+
+    if (role === 'ADMIN') {
+      if (puestoControl.value !== 'Administrador') {
+        puestoControl.setValue('Administrador');
+      }
+      return;
+    }
+
+    const currentValue = puestoControl.value ?? '';
+    const available = this.catalogSvc.puestos().filter(entry => entry.role === role);
+    const currentStillValid = available.some(entry => entry.value === currentValue);
+    if (!currentStillValid) {
+      puestoControl.setValue('');
     }
   }
 

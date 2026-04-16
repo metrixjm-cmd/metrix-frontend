@@ -51,9 +51,9 @@ export class CatalogService {
     }
   }
 
-  async addEntry(type: string, value: string): Promise<CatalogEntry> {
+  async addEntry(type: string, value: string, role?: string): Promise<CatalogEntry> {
     const entry = await firstValueFrom(
-      this.http.post<CatalogEntry>(this.baseUrl + '/' + type, { value })
+      this.http.post<CatalogEntry>(this.baseUrl + '/' + type, { value, role })
     );
     // Refrescar la lista correspondiente
     switch (type) {

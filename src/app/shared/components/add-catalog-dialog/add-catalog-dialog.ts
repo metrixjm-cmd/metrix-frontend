@@ -16,6 +16,7 @@ export class AddCatalogDialog {
 
   readonly catalogType = input<string>('PUESTO');
   readonly isOpen      = input<boolean>(false);
+  readonly catalogRole = input<string | null>(null);
 
   @Output() readonly saved  = new EventEmitter<CatalogEntry>();
   @Output() readonly closed = new EventEmitter<void>();
@@ -35,7 +36,9 @@ export class AddCatalogDialog {
     // Verificar si el puesto ya existe localmente para evitar duplicados
     if (this.catalogType() === 'PUESTO') {
       const exists = this.catalogSvc.puestos().some(
-        p => p.value.toLowerCase() === newValue.toLowerCase()
+        p =>
+          p.value.toLowerCase() === newValue.toLowerCase()
+          && (this.catalogRole() == null || p.role === this.catalogRole())
       );
       if (exists) {
         this.errorMsg.set('Ya existe ese puesto.');
@@ -49,7 +52,8 @@ export class AddCatalogDialog {
     try {
       const entry = await this.catalogSvc.addEntry(
         this.catalogType(),
-        newValue
+        newValue,
+        this.catalogRole() ?? undefined
       );
       this.form.reset();
       this.saved.emit(entry);

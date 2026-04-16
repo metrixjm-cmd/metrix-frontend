@@ -3,4 +3,5 @@ export interface CatalogEntry {
   type: string;
   value: string;
   label: string;
+  role?: string;
 }
