@@ -16,6 +16,12 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './puesto-list.html',
 })
 export class PuestoList implements OnInit {
+  readonly roleLabels: Record<string, string> = {
+    ADMIN: 'Administrador',
+    GERENTE: 'Gerente',
+    EJECUTADOR: 'Ejecutador',
+  };
+
   private readonly authSvc    = inject(AuthService);
   readonly catalogSvc         = inject(CatalogService);
   private readonly http       = inject(HttpClient);
@@ -24,45 +30,52 @@ export class PuestoList implements OnInit {
   readonly isAdmin   = () => this.authSvc.hasRole('ADMIN');
   readonly isManager = () => this.authSvc.hasRole('ADMIN') || this.authSvc.hasRole('GERENTE');
 
-  readonly saving  = signal(false);
-  readonly error   = signal<string | null>(null);
+  readonly saving     = signal(false);
+  readonly error      = signal<string | null>(null);
+  readonly createRole = signal<'GERENTE' | 'EJECUTADOR' | null>(null);
 
-  // ── Inline create form ───────────────────────────────────────────────
   readonly showCreateForm = signal(false);
   readonly createForm = this.fb.group({
     value: ['', [Validators.required, Validators.minLength(2)]],
   });
 
-  // ── Inline edit state ────────────────────────────────────────────────
-  readonly editingId   = signal<string | null>(null);
-  readonly editForm    = this.fb.group({
+  readonly editingId = signal<string | null>(null);
+  readonly editForm = this.fb.group({
     value: ['', [Validators.required, Validators.minLength(2)]],
   });
 
-  // ── Delete confirm ───────────────────────────────────────────────────
   readonly deletingId = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.catalogSvc.loadPuestos();
+    void this.catalogSvc.loadPuestos();
   }
 
-  startCreate(): void {
+  puestosByRole(role: 'ADMIN' | 'GERENTE' | 'EJECUTADOR'): CatalogEntry[] {
+    return this.catalogSvc.puestos().filter(entry => entry.role === role);
+  }
+
+  startCreate(role: 'GERENTE' | 'EJECUTADOR'): void {
+    this.createRole.set(role);
     this.createForm.reset();
     this.showCreateForm.set(true);
     this.error.set(null);
   }
 
   cancelCreate(): void {
+    this.createRole.set(null);
     this.showCreateForm.set(false);
     this.createForm.reset();
   }
 
   async submitCreate(): Promise<void> {
     if (this.createForm.invalid || this.saving()) return;
-    
+
+    const role = this.createRole();
+    if (!role) return;
+
     const v = this.createForm.getRawValue();
     const newValue = v.value!.trim();
-    
+
     const exists = this.catalogSvc.puestos().some(
       p => p.value.toLowerCase() === newValue.toLowerCase()
     );
@@ -70,14 +83,15 @@ export class PuestoList implements OnInit {
       this.error.set('Ya existe ese puesto.');
       return;
     }
-    
+
     this.saving.set(true);
     this.error.set(null);
 
     try {
-      await this.catalogSvc.addEntry('PUESTO', newValue);
-      this.catalogSvc.loadPuestos();
+      await this.catalogSvc.addEntry('PUESTO', newValue, role);
+      await this.catalogSvc.loadPuestos();
       this.showCreateForm.set(false);
+      this.createRole.set(null);
       this.createForm.reset();
     } catch (e: any) {
       this.error.set(e?.error?.error ?? 'Error al crear el puesto');
@@ -101,11 +115,10 @@ export class PuestoList implements OnInit {
     if (this.editForm.invalid || this.saving()) return;
     const id = this.editingId();
     if (!id) return;
-    
+
     const v = this.editForm.getRawValue();
     const newValue = v.value!.trim();
 
-    // Validar duplicado al editar (ignorando el mismo puesto que se está editando)
     const exists = this.catalogSvc.puestos().some(
       p => p.id !== id && p.value.toLowerCase() === newValue.toLowerCase()
     );
@@ -113,15 +126,15 @@ export class PuestoList implements OnInit {
       this.error.set('Ya existe ese puesto.');
       return;
     }
-    
+
     this.saving.set(true);
     this.error.set(null);
     try {
       await this.http.put(
         `${environment.apiUrl}/catalogs/PUESTO/${id}`,
-        { value: newValue }
+        { value: newValue, role: this.currentEditingRole() }
       ).toPromise();
-      this.catalogSvc.loadPuestos();
+      await this.catalogSvc.loadPuestos();
       this.editingId.set(null);
     } catch (e: any) {
       this.error.set(e?.error?.error ?? 'Error al actualizar el puesto');
@@ -144,12 +157,17 @@ export class PuestoList implements OnInit {
     this.saving.set(true);
     try {
       await this.http.delete(`${environment.apiUrl}/catalogs/PUESTO/${id}`).toPromise();
-      this.catalogSvc.loadPuestos();
+      await this.catalogSvc.loadPuestos();
       this.deletingId.set(null);
     } catch (e: any) {
       this.error.set(e?.error?.error ?? 'Error al eliminar el puesto');
     } finally {
       this.saving.set(false);
     }
+  }
+
+  private currentEditingRole(): string | undefined {
+    const id = this.editingId();
+    return this.catalogSvc.puestos().find(entry => entry.id === id)?.role;
   }
 }

@@ -10,20 +10,11 @@
       </a>
       <div>
         <h1 class="text-2xl font-bold text-stone-900">Puestos</h1>
-        <p class="text-sm text-stone-500">Catalogo de puestos de trabajo del sistema</p>
+        <p class="text-sm text-stone-500">Catalogo de puestos separados por perfil</p>
       </div>
     </div>
 
-    @if (isManager()) {
-      <button type="button"
-              (click)="startCreate()"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Nuevo puesto
-      </button>
-    }
+    <span class="text-xs font-medium uppercase tracking-[0.25em] text-stone-400">3 perfiles</span>
   </div>
 
   @if (error()) {
@@ -36,13 +27,13 @@
     <form [formGroup]="createForm"
           (ngSubmit)="submitCreate()"
           class="bg-brand-50 border border-brand-200 rounded-xl p-4 space-y-3">
-      <p class="text-sm font-medium text-brand-800">Nuevo puesto</p>
+      <p class="text-sm font-medium text-brand-800">Nuevo puesto para {{ roleLabels[createRole() ?? 'EJECUTADOR'] }}</p>
 
       <div>
         <label class="block text-xs font-medium text-stone-600 mb-1">Nombre *</label>
         <input formControlName="value"
                type="text"
-               placeholder="Ej. Cajero, Mesero, Cocinero"
+               placeholder="Ej. Cajero, Supervisor, Gerente de sucursal"
                class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
         @if (createForm.get('value')?.invalid && createForm.get('value')?.touched) {
           <p class="text-xs text-red-600 mt-1">El nombre es obligatorio</p>
@@ -64,112 +55,138 @@
     </form>
   }
 
-  <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-    <div class="px-5 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-      <span class="text-sm font-medium text-stone-600">
-        {{ catalogSvc.puestos().length }} puesto(s) registrado(s)
-      </span>
-      <span class="text-xs text-stone-400">Prefijo ID Auto</span>
+  <section class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+    <div class="px-5 py-4 bg-stone-50 border-b border-stone-200">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Perfil fijo</p>
+      <div class="mt-2 flex items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-semibold text-stone-900">Administrador</h2>
+          <p class="text-sm text-stone-500">Solo existe un puesto para este perfil.</p>
+        </div>
+        <span class="px-2.5 py-1 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold">ADM</span>
+      </div>
     </div>
+    <div class="px-5 py-4 flex items-center gap-4">
+      <span class="font-mono text-xs font-bold text-brand-700 bg-brand-100 px-2 py-1 rounded min-w-[3rem] text-center">
+        ADM
+      </span>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-stone-900">Administrador</p>
+        <p class="text-xs text-stone-400">Se asigna automaticamente al crear un usuario administrador.</p>
+      </div>
+    </div>
+  </section>
 
-    @if (catalogSvc.puestos().length === 0) {
-      <div class="py-12 text-center text-stone-400">
-        <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-        </svg>
-        <p class="text-sm">No hay puestos registrados.</p>
+  @for (role of ['GERENTE', 'EJECUTADOR']; track role) {
+    <section class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+      <div class="px-5 py-4 bg-stone-50 border-b border-stone-200 flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">Perfil editable</p>
+          <h2 class="mt-2 text-base font-semibold text-stone-900">{{ roleLabels[role] }}</h2>
+          <p class="text-sm text-stone-500">
+            {{ puestosByRole($any(role)).length }} puesto(s) configurado(s)
+          </p>
+        </div>
         @if (isManager()) {
           <button type="button"
-                  (click)="startCreate()"
-                  class="mt-3 text-sm text-brand-600 hover:underline">
-            Agregar el primero
+                  (click)="startCreate($any(role))"
+                  class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo puesto
           </button>
         }
       </div>
-    }
 
-    @for (entry of catalogSvc.puestos(); track entry.id) {
-      <div class="border-b border-stone-100 last:border-b-0">
-        @if (editingId() !== entry.id) {
-          <div class="px-5 py-3 flex items-center gap-4">
-            <span class="font-mono text-xs font-bold text-brand-700 bg-brand-100 px-2 py-1 rounded min-w-[3rem] text-center">
-              {{ entry.value.substring(0, 3).toUpperCase() }}
-            </span>
+      @if (puestosByRole($any(role)).length === 0) {
+        <div class="py-10 text-center text-stone-400">
+          <p class="text-sm">No hay puestos registrados para {{ roleLabels[role].toLowerCase() }}.</p>
+        </div>
+      }
 
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-stone-900">{{ entry.value }}</p>
+      @for (entry of puestosByRole($any(role)); track entry.id) {
+        <div class="border-b border-stone-100 last:border-b-0">
+          @if (editingId() !== entry.id) {
+            <div class="px-5 py-3 flex items-center gap-4">
+              <span class="font-mono text-xs font-bold text-brand-700 bg-brand-100 px-2 py-1 rounded min-w-[3rem] text-center">
+                {{ entry.value.substring(0, 3).toUpperCase() }}
+              </span>
+
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-stone-900">{{ entry.value }}</p>
+              </div>
+
+              @if (isManager()) {
+                <div class="flex items-center gap-1">
+                  <button type="button"
+                          (click)="startEdit(entry)"
+                          class="p-1.5 text-stone-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+                          title="Editar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button type="button"
+                          (click)="confirmDelete(entry.id)"
+                          class="p-1.5 text-stone-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+                          title="Eliminar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              }
             </div>
 
-            @if (isManager()) {
-              <div class="flex items-center gap-1">
+            @if (deletingId() === entry.id) {
+              <div class="px-5 pb-3 flex items-center gap-3 bg-brand-50 border-t border-brand-100">
+                <p class="text-sm text-brand-700 flex-1">Â¿Eliminar el puesto <strong>{{ entry.value }}</strong>?</p>
                 <button type="button"
-                        (click)="startEdit(entry)"
-                        class="p-1.5 text-stone-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
-                        title="Editar">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                  </svg>
+                        (click)="cancelDelete()"
+                        class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
+                  Cancelar
                 </button>
                 <button type="button"
-                        (click)="confirmDelete(entry.id)"
-                        class="p-1.5 text-stone-400 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
-                        title="Eliminar">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                  </svg>
+                        (click)="executeDelete()"
+                        [disabled]="saving()"
+                        class="px-3 py-1 text-xs font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
+                  Eliminar
                 </button>
               </div>
             }
-          </div>
+          } @else {
+            <form [formGroup]="editForm"
+                  (ngSubmit)="submitEdit()"
+                  class="px-5 py-3 bg-brand-50 space-y-3">
+              <p class="text-xs font-medium text-brand-700">Editando puesto</p>
 
-          @if (deletingId() === entry.id) {
-            <div class="px-5 pb-3 flex items-center gap-3 bg-brand-50 border-t border-brand-100">
-              <p class="text-sm text-brand-700 flex-1">¿Eliminar el puesto <strong>{{ entry.value }}</strong>?</p>
-              <button type="button"
-                      (click)="cancelDelete()"
-                      class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
-                Cancelar
-              </button>
-              <button type="button"
-                      (click)="executeDelete()"
-                      [disabled]="saving()"
-                      class="px-3 py-1 text-xs font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
-                Eliminar
-              </button>
-            </div>
+              <div>
+                <label class="block text-xs font-medium text-stone-600 mb-1">Nombre *</label>
+                <input formControlName="value"
+                       type="text"
+                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <button type="button"
+                        (click)="cancelEdit()"
+                        class="px-3 py-1.5 text-sm text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit"
+                        [disabled]="editForm.invalid || saving()"
+                        class="px-4 py-1.5 text-sm font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
+                  @if (saving()) { Guardando... } @else { Actualizar }
+                </button>
+              </div>
+            </form>
           }
-        } @else {
-          <form [formGroup]="editForm"
-                (ngSubmit)="submitEdit()"
-                class="px-5 py-3 bg-brand-50 space-y-3">
-            <p class="text-xs font-medium text-brand-700">Editando puesto</p>
-
-            <div>
-              <label class="block text-xs font-medium text-stone-600 mb-1">Nombre *</label>
-              <input formControlName="value"
-                     type="text"
-                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-            </div>
-
-            <div class="flex justify-end gap-2">
-              <button type="button"
-                      (click)="cancelEdit()"
-                      class="px-3 py-1.5 text-sm text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
-                Cancelar
-              </button>
-              <button type="submit"
-                      [disabled]="editForm.invalid || saving()"
-                      class="px-4 py-1.5 text-sm font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors">
-                @if (saving()) { Guardando... } @else { Actualizar }
-              </button>
-            </div>
-          </form>
-        }
-      </div>
-    }
-  </div>
+        </div>
+      }
+    </section>
+  }
 
 </div>
