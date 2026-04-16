@@ -51,4 +51,10 @@ export class TaskCategoriaService {
       this.http.post<TaskCategoriaEntry>(this.baseUrl, request)
     );
   }
+
+  async update(id: string, request: TaskCategoriaRequest): Promise<TaskCategoriaEntry> {
+    return firstValueFrom(
+      this.http.put<TaskCategoriaEntry>(`${this.baseUrl}/${id}`, request)
+    );
+  }
 }
