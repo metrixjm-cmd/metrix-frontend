@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
+import { firstValueFrom, forkJoin } from 'rxjs';
 
 import { AuthService } from '../../auth/services/auth.service';
 import { TaskService } from '../services/task.service';
@@ -10,11 +11,25 @@ import { SettingsService } from '../../settings/services/settings.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { CatalogEntry } from '../../../core/services/catalog.models';
 import { TaskCategoriaService } from '../services/task-categoria.service';
-import { TaskCategoriaEntry } from '../models/task-categoria.models';
+import { TaskCategoriaEntry, TaskCategoriaRequest } from '../models/task-categoria.models';
 import { AddCatalogDialog } from '../../../shared/components/add-catalog-dialog/add-catalog-dialog';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { DayTimePicker, DayTimeValue } from '../../../shared/components/day-time-picker/day-time-picker';
-import { TaskCategory, WEEK_DAYS, WeekDay, ProcessStepRequest } from '../models/task.models';
+import { CreateTaskRequest, TaskCategory, TaskShift, WEEK_DAYS, WeekDay, ProcessStepRequest } from '../models/task.models';
+
+type EditableTemplateStep = {
+  title: string;
+  description: string;
+  order: number;
+};
+
+type EditableTemplateSnapshot = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  steps: EditableTemplateStep[];
+};
 
 @Component({
   selector: 'app-task-create',
@@ -35,6 +50,11 @@ export class TaskCreate implements OnInit {
   submitting  = signal(false);
   submitError = signal<string | null>(null);
   submitted   = signal(false);
+  createdTasksCount = signal(0);
+  templateDecisionOpen = signal(false);
+  templateNamingOpen = signal(false);
+  templateDecisionSaving = signal(false);
+  newTemplateName = signal('');
 
   /** Secciones colapsables — orden: definition → assignment → scheduling */
   sectionOpen = signal({ definition: true, assignment: true, scheduling: true });
@@ -75,6 +95,8 @@ export class TaskCreate implements OnInit {
 
   /** Entrada seleccionada de categorias (null = modo manual) */
   selectedTemplate = signal<TaskCategoriaEntry | null>(null);
+  private readonly selectedTemplateSnapshot = signal<EditableTemplateSnapshot | null>(null);
+  private pendingTaskRequests: CreateTaskRequest[] | null = null;
 
   /** Controla visibilidad del dropdown de resultados */
   templateDropdownOpen = signal(false);
@@ -93,10 +115,12 @@ export class TaskCreate implements OnInit {
   onTitleInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.form.get('title')?.setValue(query, { emitEvent: false });
+    this.closeTemplateDropdown();
 
-    // Si ya hay una entrada seleccionada y el usuario edita manualmente, la limpiamos
-    if (this.selectedTemplate() && query !== this.selectedTemplate()!.title) {
-      this.selectedTemplate.set(null);
+    // Si viene de plantilla, conservamos la referencia para poder decidir
+    // luego si los cambios actualizan la plantilla o se guardan como nueva.
+    if (this.selectedTemplate()) {
+      return;
     }
 
     // Debounce 300ms
@@ -114,6 +138,9 @@ export class TaskCreate implements OnInit {
 
   /** Abre el dropdown con categorias (al hacer foco en el input vacío) */
   onTitleFocus(): void {
+    if (this.selectedTemplate()) {
+      return;
+    }
     const query = this.form.get('title')?.value ?? '';
     if (!this.selectedTemplate() && this.templateResults().length === 0) {
       this.categoriaTaskSvc.searchAndUpdate(query);
@@ -134,6 +161,8 @@ export class TaskCreate implements OnInit {
    */
   selectTemplate(template: TaskCategoriaEntry): void {
     this.selectedTemplate.set(template);
+    this.selectedTemplateSnapshot.set(this.toTemplateSnapshot(template));
+    this.newTemplateName.set(template.title);
     this.templateDropdownOpen.set(false);
     this.categoriaTaskSvc.clearResults();
 
@@ -165,6 +194,12 @@ export class TaskCreate implements OnInit {
    */
   clearTemplate(): void {
     this.selectedTemplate.set(null);
+    this.selectedTemplateSnapshot.set(null);
+    this.pendingTaskRequests = null;
+    this.templateDecisionOpen.set(false);
+    this.templateNamingOpen.set(false);
+    this.templateDecisionSaving.set(false);
+    this.newTemplateName.set('');
     this.form.get('title')?.setValue('');
     this.form.get('description')?.setValue('');
     this.form.get('category')?.setValue('');
@@ -176,6 +211,152 @@ export class TaskCreate implements OnInit {
   /** Cierra el dropdown si el click fue fuera (llamado desde el host del documento) */
   closeTemplateDropdown(): void {
     this.templateDropdownOpen.set(false);
+  }
+
+  private toTemplateSnapshot(template: TaskCategoriaEntry): EditableTemplateSnapshot {
+    return {
+      id: template.id,
+      title: template.title.trim(),
+      description: template.description.trim(),
+      category: template.category.trim(),
+      steps: (template.steps ?? []).map((step, index) => ({
+        title: step.title.trim(),
+        description: step.description?.trim() ?? '',
+        order: step.order ?? index,
+      })),
+    };
+  }
+
+  private getCurrentTemplatePayload(titleOverride?: string): TaskCategoriaRequest {
+    return {
+      title: (titleOverride ?? this.form.get('title')?.value ?? '').trim(),
+      description: (this.form.get('description')?.value ?? '').trim(),
+      category: (this.form.get('category')?.value ?? '').trim(),
+      steps: this.processSteps()
+        .filter(step => step.title.trim())
+        .map((step, order) => ({
+          title: step.title.trim(),
+          description: step.description.trim() || undefined,
+          tags: [],
+          order,
+        })),
+      media: this.selectedTemplate()?.media ?? [],
+    };
+  }
+
+  private getCurrentTemplateSnapshot(): EditableTemplateSnapshot | null {
+    const template = this.selectedTemplate();
+    if (!template) return null;
+
+    const payload = this.getCurrentTemplatePayload();
+    return {
+      id: template.id,
+      title: payload.title,
+      description: payload.description,
+      category: payload.category,
+      steps: payload.steps.map((step, index) => ({
+        title: step.title.trim(),
+        description: step.description?.trim() ?? '',
+        order: step.order ?? index,
+      })),
+    };
+  }
+
+  private hasTemplateChanges(): boolean {
+    const original = this.selectedTemplateSnapshot();
+    const current = this.getCurrentTemplateSnapshot();
+    if (!original || !current) return false;
+
+    return JSON.stringify(original) !== JSON.stringify(current);
+  }
+
+  private async executeTaskCreation(taskRequests: CreateTaskRequest[]): Promise<void> {
+    this.submitting.set(true);
+    this.submitError.set(null);
+
+    try {
+      const createdTasks = await firstValueFrom(
+        forkJoin(taskRequests.map(request => this.taskSvc.createTask(request)))
+      );
+      this.createdTasksCount.set(createdTasks.length);
+      this.submitted.set(true);
+      this.selectedTemplate.set(null);
+      this.selectedTemplateSnapshot.set(null);
+      this.pendingTaskRequests = null;
+      this.templateDecisionOpen.set(false);
+      this.templateNamingOpen.set(false);
+    } catch (err) {
+      this.templateDecisionOpen.set(false);
+      this.templateNamingOpen.set(false);
+      this.submitError.set(this.extractMsg(err));
+    } finally {
+      this.submitting.set(false);
+      this.templateDecisionSaving.set(false);
+    }
+  }
+
+  private openTemplateDecision(taskRequests: CreateTaskRequest[]): void {
+    this.pendingTaskRequests = taskRequests;
+    this.templateDecisionOpen.set(true);
+    this.templateNamingOpen.set(false);
+    this.templateDecisionSaving.set(false);
+    this.newTemplateName.set(this.form.get('title')?.value?.trim() || this.selectedTemplate()?.title || '');
+  }
+
+  cancelTemplateDecision(): void {
+    this.pendingTaskRequests = null;
+    this.templateDecisionOpen.set(false);
+    this.templateNamingOpen.set(false);
+    this.templateDecisionSaving.set(false);
+    this.newTemplateName.set(this.selectedTemplate()?.title ?? '');
+  }
+
+  askCreateNewTemplate(): void {
+    this.templateNamingOpen.set(true);
+    this.newTemplateName.set(this.form.get('title')?.value?.trim() || this.selectedTemplate()?.title || '');
+  }
+
+  async applyTemplateUpdate(): Promise<void> {
+    const template = this.selectedTemplate();
+    const pendingRequests = this.pendingTaskRequests;
+    if (!template || !pendingRequests || this.templateDecisionSaving()) return;
+
+    this.templateDecisionSaving.set(true);
+    this.submitError.set(null);
+
+    try {
+      const updated = await this.categoriaTaskSvc.update(template.id, this.getCurrentTemplatePayload());
+      this.selectedTemplate.set(updated);
+      this.selectedTemplateSnapshot.set(this.toTemplateSnapshot(updated));
+      await this.executeTaskCreation(pendingRequests);
+    } catch (err) {
+      this.templateDecisionSaving.set(false);
+      this.submitError.set(this.extractMsg(err));
+    }
+  }
+
+  async saveAsNewTemplateAndCreate(): Promise<void> {
+    const pendingRequests = this.pendingTaskRequests;
+    const templateName = this.newTemplateName().trim();
+
+    if (!pendingRequests || this.templateDecisionSaving()) return;
+    if (templateName.length < 4) {
+      this.submitError.set('El nombre de la nueva plantilla debe tener al menos 4 caracteres.');
+      return;
+    }
+
+    this.templateDecisionSaving.set(true);
+    this.submitError.set(null);
+
+    try {
+      const created = await this.categoriaTaskSvc.create(this.getCurrentTemplatePayload(templateName));
+      this.selectedTemplate.set(created);
+      this.selectedTemplateSnapshot.set(this.toTemplateSnapshot(created));
+      await this.executeTaskCreation(pendingRequests);
+    } catch (err) {
+      this.templateDecisionSaving.set(false);
+      this.submitError.set(this.extractMsg(err));
+    }
   }
 
   // ── Input inline para agregar proceso rápido ────────────────────────────
@@ -494,34 +675,89 @@ export class TaskCreate implements OnInit {
         }))
       : undefined;
 
-    this.taskSvc.createTask({
-      title:        v.title!,
-      description:  v.description!,
-      category:     v.category as TaskCategory,
-      isCritical:   v.isCritical ?? false,
-      assignedToIds: v.assignedToIds as string[],
-      storeId:      v.storeId!,
-      dueAt,
-      processes,
-      isRecurring:         recurring,
-      recurrenceDays:      recurring ? [...this.selectedDays()] : undefined,
-      recurrenceStartTime: recurring ? v.recurrenceStartTime! : undefined,
-      recurrenceEndTime:   recurring ? v.recurrenceEndTime! : undefined,
-    }).subscribe({
-      next: () => {
-        this.submitted.set(true);
-        this.submitting.set(false);
-        this.selectedTemplate.set(null);
-      },
-      error: err => {
-        this.submitError.set(this.extractMsg(err));
-        this.submitting.set(false);
-      },
-    });
+    const selectedIds = v.assignedToIds as string[];
+    const selectedUsers = this.filteredUsers().filter(user => selectedIds.includes(user.id));
+
+    if (selectedUsers.length === 0) {
+      this.submitError.set('No se encontraron los colaboradores seleccionados para crear la tarea.');
+      this.submitting.set(false);
+      return;
+    }
+
+    const userWithoutShift = selectedUsers.find(user => !user.turno);
+    if (userWithoutShift) {
+      this.submitError.set(`El colaborador ${userWithoutShift.nombre} no tiene turno configurado.`);
+      this.submitting.set(false);
+      return;
+    }
+
+    const taskRequests = selectedUsers.map(user => ({
+        title:        v.title!,
+        description:  v.description!,
+        category:     v.category as TaskCategory,
+        isCritical:   v.isCritical ?? false,
+        assignedToId: user.id,
+        storeId:      v.storeId!,
+        shift:        user.turno as TaskShift,
+        dueAt,
+        processes,
+        isRecurring:         recurring,
+        recurrenceDays:      recurring ? [...this.selectedDays()] : undefined,
+        recurrenceStartTime: recurring ? v.recurrenceStartTime! : undefined,
+        recurrenceEndTime:   recurring ? v.recurrenceEndTime! : undefined,
+      }));
+
+    if (this.selectedTemplate() && this.hasTemplateChanges()) {
+      this.submitting.set(false);
+      this.openTemplateDecision(taskRequests);
+      return;
+    }
+
+    void this.executeTaskCreation(taskRequests);
   }
 
   goToList(): void {
     this.router.navigate(['/tasks']);
+  }
+
+  resetForNewTask(): void {
+    const storeId = this.auth.currentUser()?.storeId ?? '';
+    this.submitted.set(false);
+    this.createdTasksCount.set(0);
+    this.submitError.set(null);
+    this.dueDateError.set(null);
+    this.selectedTemplate.set(null);
+    this.selectedTemplateSnapshot.set(null);
+    this.templateDropdownOpen.set(false);
+    this.templateDecisionOpen.set(false);
+    this.templateNamingOpen.set(false);
+    this.templateDecisionSaving.set(false);
+    this.newTemplateName.set('');
+    this.pendingTaskRequests = null;
+    this.processSteps.set([]);
+    this.selectedDays.set(new Set());
+    this.isRecurring.set(false);
+    this.cancelEditStep();
+    this.form.reset({
+      title: '',
+      description: '',
+      category: '',
+      isCritical: false,
+      isRecurring: false,
+      recurrenceStartTime: '',
+      recurrenceEndTime: '',
+      assignedToIds: [],
+      storeId,
+      startDay: '',
+      startMonth: '',
+      startTime: '',
+      dueDay: '',
+      dueMonth: '',
+      dueTime: '',
+    });
+    if (storeId) {
+      this.rhSvc.loadUsersByStore(storeId);
+    }
   }
 
   hasError(field: string, error: string): boolean {

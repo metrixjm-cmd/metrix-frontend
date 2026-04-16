@@ -90,9 +90,9 @@ export interface CreateTaskRequest {
   category:    TaskCategory;
   isCritical:  boolean;
 
-  assignedToIds: string[];
+  assignedToId: string;
   storeId:      string;
-  shift?:       TaskShift;
+  shift:        TaskShift;
   dueAt:        string; // ISO-8601
 
   processes?:           ProcessStepRequest[];

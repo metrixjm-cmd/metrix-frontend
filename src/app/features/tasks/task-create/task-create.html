@@ -12,7 +12,7 @@
         <h2 class="text-xl font-bold text-stone-900 mb-2">¡Tarea creada exitosamente!</h2>
         <p class="text-stone-500 text-sm mb-6">La tarea ha sido asignada y está lista para ejecutarse.</p>
         <div class="flex justify-center gap-3">
-          <app-button variant="primary" (click)="submitted.set(false); form.reset()">Crear otra tarea</app-button>
+          <app-button variant="primary" (click)="resetForNewTask()">Crear otra tarea</app-button>
           <app-button variant="secondary" (click)="goToList()">Ver lista de tareas</app-button>
         </div>
       </div>
@@ -806,4 +806,92 @@
     (saved)="onCategoriaAdded($event)"
     (closed)="categoriaDialogOpen.set(false)"
   />
+  @if (templateDecisionOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/55 px-4">
+      <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl">
+        <div class="border-b border-stone-200 px-6 py-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-brand-600">Plantilla detectada</p>
+          <h3 class="mt-1 text-lg font-semibold text-stone-900">
+            @if (!templateNamingOpen()) {
+              ¿Qué quieres hacer con los cambios?
+            } @else {
+              Guardar como plantilla nueva
+            }
+          </h3>
+        </div>
+
+        <div class="px-6 py-5">
+          @if (!templateNamingOpen()) {
+            <p class="text-sm leading-6 text-stone-600">
+              Detectamos que modificaste la plantilla
+              <span class="font-semibold text-stone-900">"{{ selectedTemplate()?.title }}"</span>.
+              Puedes actualizar la plantilla actual o guardar estos cambios como una nueva antes de crear la tarea.
+            </p>
+
+            <div class="mt-5 grid gap-3">
+              <button
+                type="button"
+                (click)="applyTemplateUpdate()"
+                [disabled]="templateDecisionSaving()"
+                class="flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-left transition-colors hover:bg-brand-100 disabled:opacity-60">
+                <div>
+                  <p class="text-sm font-semibold text-brand-800">Actualizar plantilla actual</p>
+                  <p class="mt-1 text-xs text-brand-700">Sobrescribe la plantilla seleccionada con tus cambios.</p>
+                </div>
+                <svg class="h-5 w-5 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                (click)="askCreateNewTemplate()"
+                [disabled]="templateDecisionSaving()"
+                class="flex items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left transition-colors hover:bg-stone-50 disabled:opacity-60">
+                <div>
+                  <p class="text-sm font-semibold text-stone-900">Guardar como nueva</p>
+                  <p class="mt-1 text-xs text-stone-500">Conserva la original y crea otra plantilla con tus cambios.</p>
+                </div>
+                <svg class="h-5 w-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+              </button>
+            </div>
+          } @else {
+            <label class="mb-2 block text-sm font-medium text-stone-700">Nuevo nombre de la plantilla</label>
+            <input
+              type="text"
+              [value]="newTemplateName()"
+              (input)="newTemplateName.set($any($event.target).value)"
+              placeholder="Ej. Cierre de limpieza premium"
+              class="input-field h-11" />
+            <p class="mt-2 text-xs text-stone-500">
+              La plantilla original se conserva y esta nueva se guardará con el nombre que indiques.
+            </p>
+          }
+        </div>
+
+        <div class="flex items-center justify-end gap-3 border-t border-stone-200 bg-stone-50 px-6 py-4">
+          <button
+            type="button"
+            (click)="templateNamingOpen() ? templateNamingOpen.set(false) : cancelTemplateDecision()"
+            [disabled]="templateDecisionSaving()"
+            class="inline-flex h-10 items-center justify-center rounded-lg border border-stone-200 bg-white px-4 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-60">
+            @if (templateNamingOpen()) { Volver } @else { Cancelar }
+          </button>
+
+          @if (templateNamingOpen()) {
+            <button
+              type="button"
+              (click)="saveAsNewTemplateAndCreate()"
+              [disabled]="templateDecisionSaving()"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60">
+              Guardar plantilla y crear tarea
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

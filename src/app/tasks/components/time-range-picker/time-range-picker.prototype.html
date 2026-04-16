@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metrix – Time Range Picker · Prototipo</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #22c55e;
+    --green-light: #dcfce7;
+    --green-dark: #16a34a;
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --border-focus: #22c55e;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --chip-active-bg: #1a1a2e;
+    --chip-active-text: #ffffff;
+    --chip-inactive-bg: #f1f5f9;
+    --chip-inactive-text: #64748b;
+    --preset-hover: #f0fdf4;
+    --danger: #ef4444;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px 60px;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Demo wrapper ── */
+  .demo-column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 440px;
+  }
+  .demo-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 4px;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  /* ── Section header ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-icon {
+    width: 32px; height: 32px;
+    background: var(--chip-active-bg);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .section-icon svg { width: 16px; height: 16px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .section-sub   { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+  /* Toggle */
+  .toggle { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+  /* ── Body ── */
+  .card-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── Day chips ── */
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .field-label span { color: var(--danger); margin-left: 2px; }
+
+  .day-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day-chip {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 1px;
+    transition: background .15s, color .15s, transform .1s;
+    position: relative;
+    background: var(--chip-inactive-bg);
+    color: var(--chip-inactive-text);
+  }
+  .day-chip .chip-letter { font-size: 13px; font-weight: 800; line-height: 1; }
+  .day-chip .chip-abbr   { font-size: 9px; font-weight: 500; opacity: .7; }
+  .day-chip.active {
+    background: var(--chip-active-bg);
+    color: var(--chip-active-text);
+  }
+  .day-chip.active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; right: 4px;
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+  .day-chip:hover:not(.active) { background: var(--border); transform: translateY(-1px); }
+  .day-chip:active { transform: scale(.95); }
+
+  /* ── Time range NEW design ── */
+  .time-section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+
+  /* --- Presets --- */
+  .presets-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .preset-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .preset-btn:hover { border-color: var(--green); color: var(--green-dark); background: var(--green-light); }
+  .preset-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+
+  /* --- Time inputs row --- */
+  .time-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    align-items: center;
+  }
+  .time-input-group { display: flex; flex-direction: column; gap: 6px; }
+  .time-input-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; }
+
+  .time-input-box {
+    display: flex; align-items: center;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .time-input-box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,.12); }
+
+  .time-stepper {
+    display: flex; flex-direction: column;
+  }
+  .stepper-btn {
+    width: 32px; height: 22px;
+    border: none; background: transparent;
+    cursor: pointer; color: var(--text-secondary);
+    display: grid; place-items: center;
+    transition: background .1s, color .1s;
+    font-size: 10px;
+  }
+  .stepper-btn:hover { background: var(--border); color: var(--text-primary); }
+  .stepper-btn:active { background: var(--green-light); color: var(--green-dark); }
+
+  .time-display {
+    flex: 1;
+    text-align: center;
+    padding: 0 4px;
+  }
+  .time-display input {
+    width: 100%; border: none; background: transparent;
+    font-size: 22px; font-weight: 700; color: var(--text-primary);
+    text-align: center; outline: none; cursor: text;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+  }
+  .time-display input:focus { color: var(--green-dark); }
+  .time-display .time-suffix {
+    font-size: 10px; font-weight: 600; color: var(--text-muted); display: block; margin-top: -4px;
+  }
+
+  .time-arrow {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 10px; gap: 4px;
+  }
+  .time-arrow svg { width: 20px; height: 20px; color: var(--text-muted); }
+  .duration-pill {
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-size: 10px; font-weight: 700;
+    padding: 3px 8px; border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  /* --- Visual range bar --- */
+  .range-bar-wrap { margin-top: 14px; }
+  .range-bar-track {
+    position: relative;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    margin: 0 4px;
+  }
+  .range-bar-fill {
+    position: absolute;
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: left .2s, width .2s;
+  }
+  .range-bar-labels {
+    display: flex; justify-content: space-between;
+    margin-top: 4px; padding: 0 4px;
+  }
+  .range-bar-labels span { font-size: 10px; color: var(--text-muted); }
+
+  /* --- Summary pill --- */
+  .summary-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .summary-time { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .summary-time span { color: var(--text-muted); font-weight: 400; margin: 0 4px; }
+  .summary-tag {
+    font-size: 11px; font-weight: 700;
+    background: var(--green-light); color: var(--green-dark);
+    padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ══════════════ MOBILE VIEW ══════════════ */
+  .mobile-demo { max-width: 375px; }
+
+  /* ── Page title comparison ── */
+  .compare-header {
+    text-align: center; padding: 12px 0 4px;
+    font-size: 13px; color: var(--text-secondary);
+    font-weight: 600;
+  }
+  .compare-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; margin: 4px;
+  }
+  .badge-before { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+  .badge-after  { background: var(--green-light); color: var(--green-dark); border: 1px solid #bbf7d0; }
+
+  /* Time grid (mobile alternative) */
+  .time-grid-section { margin-top: 2px; }
+  .time-grid-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .time-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  }
+  .time-slot {
+    padding: 8px 4px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: white;
+    text-align: center;
+    font-size: 12px; font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .time-slot:hover { border-color: var(--green); color: var(--green-dark); }
+  .time-slot.selected-start { background: var(--chip-active-bg); color: white; border-color: var(--chip-active-bg); }
+  .time-slot.selected-end   { background: var(--green); color: white; border-color: var(--green-dark); }
+  .time-slot.in-range       { background: var(--green-light); color: var(--green-dark); border-color: #bbf7d0; }
+
+  /* ── Responsive ── */
+  @media (max-width: 500px) {
+    body { padding: 16px 12px 40px; flex-direction: column; align-items: center; }
+    .demo-column { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ DESKTOP ══════════ -->
+<div class="demo-column">
+  <div class="compare-header">
+    <span class="compare-badge badge-after">✓ Nuevo diseño · Desktop</span>
+  </div>
+  <div class="demo-label">Endpoint /tasks/create — Sección Ejecución</div>
+
+  <div class="card">
+    <!-- Header -->
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2v10l4 4"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Ejecución</div>
+          <div class="section-sub">Fechas, horarios y recurrencia</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" width="18"><path d="M18 15l-6-6-6 6"/></svg>
+    </div>
+
+    <div class="card-body">
+
+      <!-- Tarea repetitiva -->
+      <div class="summary-row" style="background:white;border:1.5px solid #e2e8f0;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="section-icon" style="width:28px;height:28px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="14"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#0f172a;">Tarea repetitiva</div>
+            <div style="font-size:12px;color:#64748b;">Se repite según la configuración</div>
+          </div>
+        </div>
+        <label class="toggle"><input type="checkbox" checked onchange="toggleRepeat(this)"><span class="toggle-slider"></span></label>
+      </div>
+
+      <!-- Days -->
+      <div id="repeat-section">
+        <div class="field-label">Días de repetición <span>*</span></div>
+        <div class="day-chips">
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">L</span><span class="chip-abbr">Lun</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">M</span><span class="chip-abbr">Mar</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">Mi</span><span class="chip-abbr">Mié</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">J</span><span class="chip-abbr">Jue</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">V</span><span class="chip-abbr">Vie</span></button>
+          <button class="day-chip" onclick="toggleDay(this)"><span class="chip-letter">S</span><span class="chip-abbr">Sáb</span></button>
+          <button class="day-chip" onclick="toggleDay(this)"><span class="chip-letter">D</span><span class="chip-abbr">Dom</span></button>
+        </div>
+
+        <!-- ── NEW TIME RANGE ── -->
+        <div style="margin-top:20px;">
+          <div class="time-section-label">Horario</div>
+
+          <!-- Presets -->
+          <div class="presets-row" id="presets">
+            <button class="preset-btn" onclick="applyPreset(this,9,12)">Mañana  9–12</button>
+            <button class="preset-btn active" onclick="applyPreset(this,10,15)">10–15 hs</button>
+            <button class="preset-btn" onclick="applyPreset(this,14,18)">Tarde 14–18</button>
+            <button class="preset-btn" onclick="applyPreset(this,9,18)">Jornada 9–18</button>
+          </div>
+
+          <!-- Inputs -->
+          <div class="time-inputs-row">
+            <!-- INICIO -->
+            <div class="time-input-group">
+              <div class="time-input-label">Inicio</div>
+              <div class="time-input-box">
+                <div class="time-stepper">
+                  <button class="stepper-btn" onclick="stepTime('start', 1)" title="Aumentar">▲</button>
+                  <button class="stepper-btn" onclick="stepTime('start',-1)" title="Disminuir">▼</button>
+                </div>
+                <div class="time-display">
+                  <input id="start-input" type="text" value="10:00" maxlength="5"
+                         oninput="onTimeInput('start',this)" onblur="formatTime('start',this)">
+                  <span class="time-suffix">hrs</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow + duration -->
+            <div class="time-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              <div class="duration-pill" id="duration-pill">5 hs</div>
+            </div>
+
+            <!-- FIN -->
+            <div class="time-input-group">
+              <div class="time-input-label">Fin</div>
+              <div class="time-input-box">
+                <div class="time-stepper">
+                  <button class="stepper-btn" onclick="stepTime('end', 1)">▲</button>
+                  <button class="stepper-btn" onclick="stepTime('end',-1)">▼</button>
+                </div>
+                <div class="time-display">
+                  <input id="end-input" type="text" value="15:00" maxlength="5"
+                         oninput="onTimeInput('end',this)" onblur="formatTime('end',this)">
+                  <span class="time-suffix">hrs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual bar -->
+          <div class="range-bar-wrap">
+            <div class="range-bar-track">
+              <div class="range-bar-fill" id="range-fill"></div>
+            </div>
+            <div class="range-bar-labels">
+              <span>06:00</span><span>10:00</span><span>14:00</span><span>18:00</span><span>22:00</span>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="summary-row" style="margin-top:12px;">
+            <div class="summary-time" id="summary-text">
+              Horario: <strong>10:00</strong> <span>→</span> <strong>15:00</strong>
+            </div>
+            <div class="summary-tag" id="summary-tag">5 horas</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ MOBILE ══════════ -->
+<div class="demo-column mobile-demo">
+  <div class="compare-header">
+    <span class="compare-badge badge-after">✓ Nuevo diseño · Mobile</span>
+  </div>
+  <div class="demo-label">iPhone 375px — variante con grid de slots</div>
+
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M12 2v10l4 4"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <div>
+          <div class="section-title">Ejecución</div>
+          <div class="section-sub">Fechas, horarios y recurrencia</div>
+        </div>
+      </div>
+      <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+    </div>
+
+    <div class="card-body">
+
+      <div>
+        <div class="field-label">Días de repetición <span style="color:#ef4444">*</span></div>
+        <div class="day-chips">
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">L</span><span class="chip-abbr">Lun</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">M</span><span class="chip-abbr">Mar</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">Mi</span><span class="chip-abbr">Mié</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">J</span><span class="chip-abbr">Jue</span></button>
+          <button class="day-chip active" onclick="toggleDay(this)"><span class="chip-letter">V</span><span class="chip-abbr">Vie</span></button>
+          <button class="day-chip" onclick="toggleDay(this)"><span class="chip-letter">S</span><span class="chip-abbr">Sáb</span></button>
+          <button class="day-chip" onclick="toggleDay(this)"><span class="chip-letter">D</span><span class="chip-abbr">Dom</span></button>
+        </div>
+      </div>
+
+      <!-- Mobile: presets + grid of slots -->
+      <div>
+        <div class="time-section-label">Horario</div>
+
+        <!-- Presets scrollables -->
+        <div class="presets-row" style="flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;">
+          <button class="preset-btn" style="flex-shrink:0" onclick="mobilePreset(this,10,15)">10–15 ✓</button>
+          <button class="preset-btn" style="flex-shrink:0" onclick="mobilePreset(this,9,12)">Mañana 9–12</button>
+          <button class="preset-btn" style="flex-shrink:0" onclick="mobilePreset(this,14,18)">Tarde 14–18</button>
+          <button class="preset-btn" style="flex-shrink:0" onclick="mobilePreset(this,9,18)">Jornada</button>
+        </div>
+
+        <!-- Time grid -->
+        <div class="time-grid-label" style="margin-top:10px;">Toca para ajustar inicio → fin</div>
+        <div class="time-grid" id="mobile-grid"></div>
+
+        <!-- Compact inputs for fine-tuning -->
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <div style="flex:1;">
+            <div class="time-input-label" style="margin-bottom:4px;">Inicio</div>
+            <div class="time-input-box" style="border-radius:10px;">
+              <div class="time-stepper">
+                <button class="stepper-btn" onclick="stepTime('mob-start',1)">▲</button>
+                <button class="stepper-btn" onclick="stepTime('mob-start',-1)">▼</button>
+              </div>
+              <div class="time-display">
+                <input id="mob-start-input" type="text" value="10:00" maxlength="5"
+                       style="font-size:18px;" oninput="onTimeInput('mob-start',this)" onblur="formatTime('mob-start',this)">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;padding-top:18px;color:#94a3b8;">→</div>
+          <div style="flex:1;">
+            <div class="time-input-label" style="margin-bottom:4px;">Fin</div>
+            <div class="time-input-box" style="border-radius:10px;">
+              <div class="time-stepper">
+                <button class="stepper-btn" onclick="stepTime('mob-end',1)">▲</button>
+                <button class="stepper-btn" onclick="stepTime('mob-end',-1)">▼</button>
+              </div>
+              <div class="time-display">
+                <input id="mob-end-input" type="text" value="15:00" maxlength="5"
+                       style="font-size:18px;" oninput="onTimeInput('mob-end',this)" onblur="formatTime('mob-end',this)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-row" style="margin-top:12px;">
+          <div class="summary-time"><strong>10:00</strong> <span>→</span> <strong>15:00</strong></div>
+          <div class="summary-tag">5 horas</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UX notes -->
+  <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#92400e;margin-bottom:8px;">Mejoras UX vs. drum scroll</div>
+    <ul style="font-size:12px;color:#78350f;line-height:1.7;padding-left:16px;">
+      <li>Presets frecuentes → 0 clics para casos comunes</li>
+      <li>Grid visual → selección por rango en 2 taps</li>
+      <li>Steppers ▲▼ → ajuste preciso sin scroll</li>
+      <li>Input directo → tipear "09:30" desde teclado</li>
+      <li>Barra de rango → feedback visual inmediato</li>
+      <li>Touch target ≥ 44px en todos los elementos</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+/* ── State ── */
+const state = { startH: 10, startM: 0, endH: 15, endM: 0 };
+const STEP = 30; // minutes per step
+
+function toMinutes(h, m) { return h * 60 + m; }
+function toHHMM(total) {
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function diffLabel(s, e) {
+  let d = e - s;
+  if (d <= 0) d += 24 * 60;
+  const h = Math.floor(d / 60);
+  const m = d % 60;
+  if (m === 0) return `${h} hs`;
+  return `${h}h ${m}m`;
+}
+
+function updateUI() {
+  const sMin = toMinutes(state.startH, state.startM);
+  const eMin = toMinutes(state.endH, state.endM);
+  const sStr = toHHMM(sMin);
+  const eStr = toHHMM(eMin);
+  const dur  = diffLabel(sMin, eMin);
+
+  // Inputs
+  const si = document.getElementById('start-input');
+  const ei = document.getElementById('end-input');
+  if (si && document.activeElement !== si) si.value = sStr;
+  if (ei && document.activeElement !== ei) ei.value = eStr;
+
+  // Duration pill + summary
+  const dp = document.getElementById('duration-pill');
+  if (dp) dp.textContent = dur;
+  const st = document.getElementById('summary-text');
+  if (st) st.innerHTML = `Horario: <strong>${sStr}</strong> <span>→</span> <strong>${eStr}</strong>`;
+  const stag = document.getElementById('summary-tag');
+  if (stag) stag.textContent = dur;
+
+  // Range bar (06:00–22:00 = 960 min window)
+  const RANGE_START = 6 * 60, RANGE_END = 22 * 60, RANGE = RANGE_END - RANGE_START;
+  const fillLeft  = Math.max(0, Math.min(100, (sMin - RANGE_START) / RANGE * 100));
+  const fillWidth = Math.max(0, Math.min(100 - fillLeft, (eMin - sMin) / RANGE * 100));
+  const fill = document.getElementById('range-fill');
+  if (fill) { fill.style.left = fillLeft + '%'; fill.style.width = fillWidth + '%'; }
+}
+
+function stepTime(which, dir) {
+  if (which === 'start' || which === 'mob-start') {
+    let m = toMinutes(state.startH, state.startM) + dir * STEP;
+    m = (m + 24*60) % (24*60);
+    state.startH = Math.floor(m/60); state.startM = m%60;
+  } else {
+    let m = toMinutes(state.endH, state.endM) + dir * STEP;
+    m = (m + 24*60) % (24*60);
+    state.endH = Math.floor(m/60); state.endM = m%60;
+  }
+  clearPresets();
+  updateUI();
+  updateMobileGrid();
+}
+
+function onTimeInput(which, el) {
+  // Just mark presets dirty
+  clearPresets();
+}
+function formatTime(which, el) {
+  const val = el.value.replace(/[^0-9:]/g,'');
+  let h, m;
+  if (val.includes(':')) {
+    [h, m] = val.split(':').map(Number);
+  } else if (val.length <= 2) {
+    h = Number(val); m = 0;
+  } else {
+    h = Number(val.slice(0,-2)); m = Number(val.slice(-2));
+  }
+  h = isNaN(h) ? 0 : Math.min(23, Math.max(0, h));
+  m = isNaN(m) ? 0 : Math.min(59, Math.max(0, m));
+  if (which === 'start' || which === 'mob-start') { state.startH = h; state.startM = m; }
+  else                                             { state.endH   = h; state.endM   = m; }
+  updateUI(); updateMobileGrid();
+}
+
+function applyPreset(btn, sh, eh) {
+  state.startH = sh; state.startM = 0;
+  state.endH   = eh; state.endM   = 0;
+  document.querySelectorAll('#presets .preset-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateUI();
+}
+function mobilePreset(btn, sh, eh) {
+  state.startH = sh; state.startM = 0;
+  state.endH   = eh; state.endM   = 0;
+  updateUI(); updateMobileGrid();
+}
+function clearPresets() {
+  document.querySelectorAll('#presets .preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+/* ── Day chips ── */
+function toggleDay(btn) { btn.classList.toggle('active'); }
+
+/* ── Toggle repeat ── */
+function toggleRepeat(cb) {
+  document.getElementById('repeat-section').style.opacity = cb.checked ? '1' : '.4';
+  document.getElementById('repeat-section').style.pointerEvents = cb.checked ? '' : 'none';
+}
+
+/* ── Mobile grid ── */
+const GRID_SLOTS = [];
+for (let h = 6; h <= 20; h++) {
+  GRID_SLOTS.push({ h, m: 0 });
+  if (h < 20) GRID_SLOTS.push({ h, m: 30 });
+}
+let mobilePhase = 'start'; // 'start' | 'end'
+
+function updateMobileGrid() {
+  const grid = document.getElementById('mobile-grid');
+  if (!grid) return;
+  const sMin = toMinutes(state.startH, state.startM);
+  const eMin = toMinutes(state.endH, state.endM);
+  grid.innerHTML = '';
+  GRID_SLOTS.forEach(slot => {
+    const slotMin = toMinutes(slot.h, slot.m);
+    const btn = document.createElement('button');
+    btn.className = 'time-slot';
+    btn.textContent = toHHMM(slotMin);
+    if (slotMin === sMin) btn.classList.add('selected-start');
+    else if (slotMin === eMin) btn.classList.add('selected-end');
+    else if (slotMin > sMin && slotMin < eMin) btn.classList.add('in-range');
+    btn.onclick = () => {
+      if (mobilePhase === 'start') {
+        state.startH = slot.h; state.startM = slot.m;
+        if (toMinutes(state.startH,state.startM) >= toMinutes(state.endH,state.endM)) {
+          state.endH = slot.h + 1; state.endM = slot.m;
+        }
+        mobilePhase = 'end';
+      } else {
+        if (slotMin > toMinutes(state.startH, state.startM)) {
+          state.endH = slot.h; state.endM = slot.m;
+        }
+        mobilePhase = 'start';
+      }
+      updateUI(); updateMobileGrid();
+      // sync mob inputs
+      const ms = document.getElementById('mob-start-input');
+      const me = document.getElementById('mob-end-input');
+      if (ms) ms.value = toHHMM(toMinutes(state.startH, state.startM));
+      if (me) me.value = toHHMM(toMinutes(state.endH, state.endM));
+    };
+    grid.appendChild(btn);
+  });
+}
+
+updateUI();
+updateMobileGrid();
+// Mark active preset
+document.querySelector('#presets .preset-btn:nth-child(2)').classList.add('active');
+</script>
+</body>
+</html>
