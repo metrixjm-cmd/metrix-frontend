@@ -51,7 +51,7 @@ export class TaskService {
       .get<TaskResponse[]>(`${this.apiUrl}/admin/all`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
       });
   }
@@ -69,7 +69,7 @@ export class TaskService {
       .get<TaskResponse[]>(`${this.apiUrl}/my`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
       });
   }
@@ -84,10 +84,10 @@ export class TaskService {
     if (shift) params = params.set('shift', shift);
 
     this.http
-      .get<TaskResponse[]>(`${this.apiUrl}/store/${storeId}`, { params })
+      .get<TaskResponse[] | { content?: TaskResponse[] }>(`${this.apiUrl}/store/${storeId}`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
+        next:  response => { this.setTasks(response); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
       });
   }
@@ -105,7 +105,7 @@ export class TaskService {
       .get<TaskResponse[]>(`${this.apiUrl}/user/${userId}`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this._tasks.set(tasks); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
       });
   }
@@ -132,7 +132,7 @@ export class TaskService {
     return this.http
       .post<TaskResponse>(this.apiUrl, request)
       .pipe(
-        tap(newTask => this._tasks.update(list => [newTask, ...list])),
+        tap(newTask => this._tasks.update(list => [newTask, ...this.normalizeTasks(list)])),
       );
   }
 
@@ -145,7 +145,7 @@ export class TaskService {
         tap(updated => {
           // Actualiza la tarea en la lista y en el detalle seleccionado
           this._tasks.update(list =>
-            list.map(t => t.id === updated.id ? updated : t),
+            this.normalizeTasks(list).map(t => t.id === updated.id ? updated : t),
           );
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
@@ -162,7 +162,7 @@ export class TaskService {
       .pipe(
         tap(updated => {
           this._tasks.update(list =>
-            list.map(t => t.id === updated.id ? updated : t),
+            this.normalizeTasks(list).map(t => t.id === updated.id ? updated : t),
           );
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
@@ -179,7 +179,7 @@ export class TaskService {
       .pipe(
         tap(updated => {
           this._tasks.update(list =>
-            list.map(t => t.id === updated.id ? updated : t),
+            this.normalizeTasks(list).map(t => t.id === updated.id ? updated : t),
           );
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
@@ -196,7 +196,7 @@ export class TaskService {
       .pipe(
         tap(updated => {
           this._tasks.update(list =>
-            list.map(t => t.id === updated.id ? updated : t),
+            this.normalizeTasks(list).map(t => t.id === updated.id ? updated : t),
           );
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
@@ -213,7 +213,7 @@ export class TaskService {
       .pipe(
         tap(updated => {
           this._tasks.update(list =>
-            list.map(t => t.id === updated.id ? updated : t),
+            this.normalizeTasks(list).map(t => t.id === updated.id ? updated : t),
           );
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
@@ -229,7 +229,7 @@ export class TaskService {
       .patch<void>(`${this.apiUrl}/${taskId}/deactivate`, {})
       .pipe(
         tap(() => {
-          this._tasks.update(list => list.filter(t => t.id !== taskId));
+          this._tasks.update(list => this.normalizeTasks(list).filter(t => t.id !== taskId));
         }),
       );
   }
@@ -239,6 +239,23 @@ export class TaskService {
   clearTasks(): void {
     this._tasks.set([]);
     this._selectedTask.set(null);
+  }
+
+  private setTasks(response: TaskResponse[] | { content?: TaskResponse[] }): void {
+    this._tasks.set(this.normalizeTasks(response));
+  }
+
+  private normalizeTasks(response: unknown): TaskResponse[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (response && typeof response === 'object' && 'content' in response) {
+      const content = (response as { content?: unknown }).content;
+      return Array.isArray(content) ? content : [];
+    }
+
+    return [];
   }
 
   private extractMessage(err: unknown): string {
