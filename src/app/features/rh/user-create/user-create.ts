@@ -65,7 +65,7 @@ export class UserCreate implements OnInit {
   readonly puestoDialogOpen    = signal(false);
   readonly nextFolio           = signal<string>('Selecciona rol y puesto...');
   readonly selectedRole        = signal<string>(this.isAdmin() ? 'GERENTE' : 'EJECUTADOR');
-  readonly maxBirthDate        = getLatestBirthDateBeforeYears(12);
+  readonly maxBirthDate        = getLatestBirthDateBeforeYears(17);
   readonly puestosDisponibles  = computed(() =>
     this.catalogSvc.puestos().filter(p => p.role === this.selectedRole())
   );
@@ -76,7 +76,7 @@ export class UserCreate implements OnInit {
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     turno:           ['MATUTINO', Validators.required],
     email:           ['', Validators.email],
-    fechaNacimiento: ['', [realBirthDateValidator, olderThanYearsValidator(12)]],
+    fechaNacimiento: ['', [realBirthDateValidator, olderThanYearsValidator(17)]],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
     roles:           [this.isAdmin() ? ['GERENTE'] : ['EJECUTADOR'], Validators.required],

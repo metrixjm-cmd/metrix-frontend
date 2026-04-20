@@ -694,8 +694,19 @@
                           <option value="">Mes</option>
                           @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
                         </select>
-                        <input type="time" formControlName="startTime" class="input-field h-11"
-                               (change)="dueDateError.set(null)" />
+                        <div class="grid grid-cols-3 gap-2">
+                          <select class="input-field h-11" [ngModel]="startHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartHour12($event); dueDateError.set(null)">
+                            <option value="">Hora</option>
+                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
+                          </select>
+                          <select class="input-field h-11" [ngModel]="startMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMinute($event); dueDateError.set(null)">
+                            <option value="">Min</option>
+                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
+                          </select>
+                          <select class="input-field h-11" [ngModel]="startMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMeridiem($event); dueDateError.set(null)">
+                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
+                          </select>
+                        </div>
                       </div>
                     </div>
 
@@ -717,8 +728,19 @@
                           <option value="">Mes</option>
                           @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
                         </select>
-                        <input type="time" formControlName="dueTime" class="input-field h-11"
-                               (change)="dueDateError.set(null)" />
+                        <div class="grid grid-cols-3 gap-2">
+                          <select class="input-field h-11" [ngModel]="dueHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueHour12($event); dueDateError.set(null)">
+                            <option value="">Hora</option>
+                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
+                          </select>
+                          <select class="input-field h-11" [ngModel]="dueMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMinute($event); dueDateError.set(null)">
+                            <option value="">Min</option>
+                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
+                          </select>
+                          <select class="input-field h-11" [ngModel]="dueMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMeridiem($event); dueDateError.set(null)">
+                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
+                          </select>
+                        </div>
                       </div>
                     </div>
 

@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
+import { TimeFormatPipe } from '../../shared/pipes/time-format.pipe';
 import { AuthService } from '../auth/services/auth.service';
 import { IgeoAnalyticsResponse } from '../kpi/kpi.models';
 import { TaskService } from '../tasks/services/task.service';
@@ -43,7 +44,7 @@ export interface LiveEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, AppDatePipe],
+  imports: [RouterLink, StatusBadgeComponent, AppDatePipe, TimeFormatPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -140,7 +141,7 @@ export class Dashboard implements OnInit {
       .map(task => {
         const ts   = task.finishedAt ?? task.startedAt ?? task.createdAt;
         const d    = new Date(ts);
-        const time = `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+        const time = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
         return {
           id:       task.id,
           time,
