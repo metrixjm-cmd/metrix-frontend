@@ -1,15 +1,6 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { TaskService } from '../services/task.service';
 
-/**
- * Componente de upload de evidencias para METRIX (Sprint 5).
- *
- * Maneja selección por clic y drag-and-drop de imágenes o videos.
- * Llama a TaskService.uploadEvidence() y emite la URL resultante.
- *
- * Uso:
- *   <app-evidence-upload [taskId]="task().id" type="IMAGE" (uploaded)="onUploaded($event)" />
- */
 @Component({
   selector: 'app-evidence-upload',
   standalone: true,
@@ -19,20 +10,14 @@ import { TaskService } from '../services/task.service';
 export class EvidenceUpload {
   private readonly taskSvc = inject(TaskService);
 
-  // ── Inputs ───────────────────────────────────────────────────────────────
   readonly taskId = input.required<string>();
-  readonly type   = input.required<'IMAGE' | 'VIDEO'>();
+  readonly type = input.required<'IMAGE' | 'VIDEO'>();
 
-  // ── Outputs ──────────────────────────────────────────────────────────────
-  /** Emite la URL de GCS del archivo subido exitosamente. */
   readonly uploaded = output<string>();
 
-  // ── Estado interno ───────────────────────────────────────────────────────
-  readonly uploading   = signal(false);
+  readonly uploading = signal(false);
   readonly uploadError = signal<string | null>(null);
-  readonly dragOver    = signal(false);
-
-  // ── Computed ─────────────────────────────────────────────────────────────
+  readonly dragOver = signal(false);
 
   readonly accept = computed(() =>
     this.type() === 'IMAGE'
@@ -45,20 +30,18 @@ export class EvidenceUpload {
   );
 
   readonly maxSizeLabel = computed(() =>
-    this.type() === 'IMAGE' ? '10 MB máx.' : '50 MB máx.',
+    this.type() === 'IMAGE' ? '10 MB max.' : '50 MB max.',
   );
 
   readonly formatsLabel = computed(() =>
     this.type() === 'IMAGE' ? 'JPG, PNG, WebP' : 'MP4, MOV, WebM',
   );
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       this.upload(input.files[0]);
-      input.value = ''; // permite volver a seleccionar el mismo archivo
+      input.value = '';
     }
   }
 
@@ -78,17 +61,28 @@ export class EvidenceUpload {
     this.dragOver.set(false);
   }
 
-  // ── Upload ───────────────────────────────────────────────────────────────
+  private upload(file: File): void {
+    this.uploading.set(true);
+    this.uploadError.set(null);
 
-  private upload(_file: File): void {
-    // Evidencias deshabilitadas — módulo removido
-    this.uploadError.set('Módulo de evidencias deshabilitado.');
+    this.taskSvc.uploadEvidence(this.taskId(), file, this.type()).subscribe({
+      next: response => {
+        this.uploading.set(false);
+        this.uploaded.emit(response.url);
+      },
+      error: err => {
+        this.uploadError.set(this.extractMsg(err));
+        this.uploading.set(false);
+      },
+    });
   }
 
   private extractMsg(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const body = (err as { error?: { error?: string } }).error;
+      const body = (err as { error?: { error?: string; message?: string } | string }).error;
+      if (typeof body === 'string') return body;
       if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
     return 'Error al subir el archivo. Intenta de nuevo.';
   }

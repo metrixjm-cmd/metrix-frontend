@@ -33,6 +33,7 @@ export class AppDatePipe implements PipeTransform {
     return d.toLocaleDateString('es-MX', {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
+      hour12: true,
     });
   }
 
@@ -43,7 +44,7 @@ export class AppDatePipe implements PipeTransform {
   }
 
   private formatTime(d: Date): string {
-    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
   }
 
   private formatShort(d: Date): string {

@@ -6,6 +6,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   CreateTaskRequest,
+  EvidenceUploadResponse,
   TaskResponse,
   TaskShift,
   UpdateStatusRequest,
@@ -218,6 +219,36 @@ export class TaskService {
           if (this._selectedTask()?.id === updated.id) {
             this._selectedTask.set(updated);
           }
+        }),
+      );
+  }
+
+  uploadEvidence(taskId: string, file: File, type: 'IMAGE' | 'VIDEO'): Observable<EvidenceUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+
+    return this.http
+      .post<EvidenceUploadResponse>(`${this.apiUrl}/${taskId}/evidence`, formData)
+      .pipe(
+        tap(response => {
+          const selected = this._selectedTask();
+          if (!selected || selected.id !== taskId) return;
+
+          const updated: TaskResponse = {
+            ...selected,
+            evidenceImages: type === 'IMAGE'
+              ? [...selected.evidenceImages, response.url]
+              : selected.evidenceImages,
+            evidenceVideos: type === 'VIDEO'
+              ? [...selected.evidenceVideos, response.url]
+              : selected.evidenceVideos,
+          };
+
+          this._selectedTask.set(updated);
+          this._tasks.update(list =>
+            this.normalizeTasks(list).map(task => task.id === taskId ? updated : task),
+          );
         }),
       );
   }

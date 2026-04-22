@@ -7,6 +7,7 @@ import { TaskService } from '../services/task.service';
 import { CatalogService } from '../../../core/services/catalog.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
+import { TimeFormatPipe } from '../../../shared/pipes/time-format.pipe';
 import {
   TaskResponse,
   TaskStatus,
@@ -19,7 +20,7 @@ import {
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [RouterLink, FormsModule, StatusBadgeComponent, AppDatePipe],
+  imports: [RouterLink, FormsModule, StatusBadgeComponent, AppDatePipe, TimeFormatPipe],
   templateUrl: './task-list.html',
 })
 export class TaskList implements OnInit {
