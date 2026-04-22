@@ -278,6 +278,22 @@ export class TaskDetail implements OnInit {
     return `${days}d ${hrs % 24}h`;
   }
 
+  getProcessReason(processTitle: string): string | null {
+    const comments = this.task()?.comments;
+    if (!comments) return null;
+    const lines = comments.split('\n');
+    for (const line of lines) {
+      const trimmed = line.replace(/^[•\-]\s*/, '');
+      const colonIdx = trimmed.indexOf(': ');
+      if (colonIdx === -1) continue;
+      const title = trimmed.slice(0, colonIdx).trim();
+      if (title.toLowerCase() === processTitle.toLowerCase()) {
+        return trimmed.slice(colonIdx + 2).trim() || null;
+      }
+    }
+    return null;
+  }
+
   goBack(): void {
     this.router.navigate(['/tasks']);
   }

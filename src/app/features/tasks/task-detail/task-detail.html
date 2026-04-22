@@ -204,66 +204,52 @@
                   </div>
                 } @else {
 
-                <!-- Vista normal del paso -->
-                <div class="px-5 py-3 flex items-start gap-3 hover:bg-stone-50 transition-colors"
-                     [class.bg-emerald-50]="step.completed">
+                <!-- Vista de proceso — solo visual -->
+                <div class="px-5 py-3 flex items-start gap-3"
+                     [class]="step.completed ? 'bg-emerald-50/60' : 'bg-red-50/40'">
 
-                  @if (canCheckProcesses()) {
-                    <!-- GERENTE / EJECUTADOR: Checkbox interactivo -->
-                    <button
-                      type="button"
-                      (click)="toggleProcessStep(step.stepId, step.completed)"
-                      [disabled]="togglingStep() === step.stepId"
-                      class="mt-0.5 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
-                      [class]="step.completed
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : 'border-stone-300 hover:border-orange-400'"
-                    >
-                      @if (togglingStep() === step.stepId) {
-                        <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                        </svg>
-                      } @else if (step.completed) {
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                        </svg>
-                      }
-                    </button>
-                  } @else {
-                    <!-- ADMIN: Indicador readonly -->
-                    <div class="mt-0.5 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
-                      [class]="step.completed
-                        ? 'bg-emerald-500 border-emerald-500 text-white'
-                        : 'border-stone-300 bg-stone-100'">
-                      @if (step.completed) {
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                        </svg>
-                      }
-                    </div>
-                  }
+                  <!-- Ícono de estado -->
+                  <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                    [class]="step.completed ? 'bg-emerald-500 text-white' : 'bg-red-400 text-white'">
+                    @if (step.completed) {
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    } @else {
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    }
+                  </div>
 
                   <!-- Contenido -->
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <p class="text-sm font-medium" [class]="step.completed ? 'text-stone-400 line-through' : 'text-stone-800'">
-                        {{ step.title }}
-                      </p>
-                      @if (step.completed && step.completedAt) {
-                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-medium shrink-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <p class="text-sm font-medium text-stone-800">{{ step.title }}</p>
+                      @if (step.completed) {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-semibold shrink-0">
                           <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                           </svg>
-                          {{ getStepDuration(step.completedAt) }}
+                          Completado
+                          @if (step.completedAt) { · {{ getStepDuration(step.completedAt) }} }
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-semibold shrink-0">
+                          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
+                          No completado
                         </span>
                       }
                     </div>
                     @if (step.description) {
                       <p class="text-xs text-stone-400 mt-0.5">{{ step.description }}</p>
                     }
-                    @if (step.notes) {
-                      <p class="text-xs text-stone-500 mt-1 italic">{{ step.notes }}</p>
+                    @if (!step.completed && getProcessReason(step.title)) {
+                      <p class="text-xs text-red-600 mt-1.5 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5">
+                        <span class="font-semibold">Motivo: </span>{{ getProcessReason(step.title) }}
+                      </p>
                     }
                   </div>
 

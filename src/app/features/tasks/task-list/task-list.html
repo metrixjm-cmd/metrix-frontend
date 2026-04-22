@@ -315,7 +315,7 @@
                   <div class="max-h-52 overflow-y-auto space-y-1 mb-4">
                     @for (step of task.processes; track step.stepId; let i = $index) {
                       <button
-                        (click)="toggleProcessStep(task.id, step.stepId, step.completed, $event)"
+                        (click)="onProcessStepToggle(task, step, $event)"
                         [disabled]="togglingStepId() === step.stepId"
                         class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-left"
                         [class]="step.completed ? 'bg-brand-50/50 hover:bg-brand-50' : 'hover:bg-stone-50'">
@@ -343,11 +343,35 @@
                       </button>
                     }
                   </div>
+
+                  @if (task.evidenceImages.length > 0 || task.evidenceVideos.length > 0) {
+                    <div class="mb-4 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                      <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Evidencias</p>
+                        <span class="text-xs text-stone-400">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
+                      </div>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        @for (img of task.evidenceImages; track img) {
+                          <button type="button" (click)="openLightbox(img, 'image')" class="block rounded-lg overflow-hidden border border-stone-200 bg-white hover:border-brand-300 transition-colors">
+                            <img [src]="img" alt="Evidencia imagen" class="w-full h-24 object-cover" loading="lazy" />
+                          </button>
+                        }
+                        @for (vid of task.evidenceVideos; track vid) {
+                          <button type="button" (click)="openLightbox(vid, 'video')" class="rounded-lg overflow-hidden border border-stone-200 bg-stone-100 hover:border-brand-300 transition-colors flex items-center justify-center h-24 w-full">
+                            <svg class="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
                 }
 
                 <!-- Acciones separadas por línea -->
                 <div class="flex items-center gap-3 pt-3" [class.border-t]="task.processes && task.processes.length > 0" [class.border-stone-200/60]="task.processes && task.processes.length > 0">
-                  <button (click)="askCompleteTask(task.id, $event)" [disabled]="completingTaskId() === task.id"
+                  <button (click)="askCompleteTask(task, $event)" [disabled]="completingTaskId() === task.id"
                     class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
                     @if (completingTaskId() === task.id) {
                       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -356,27 +380,7 @@
                     }
                     Terminar
                   </button>
-                  <button (click)="openFailForm(task.id)"
-                    class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 border border-red-200/60 text-red-500 hover:bg-red-50 hover:border-red-300 text-sm font-medium rounded-lg transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    Reportar Falla
-                  </button>
                 </div>
-
-                <!-- Formulario falla inline -->
-                @if (showFailFormId() === task.id) {
-                  <div class="mt-4 pt-4 border-t border-stone-200/60 space-y-3">
-                    <label class="block text-sm font-medium text-stone-700">Motivo del fallo <span class="text-red-500">*</span></label>
-                    <textarea [ngModel]="failComments()" (ngModelChange)="failComments.set($event)" rows="2"
-                      placeholder="Describe brevemente por qué no se pudo completar (mín. 10 caracteres)..."
-                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"></textarea>
-                    <div class="flex gap-2">
-                      <button (click)="submitFail(task)" [disabled]="failComments().trim().length < 10 || failingTaskId() === task.id"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">Confirmar Falla</button>
-                      <button (click)="cancelFailForm()" class="px-4 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm rounded-lg">Cancelar</button>
-                    </div>
-                  </div>
-                }
               </div>
             }
 
@@ -593,44 +597,59 @@
                       </div>
                       <div class="max-h-64 overflow-y-auto p-3 space-y-1.5">
                         @for (step of task.processes; track step.stepId) {
-                          <div class="flex items-center gap-3 p-2.5 rounded-lg bg-white border border-stone-200 transition-colors" [class.bg-emerald-50]="step.completed" [class.border-emerald-200]="step.completed">
-                          @if (canCheckProcesses(task)) {
-                            <button (click)="toggleProcessStep(task.id, step.stepId, step.completed, $event)"
-                              [disabled]="togglingStepId() === step.stepId"
-                              class="shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
-                              [class]="step.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-stone-300 hover:border-brand-400'">
-                              @if (togglingStepId() === step.stepId) {
-                                <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                              } @else if (step.completed) {
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                              }
-                            </button>
-                          } @else {
-                            <div class="shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
-                              [class]="step.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-stone-300 bg-stone-100'">
+                          <div class="flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors"
+                            [class]="step.completed ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50/60 border-red-100'">
+                            <!-- Ícono estado -->
+                            <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+                              [class]="step.completed ? 'bg-emerald-500 text-white' : 'bg-red-400 text-white'">
                               @if (step.completed) {
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                              } @else {
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                               }
                             </div>
+                            <!-- Contenido -->
+                            <div class="flex-1 min-w-0">
+                              <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-sm font-medium text-stone-800">{{ step.title }}</span>
+                                @if (step.completed) {
+                                  <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-semibold">Completado</span>
+                                } @else {
+                                  <span class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-semibold">No completado</span>
+                                }
+                              </div>
+                              @if (!step.completed && getTaskProcessReason(task, step.title)) {
+                                <p class="text-xs text-red-600 mt-1">
+                                  <span class="font-semibold">Motivo: </span>{{ getTaskProcessReason(task, step.title) }}
+                                </p>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    @if (task.evidenceImages.length > 0 || task.evidenceVideos.length > 0) {
+                      <div class="border-t border-stone-100 p-3 bg-stone-50">
+                        <div class="flex items-center justify-between mb-2">
+                          <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Evidencias</p>
+                          <span class="text-xs text-stone-400">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                          @for (img of task.evidenceImages; track img) {
+                            <a [href]="img" target="_blank" rel="noopener" class="block rounded-lg overflow-hidden border border-stone-200 bg-white hover:border-brand-300 transition-colors">
+                              <img [src]="img" alt="Evidencia imagen" class="w-full h-20 object-cover" loading="lazy" />
+                            </a>
                           }
-                          <span class="text-sm flex-1" [class]="step.completed ? 'text-stone-400 line-through' : 'text-stone-800'">{{ step.title }}</span>
-                          @if (step.description) {
-                            <span class="text-xs text-stone-400 hidden sm:inline">{{ step.description }}</span>
+                          @for (vid of task.evidenceVideos; track vid) {
+                            <div class="rounded-lg overflow-hidden border border-stone-200 bg-white">
+                              <video [src]="vid" controls class="w-full h-20 object-cover"></video>
+                            </div>
                           }
                         </div>
-                      }
-                    </div>
+                      </div>
+                    }
                   </div>
                 }
                 </div><!-- cierre grid 3-cols -->
-
-                <!-- Comentarios -->
-                @if (task.comments) {
-                  <div class="bg-white border border-stone-200 rounded-lg p-3">
-                    <h4 class="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">Comentarios</h4>
-                    <p class="text-stone-600 text-sm">{{ task.comments }}</p>
-                  </div>
-                }
 
                 <!-- Error de accion -->
                 @if (actionError()) {
@@ -640,7 +659,7 @@
                 }
 
                 <!-- Acciones -->
-                @if (canStartTask(task) || canCompleteTask(task) || canFailTask(task)) {
+                @if (canStartTask(task) || canCompleteTask(task)) {
                   <div class="rounded-lg border p-4"
                     [class]="task.status === 'IN_PROGRESS' ? 'bg-brand-50 border-brand-100' : 'bg-amber-50 border-amber-100'">
                     <h4 class="text-xs font-semibold uppercase tracking-wide mb-2"
@@ -657,52 +676,17 @@
                       </button>
                     }
 
-                    @if (canCompleteTask(task) || canFailTask(task)) {
-                      @if (showFailFormId() !== task.id) {
-                        <p class="text-sm text-stone-500 mb-3">La tarea está en progreso. ¿Deseas finalizarla?</p>
-                        <div class="flex flex-wrap gap-2">
-                          <button (click)="askCompleteTask(task.id)" [disabled]="completingTaskId() === task.id"
-                            class="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
-                            @if (completingTaskId() === task.id) {
-                              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                            } @else {
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            }
-                            Terminar Tarea
-                          </button>
-                          <button (click)="openFailForm(task.id)"
-                            class="flex items-center gap-2 px-5 py-2.5 border border-red-300 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                            Reportar Falla
-                          </button>
-                        </div>
-                      }
-
-                      <!-- Formulario falla inline -->
-                      @if (showFailFormId() === task.id) {
-                        <div class="space-y-3">
-                          <label class="block text-sm font-medium text-stone-700">Motivo del fallo <span class="text-red-500">*</span></label>
-                          <textarea
-                            [ngModel]="failComments()"
-                            (ngModelChange)="failComments.set($event)"
-                            rows="3"
-                            placeholder="Describe brevemente por qué no se pudo completar (mín. 10 caracteres)..."
-                            class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
-                          ></textarea>
-                          <div class="flex gap-2">
-                            <button (click)="submitFail(task)" [disabled]="failComments().trim().length < 10 || failingTaskId() === task.id"
-                              class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
-                              @if (failingTaskId() === task.id) {
-                                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                              }
-                              Confirmar Falla
-                            </button>
-                            <button (click)="cancelFailForm()" class="px-4 py-2 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm rounded-lg transition-colors">
-                              Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      }
+                    @if (canCompleteTask(task)) {
+                      <p class="text-sm text-stone-500 mb-3">La tarea está en progreso. ¿Deseas finalizarla?</p>
+                      <button (click)="askCompleteTask(task)" [disabled]="completingTaskId() === task.id"
+                        class="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
+                        @if (completingTaskId() === task.id) {
+                          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        } @else {
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        }
+                        Terminar Tarea
+                      </button>
                     }
                   </div>
                 }
@@ -714,6 +698,257 @@
         }
       </div>
     }
+  }
+
+  @if (processActionModalOpen()) {
+    <div class="fixed inset-0 z-[100] bg-stone-900/45 backdrop-blur-[1px] flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-stone-100 flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-brand-600">Evidencia del proceso</p>
+            <h3 class="mt-1 text-base font-semibold text-stone-900">
+              @if (processActionPendingFiles().length > 0) {
+                ¿Agregar más evidencia?
+              } @else {
+                ¿Quieres agregar evidencia?
+              }
+            </h3>
+            <p class="mt-1 text-sm text-stone-500 line-clamp-2">{{ processActionTitle() }}</p>
+          </div>
+          <button type="button"
+            (click)="closeProcessActionModal()"
+            [disabled]="processActionUploading()"
+            class="text-stone-400 hover:text-stone-700 disabled:opacity-40 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-3">
+          <!-- Seleccionar archivo (imagen) -->
+          <button type="button"
+            (click)="openEvidenceFilePicker()"
+            [disabled]="processActionUploading()"
+            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </span>
+            <span>
+              <span class="block text-sm font-semibold text-stone-900">Seleccionar archivo</span>
+              <span class="block text-xs text-stone-500">Sube una imagen desde tu dispositivo</span>
+            </span>
+          </button>
+
+          <!-- Tomar foto con cámara -->
+          <button type="button"
+            (click)="openEvidenceCameraPicker()"
+            [disabled]="processActionUploading()"
+            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </span>
+            <span>
+              <span class="block text-sm font-semibold text-stone-900">Tomar foto</span>
+              <span class="block text-xs text-stone-500">Captura una foto con tu cámara</span>
+            </span>
+          </button>
+
+          <!-- Visor de cámara (foto) -->
+          @if (processActionCameraOpen()) {
+            <div class="rounded-xl border border-stone-200 p-3 bg-stone-50">
+              @if (processActionCameraStarting()) {
+                <div class="flex items-center justify-center gap-2 py-8 text-stone-500">
+                  <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span class="text-xs font-medium">Iniciando camara...</span>
+                </div>
+              } @else {
+                <video #cameraPreview class="w-full rounded-lg bg-black aspect-video object-cover" autoplay muted playsinline></video>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button type="button"
+                    (click)="takePhotoFromCamera()"
+                    [disabled]="processActionUploading()"
+                    class="px-3 py-2 rounded-lg border border-brand-200 text-brand-700 text-xs font-semibold hover:bg-brand-50 disabled:opacity-50">
+                    Tomar foto
+                  </button>
+                  <button type="button"
+                    (click)="closeCameraCapture()"
+                    [disabled]="processActionUploading()"
+                    class="px-3 py-2 rounded-lg border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-100 disabled:opacity-50">
+                    Cerrar camara
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Subir video desde archivo -->
+          <button type="button"
+            (click)="openEvidenceVideoPicker()"
+            [disabled]="processActionUploading()"
+            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+            </span>
+            <span>
+              <span class="block text-sm font-semibold text-stone-900">Subir video</span>
+              <span class="block text-xs text-stone-500">Selecciona un video desde tu dispositivo</span>
+            </span>
+          </button>
+
+          <!-- Galería de evidencias en cola -->
+          @if (processActionPendingFiles().length > 0) {
+            <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+              <p class="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wide">
+                En cola · {{ processActionPendingFiles().length }} archivo{{ processActionPendingFiles().length > 1 ? 's' : '' }}
+              </p>
+              <div class="flex flex-wrap gap-2">
+                @for (item of processActionPendingFiles(); track item.previewUrl; let i = $index) {
+                  <div class="relative group">
+                    @if (item.evidenceType === 'IMAGE') {
+                      <img [src]="item.previewUrl" alt="evidencia" class="w-16 h-16 rounded-lg object-cover border border-stone-200"/>
+                    } @else {
+                      <div class="w-16 h-16 rounded-lg bg-stone-200 border border-stone-300 flex items-center justify-center text-stone-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                    }
+                    <button type="button" (click)="removePendingFile(i)"
+                      class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      ×
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <button type="button"
+            (click)="chooseOnlyCheck()"
+            [disabled]="processActionUploading()"
+            class="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50">
+            @if (processActionUploading()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            }
+            <span class="text-sm font-semibold">
+              @if (processActionPendingFiles().length > 0) {
+                Subir {{ processActionPendingFiles().length }} evidencia{{ processActionPendingFiles().length > 1 ? 's' : '' }} y terminar
+              } @else {
+                Solo checar
+              }
+            </span>
+          </button>
+
+          @if (processActionError()) {
+            <p class="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {{ processActionError() }}
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <input #evidenceFileInput type="file" class="sr-only" accept="image/*" (change)="onEvidenceFileSelected($event)" />
+  <input #evidenceVideoInput type="file" class="sr-only" accept="video/*" (change)="onEvidenceVideoSelected($event)" />
+
+  <!-- Modal justificación de procesos incompletos -->
+  @if (justifyTask()) {
+    <div class="fixed inset-0 z-[110] bg-stone-900/50 backdrop-blur-[1px] flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white rounded-2xl border border-stone-200 shadow-xl">
+        <div class="px-5 py-4 border-b border-stone-100">
+          <div class="flex items-center justify-between mb-1">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Proceso incompleto</p>
+            <span class="text-xs text-stone-400 font-medium">
+              {{ justifyIndex() + 1 }} de {{ justifySteps().length }}
+            </span>
+          </div>
+          <h3 class="text-base font-semibold text-stone-900">{{ justifySteps()[justifyIndex()].title }}</h3>
+          <p class="mt-1 text-xs text-stone-500">{{ justifyTask()!.title }}</p>
+        </div>
+
+        <div class="px-5 py-4 space-y-3">
+          <div>
+            <label class="block text-sm font-medium text-stone-700 mb-1.5">
+              ¿Por qué no se completó este proceso?
+            </label>
+            <textarea
+              [value]="justifyComment()"
+              (input)="justifyComment.set($any($event.target).value)"
+              rows="4"
+              placeholder="Describe brevemente el motivo..."
+              class="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 resize-none">
+            </textarea>
+          </div>
+        </div>
+
+        <div class="px-5 pb-5 flex gap-3">
+          <button type="button" (click)="cancelJustify()"
+            class="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 text-sm font-semibold text-stone-600 hover:bg-stone-50 transition-colors">
+            Revisar tarea
+          </button>
+          <button type="button" (click)="nextJustify()"
+            [disabled]="!justifyComment().trim() || completingTaskId() === justifyTask()!.id"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+            @if (completingTaskId() === justifyTask()!.id) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            }
+            @if (justifyIndex() + 1 < justifySteps().length) {
+              Continuar
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            } @else {
+              Finalizar tarea
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Lightbox visor de evidencia -->
+  @if (lightboxUrl()) {
+    <div class="fixed inset-0 z-[200] bg-black/90 flex items-center justify-center p-4"
+         (click)="closeLightbox()">
+      <button type="button" (click)="closeLightbox()"
+        class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      @if (lightboxType() === 'image') {
+        <img [src]="lightboxUrl()!" alt="Evidencia"
+          class="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain"
+          (click)="$event.stopPropagation()" />
+      } @else {
+        <video [src]="lightboxUrl()!" controls autoplay
+          class="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+          (click)="$event.stopPropagation()">
+        </video>
+      }
+    </div>
   }
 
 </div>

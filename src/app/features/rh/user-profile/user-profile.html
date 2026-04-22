@@ -108,7 +108,7 @@
                 </div>
               </div>
 
-              @if (isAdmin()) {
+              @if (isGerente()) {
                 <div class="rounded-xl border border-brand-100 bg-brand-50/60 p-4">
                   <div class="flex items-start gap-3">
                     <div class="w-10 h-10 rounded-lg bg-white border border-brand-100 text-brand-600 flex items-center justify-center shrink-0">
@@ -116,7 +116,7 @@
                     </div>
                     <div class="min-w-0 flex-1">
                       <p class="text-sm font-bold text-stone-900">Regenerar contraseña</p>
-                      <p class="text-xs text-stone-500 mt-1">Requiere confirmar tu contraseña de administrador.</p>
+                      <p class="text-xs text-stone-500 mt-1">Requiere confirmar tu contraseña actual.</p>
                       <button type="button"
                               (click)="openResetPasswordModal()"
                               class="mt-3 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 transition-colors shadow-sm">
@@ -419,7 +419,7 @@
     </div>
 
     <!-- ── Modal regenerar contraseña ───────────────────────────────────── -->
-    @if (resetPasswordModal() && isAdmin()) {
+    @if (resetPasswordModal() && isGerente()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
            (click)="closeResetPasswordModal()">
         <div class="bg-white rounded-2xl shadow-xl border border-stone-200 w-full max-w-md mx-4 p-6"
@@ -438,7 +438,7 @@
             <h3 class="text-lg font-bold text-stone-900 text-center mb-1">Generar nueva contraseña</h3>
             <p class="text-sm text-stone-500 text-center mb-5">
               @if (resetPasswordStep() === 'verify') {
-                Confirma tu contraseña de administrador para continuar.
+                Confirma tu contraseña actual para continuar.
               } @else {
                 Captura la nueva contraseña de
                 <span class="font-semibold text-stone-800">{{ u.nombre }}</span>.
@@ -454,7 +454,7 @@
             <form [formGroup]="resetPasswordForm" (ngSubmit)="resetPasswordStep() === 'verify' ? onVerifyAdminPassword() : onResetPassword()" class="space-y-4">
               @if (resetPasswordStep() === 'verify') {
                 <div>
-                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Tu contraseña de administrador</label>
+                  <label class="block text-sm font-semibold text-stone-700 mb-1.5">Tu contraseña actual</label>
                   <div class="relative">
                     <input formControlName="adminPassword"
                            [type]="showAdminPassword() ? 'text' : 'password'"
