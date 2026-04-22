@@ -24,6 +24,7 @@ export class UserList implements OnInit {
   readonly error    = this.rhSvc.error;
   readonly rolLabels: Record<string, string | undefined> = ROL_LABELS;
   readonly turnos   = TURNOS;
+  readonly copiedUserId = signal<string | null>(null);
 
   // ── Filtros ───────────────────────────────────────────────────────────────
   filterTurno  = signal<string>('');
@@ -65,6 +66,31 @@ export class UserList implements OnInit {
 
   goToProfile(user: UserProfile): void {
     this.router.navigate(['/banco-info/usuarios', user.id]);
+  }
+
+  async copyUsuario(event: MouseEvent, user: UserProfile): Promise<void> {
+    event.stopPropagation();
+    const value = user.numeroUsuario?.trim();
+    if (!value) return;
+
+    try {
+      await navigator.clipboard.writeText(value);
+      this.copiedUserId.set(user.id);
+      setTimeout(() => this.copiedUserId.set(null), 1200);
+    } catch {
+      // Fallback for environments where Clipboard API is unavailable.
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      this.copiedUserId.set(user.id);
+      setTimeout(() => this.copiedUserId.set(null), 1200);
+    }
   }
 
   getStoreName(storeId: string): string {
