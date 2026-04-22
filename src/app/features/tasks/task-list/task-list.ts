@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -8,6 +9,7 @@ import { CatalogService } from '../../../core/services/catalog.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import {
+  ProcessStepResponse,
   TaskResponse,
   TaskStatus,
   TaskShift,
@@ -22,11 +24,17 @@ import {
   imports: [RouterLink, FormsModule, StatusBadgeComponent, AppDatePipe],
   templateUrl: './task-list.html',
 })
-export class TaskList implements OnInit {
+export class TaskList implements OnInit, OnDestroy {
   readonly auth       = inject(AuthService);
   readonly taskSvc    = inject(TaskService);
   readonly catalogSvc = inject(CatalogService);
   readonly router     = inject(Router);
+  @ViewChild('evidenceFileInput') evidenceFileInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('evidenceVideoInput') evidenceVideoInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('cameraPreview') cameraPreview?: ElementRef<HTMLVideoElement>;
+
+  private pendingProcessAction: { taskId: string; stepId: string; currentCompleted: boolean } | null = null;
+  private cameraStream: MediaStream | null = null;
 
   // ── Filtros locales ──────────────────────────────────────────────────
   searchQuery    = signal('');
@@ -101,6 +109,10 @@ export class TaskList implements OnInit {
     this.catalogSvc.loadCategorias();
   }
 
+  ngOnDestroy(): void {
+    this.stopCameraStream();
+  }
+
   loadTasks(): void {
     if (this.isAdmin()) {
       this.taskSvc.loadAllTasks();
@@ -150,16 +162,29 @@ export class TaskList implements OnInit {
   expandedTaskId = signal<string | null>(null);
   startingTaskId = signal<string | null>(null);
   completingTaskId = signal<string | null>(null);
-  failingTaskId = signal<string | null>(null);
-  showFailFormId = signal<string | null>(null);
-  failComments = signal('');
   togglingStepId = signal<string | null>(null);
+  processActionModalOpen = signal(false);
+  processActionTitle = signal('');
+  processActionUploading = signal(false);
+  processActionCameraOpen = signal(false);
+  processActionCameraStarting = signal(false);
+  processActionError = signal<string | null>(null);
+  processActionPendingFiles = signal<Array<{ file: File; previewUrl: string; evidenceType: 'IMAGE' | 'VIDEO' }>>([]);
+  lightboxUrl   = signal<string | null>(null);
+  lightboxType  = signal<'image' | 'video'>('image');
   actionError = signal<string | null>(null);
 
   // ── Confirmación de completar + mensaje de éxito ───────────────────
   confirmCompleteId = signal<string | null>(null);
   successTaskId = signal<string | null>(null);
   successTaskTitle = signal('');
+
+  // ── Justificación de procesos incompletos ────────────────────────────
+  justifyTask     = signal<TaskResponse | null>(null);
+  justifySteps    = signal<ProcessStepResponse[]>([]);
+  justifyIndex    = signal(0);
+  justifyComment  = signal('');
+  justifyComments = signal<string[]>([]);
 
   // ── Eliminación ────────────────────────────────────────────────────
   confirmingDeleteId = signal<string | null>(null);
@@ -179,10 +204,6 @@ export class TaskList implements OnInit {
     return task.status === 'IN_PROGRESS' && this.isAssignee(task);
   }
 
-  canFailTask(task: TaskResponse): boolean {
-    return task.status === 'IN_PROGRESS' && this.isAssignee(task);
-  }
-
   canCheckProcesses(task: TaskResponse): boolean {
     return this.isAssignee(task) && task.status === 'IN_PROGRESS';
   }
@@ -191,9 +212,8 @@ export class TaskList implements OnInit {
 
   toggleExpand(taskId: string): void {
     this.expandedTaskId.set(this.expandedTaskId() === taskId ? null : taskId);
-    this.showFailFormId.set(null);
-    this.failComments.set('');
     this.actionError.set(null);
+    this.closeProcessActionModal();
   }
 
   quickStartTask(task: TaskResponse, event?: Event): void {
@@ -211,9 +231,46 @@ export class TaskList implements OnInit {
   }
 
   /** Abre modal de confirmación para completar */
-  askCompleteTask(taskId: string, event?: Event): void {
+  askCompleteTask(task: TaskResponse, event?: Event): void {
     event?.stopPropagation();
-    this.confirmCompleteId.set(taskId);
+    const allDone = !task.processes?.length || task.processes.every(p => p.completed);
+    if (allDone) {
+      this.confirmAndComplete(task);
+    } else {
+      const incomplete = task.processes!.filter(p => !p.completed);
+      this.justifyTask.set(task);
+      this.justifySteps.set(incomplete);
+      this.justifyIndex.set(0);
+      this.justifyComment.set('');
+      this.justifyComments.set([]);
+    }
+  }
+
+  cancelJustify(): void {
+    this.justifyTask.set(null);
+  }
+
+  nextJustify(): void {
+    const comment = this.justifyComment().trim();
+    if (!comment) return;
+
+    const comments = [...this.justifyComments(), comment];
+    this.justifyComments.set(comments);
+
+    const steps = this.justifySteps();
+    const nextIndex = this.justifyIndex() + 1;
+
+    if (nextIndex < steps.length) {
+      this.justifyIndex.set(nextIndex);
+      this.justifyComment.set('');
+    } else {
+      const task = this.justifyTask()!;
+      const builtComments = steps
+        .map((s, i) => `• ${s.title}: ${comments[i]}`)
+        .join('\n');
+      this.justifyTask.set(null);
+      this.confirmAndComplete(task, builtComments);
+    }
   }
 
   cancelComplete(): void {
@@ -221,15 +278,22 @@ export class TaskList implements OnInit {
   }
 
   /** Ejecuta el completado tras confirmación */
-  confirmAndComplete(task: TaskResponse): void {
+  confirmAndComplete(task: TaskResponse, incompleteComments?: string): void {
     this.confirmCompleteId.set(null);
     this.completingTaskId.set(task.id);
     this.actionError.set(null);
-    this.taskSvc.updateStatus(task.id, { newStatus: 'COMPLETED' }).subscribe({
+    const allDone = !task.processes?.length || task.processes.every(p => p.completed);
+    const request = allDone
+      ? { newStatus: 'COMPLETED' as const }
+      : {
+          newStatus: 'FAILED' as const,
+          comments: incompleteComments ?? 'Finalizacion con procesos incompletos.',
+        };
+
+    this.taskSvc.updateStatus(task.id, request).subscribe({
       next: () => {
         this.completingTaskId.set(null);
         // Mostrar felicitación solo si cumplió todos sus procesos
-        const allDone = !task.processes?.length || task.processes.every(p => p.completed);
         if (allDone) {
           this.successTaskId.set(task.id);
           this.successTaskTitle.set(task.title);
@@ -245,26 +309,204 @@ export class TaskList implements OnInit {
     });
   }
 
-  openFailForm(taskId: string): void {
-    this.showFailFormId.set(taskId);
-    this.failComments.set('');
+  onProcessStepToggle(task: TaskResponse, step: ProcessStepResponse, event?: Event): void {
+    event?.stopPropagation();
     this.actionError.set(null);
+
+    if (step.completed) {
+      this.toggleProcessStep(task.id, step.stepId, true);
+      return;
+    }
+
+    this.pendingProcessAction = {
+      taskId: task.id,
+      stepId: step.stepId,
+      currentCompleted: step.completed,
+    };
+    this.processActionTitle.set(step.title);
+    this.processActionError.set(null);
+    this.processActionUploading.set(false);
+    this.processActionCameraOpen.set(false);
+    this.processActionCameraStarting.set(false);
+    this.processActionPendingFiles.set([]);
+    this.processActionModalOpen.set(true);
   }
 
-  cancelFailForm(): void {
-    this.showFailFormId.set(null);
-    this.failComments.set('');
+  closeProcessActionModal(): void {
+    if (this.processActionUploading()) return;
+    this.stopCameraStream();
+    this.revokePendingUrls();
+    this.processActionCameraOpen.set(false);
+    this.processActionCameraStarting.set(false);
+    this.processActionModalOpen.set(false);
+    this.processActionError.set(null);
+    this.pendingProcessAction = null;
+    this.processActionTitle.set('');
   }
 
-  submitFail(task: TaskResponse): void {
-    const comments = this.failComments().trim();
-    if (comments.length < 10) return;
-    this.failingTaskId.set(task.id);
-    this.actionError.set(null);
-    this.taskSvc.updateStatus(task.id, { newStatus: 'FAILED', comments }).subscribe({
-      next: () => { this.failingTaskId.set(null); this.showFailFormId.set(null); this.failComments.set(''); },
-      error: (err) => { this.failingTaskId.set(null); this.actionError.set(this.extractMsg(err)); },
+  chooseOnlyCheck(): void {
+    if (!this.pendingProcessAction) return;
+    const pending = this.pendingProcessAction;
+    const files = this.processActionPendingFiles();
+
+    this.stopCameraStream();
+    this.processActionCameraOpen.set(false);
+    this.processActionCameraStarting.set(false);
+    this.processActionError.set(null);
+
+    if (!files.length) {
+      this.revokePendingUrls();
+      this.processActionModalOpen.set(false);
+      this.pendingProcessAction = null;
+      this.processActionTitle.set('');
+      this.toggleProcessStep(pending.taskId, pending.stepId, pending.currentCompleted);
+      return;
+    }
+
+    this.processActionUploading.set(true);
+    forkJoin(files.map(f => this.taskSvc.uploadEvidence(pending.taskId, f.file, f.evidenceType))).subscribe({
+      next: () => {
+        this.revokePendingUrls();
+        this.processActionUploading.set(false);
+        this.processActionModalOpen.set(false);
+        this.pendingProcessAction = null;
+        this.processActionTitle.set('');
+        this.toggleProcessStep(pending.taskId, pending.stepId, pending.currentCompleted);
+      },
+      error: (err) => {
+        this.processActionUploading.set(false);
+        this.processActionError.set(this.extractMsg(err));
+      },
     });
+  }
+
+  removePendingFile(index: number): void {
+    const files = this.processActionPendingFiles();
+    URL.revokeObjectURL(files[index].previewUrl);
+    this.processActionPendingFiles.set(files.filter((_, i) => i !== index));
+  }
+
+  openEvidenceFilePicker(): void {
+    this.processActionError.set(null);
+    this.evidenceFileInput?.nativeElement.click();
+  }
+
+  async openEvidenceCameraPicker(): Promise<void> {
+    this.processActionError.set(null);
+    this.processActionCameraOpen.set(true);
+    this.processActionCameraStarting.set(true);
+    await this.startCameraStream();
+  }
+
+  openEvidenceVideoPicker(): void {
+    this.processActionError.set(null);
+    this.evidenceVideoInput?.nativeElement.click();
+  }
+
+  onEvidenceVideoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.queueEvidence(file);
+    input.value = '';
+  }
+
+  closeCameraCapture(): void {
+    if (this.processActionUploading()) return;
+    this.stopCameraStream();
+    this.processActionCameraOpen.set(false);
+    this.processActionCameraStarting.set(false);
+  }
+
+  async takePhotoFromCamera(): Promise<void> {
+    const video = this.cameraPreview?.nativeElement;
+    if (!video || !this.cameraStream) {
+      this.processActionError.set('No se pudo acceder al video de la camara.');
+      return;
+    }
+
+    this.processActionError.set(null);
+
+    const track = this.cameraStream.getVideoTracks()[0];
+    if (!track) {
+      this.processActionError.set('No se detecto un flujo de video activo.');
+      return;
+    }
+
+    // Preferimos captura nativa del sensor para evitar frames negros.
+    try {
+      const imageCaptureCtor = (window as Window & { ImageCapture?: new (t: MediaStreamTrack) => { takePhoto: () => Promise<Blob> } }).ImageCapture;
+      if (imageCaptureCtor) {
+        const imageCapture = new imageCaptureCtor(track);
+        const photoBlob = await imageCapture.takePhoto();
+        const nativeType = photoBlob.type || 'image/jpeg';
+        const file = new File([photoBlob], `evidencia-${Date.now()}.jpg`, { type: nativeType });
+        this.queueEvidence(file);
+        return;
+      }
+    } catch {
+      // Fallback a canvas si ImageCapture falla.
+    }
+
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    if (!width || !height || video.readyState < 2) {
+      this.processActionError.set('La camara aun no esta lista. Espera un momento e intenta de nuevo.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      this.processActionError.set('No se pudo capturar la foto.');
+      return;
+    }
+
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    ctx.drawImage(video, 0, 0, width, height);
+    canvas.toBlob(blob => {
+      if (!blob || blob.size === 0) {
+        this.processActionError.set('No se pudo generar la foto. Intenta nuevamente.');
+        return;
+      }
+      const file = new File([blob], `evidencia-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      this.queueEvidence(file);
+    }, 'image/jpeg', 0.95);
+  }
+
+  private async startCameraStream(): Promise<void> {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.processActionError.set('Tu navegador no soporta acceso a camara.');
+      this.processActionCameraStarting.set(false);
+      return;
+    }
+
+    this.processActionError.set(null);
+    this.stopCameraStream();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+      this.cameraStream = stream;
+      this.processActionCameraStarting.set(false);
+      await this.attachCameraToPreview(stream);
+    } catch (err) {
+      this.processActionError.set(this.extractCameraMsg(err));
+      this.processActionCameraOpen.set(false);
+      this.processActionCameraStarting.set(false);
+    }
+  }
+
+  onEvidenceFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.queueEvidence(file);
+    input.value = '';
   }
 
   toggleProcessStep(taskId: string, stepId: string, currentCompleted: boolean, event?: Event): void {
@@ -274,6 +516,90 @@ export class TaskList implements OnInit {
       next: () => this.togglingStepId.set(null),
       error: () => this.togglingStepId.set(null),
     });
+  }
+
+  openLightbox(url: string, type: 'image' | 'video'): void {
+    this.lightboxUrl.set(url);
+    this.lightboxType.set(type);
+  }
+
+  closeLightbox(): void {
+    this.lightboxUrl.set(null);
+  }
+
+  private queueEvidence(file: File): void {
+    const evidenceType = this.resolveEvidenceType(file);
+    if (!evidenceType) {
+      this.processActionError.set('Solo se permiten imagenes o videos.');
+      return;
+    }
+    const serial = this.processActionPendingFiles().length + 1;
+    const slug   = this.slugify(this.processActionTitle());
+    const ext    = file.name.includes('.') ? file.name.split('.').pop()! : (evidenceType === 'VIDEO' ? 'mp4' : 'jpg');
+    const renamed = new File([file], `${slug}_${serial}.${ext}`, { type: file.type });
+    const previewUrl = URL.createObjectURL(renamed);
+    this.processActionPendingFiles.update(list => [...list, { file: renamed, previewUrl, evidenceType }]);
+    this.stopCameraStream();
+    this.processActionCameraOpen.set(false);
+    this.processActionCameraStarting.set(false);
+    this.processActionError.set(null);
+  }
+
+  getTaskProcessReason(task: TaskResponse, processTitle: string): string | null {
+    if (!task.comments) return null;
+    for (const line of task.comments.split('\n')) {
+      const trimmed = line.replace(/^[•\-]\s*/, '');
+      const colonIdx = trimmed.indexOf(': ');
+      if (colonIdx === -1) continue;
+      if (trimmed.slice(0, colonIdx).trim().toLowerCase() === processTitle.toLowerCase()) {
+        return trimmed.slice(colonIdx + 2).trim() || null;
+      }
+    }
+    return null;
+  }
+
+  private slugify(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 50) || 'evidencia';
+  }
+
+  private revokePendingUrls(): void {
+    this.processActionPendingFiles().forEach(f => URL.revokeObjectURL(f.previewUrl));
+    this.processActionPendingFiles.set([]);
+  }
+
+  private resolveEvidenceType(file: File): 'IMAGE' | 'VIDEO' | null {
+    const mime = (file.type || '').toLowerCase();
+    if (mime.startsWith('image/')) return 'IMAGE';
+    if (mime.startsWith('video/')) return 'VIDEO';
+    return null;
+  }
+
+  private async attachCameraToPreview(stream: MediaStream): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 80));
+    const video = this.cameraPreview?.nativeElement;
+    if (!video) return;
+    video.srcObject = stream;
+    video.muted = true;
+    video.playsInline = true;
+    await video.play().catch(() => undefined);
+  }
+
+  private stopCameraStream(): void {
+    if (this.cameraStream) {
+      this.cameraStream.getTracks().forEach(track => track.stop());
+      this.cameraStream = null;
+    }
+    const video = this.cameraPreview?.nativeElement;
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+    }
   }
 
   getProcessProgress(task: TaskResponse): { done: number; total: number; percent: number } | null {
@@ -350,5 +676,19 @@ export class TaskList implements OnInit {
       if (e?.message) return e.message;
     }
     return 'Ocurrió un error. Intenta de nuevo.';
+  }
+  private extractCameraMsg(err: unknown): string {
+    if (err instanceof DOMException) {
+      if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+        return 'Permiso de camara denegado. Autoriza la camara en el navegador e intenta de nuevo.';
+      }
+      if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        return 'No se detecto una camara disponible en este dispositivo.';
+      }
+      if (err.name === 'NotReadableError') {
+        return 'La camara esta en uso por otra aplicacion.';
+      }
+    }
+    return 'No se pudo abrir la camara. Verifica permisos y que el sitio este en HTTPS.';
   }
 }

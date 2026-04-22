@@ -6,6 +6,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   CreateTaskRequest,
+  EvidenceUploadResponse,
   TaskResponse,
   TaskShift,
   UpdateStatusRequest,
@@ -223,6 +224,42 @@ export class TaskService {
   }
 
   // ── PATCH /{id}/deactivate — Soft-delete tarea (ADMIN) ──────────────────
+
+  uploadEvidence(taskId: string, file: File, type: 'IMAGE' | 'VIDEO'): Observable<EvidenceUploadResponse> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('type', type);
+
+    return this.http
+      .post<EvidenceUploadResponse>(`${this.apiUrl}/${taskId}/evidence`, form)
+      .pipe(
+        tap(uploaded => {
+          this._tasks.update(list =>
+            this.normalizeTasks(list).map(t => {
+              if (t.id !== taskId) return t;
+              if (uploaded.type === 'IMAGE') {
+                return { ...t, evidenceImages: [...(t.evidenceImages ?? []), uploaded.url] };
+              }
+              return { ...t, evidenceVideos: [...(t.evidenceVideos ?? []), uploaded.url] };
+            }),
+          );
+          if (this._selectedTask()?.id === taskId) {
+            const selected = this._selectedTask()!;
+            if (uploaded.type === 'IMAGE') {
+              this._selectedTask.set({
+                ...selected,
+                evidenceImages: [...(selected.evidenceImages ?? []), uploaded.url],
+              });
+            } else {
+              this._selectedTask.set({
+                ...selected,
+                evidenceVideos: [...(selected.evidenceVideos ?? []), uploaded.url],
+              });
+            }
+          }
+        }),
+      );
+  }
 
   deactivateTask(taskId: string): Observable<void> {
     return this.http

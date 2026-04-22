@@ -120,7 +120,7 @@ export class UserProfile implements OnInit {
   }
 
   openResetPasswordModal(): void {
-    if (!this.isAdmin()) return;
+    if (!this.isGerente()) return;
     this.resetPasswordForm.reset();
     this.resetPasswordError.set(null);
     this.resetPasswordSuccess.set(false);
@@ -151,7 +151,7 @@ export class UserProfile implements OnInit {
   }
 
   async onVerifyAdminPassword(): Promise<void> {
-    if (!this.isAdmin() || this.saving()) return;
+    if (!this.isGerente() || this.saving()) return;
     const adminPassword = this.resetPasswordForm.get('adminPassword')?.value;
     if (!adminPassword) {
       this.resetPasswordError.set('Ingresa tu contraseña de administrador.');
@@ -171,7 +171,7 @@ export class UserProfile implements OnInit {
   }
 
   async onResetPassword(): Promise<void> {
-    if (!this.isAdmin() || this.resetPasswordStep() !== 'reset' || this.resetPasswordForm.invalid || this.passwordsMismatch() || this.saving()) return;
+    if (!this.isGerente() || this.resetPasswordStep() !== 'reset' || this.resetPasswordForm.invalid || this.passwordsMismatch() || this.saving()) return;
     const id = this.user()?.id;
     if (!id) return;
 

@@ -105,49 +105,19 @@ export class TaskCreate implements OnInit {
   readonly templateResults  = this.categoriaTaskSvc.results;
   readonly templateSearching = this.categoriaTaskSvc.searching;
 
-  /** Temporizador de debounce para no disparar una request por cada tecla */
-  private _searchTimer: ReturnType<typeof setTimeout> | null = null;
-
   /**
    * Se llama al escribir en el input de título.
-   * Después de 300ms de inactividad busca categorias que coincidan.
+   * Solo actualiza el valor en modo manual (sin auto-cargar plantillas).
    */
   onTitleInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.form.get('title')?.setValue(query, { emitEvent: false });
     this.closeTemplateDropdown();
-
-    // Si viene de plantilla, conservamos la referencia para poder decidir
-    // luego si los cambios actualizan la plantilla o se guardan como nueva.
-    if (this.selectedTemplate()) {
-      return;
-    }
-
-    // Debounce 300ms
-    if (this._searchTimer) clearTimeout(this._searchTimer);
-    this._searchTimer = setTimeout(() => {
-      if (query.trim().length >= 1) {
-        this.categoriaTaskSvc.searchAndUpdate(query);
-        this.templateDropdownOpen.set(true);
-      } else {
-        this.categoriaTaskSvc.clearResults();
-        this.templateDropdownOpen.set(false);
-      }
-    }, 300);
   }
 
-  /** Abre el dropdown con categorias (al hacer foco en el input vacío) */
+  /** No auto-carga plantillas al enfocar el título. */
   onTitleFocus(): void {
-    if (this.selectedTemplate()) {
-      return;
-    }
-    const query = this.form.get('title')?.value ?? '';
-    if (!this.selectedTemplate() && this.templateResults().length === 0) {
-      this.categoriaTaskSvc.searchAndUpdate(query);
-    }
-    if (this.templateResults().length > 0) {
-      this.templateDropdownOpen.set(true);
-    }
+    // Intencionalmente vacío: la carga de plantillas se hace solo con el botón.
   }
 
   async loadTaskTemplatePicker(): Promise<void> {
