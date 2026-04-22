@@ -45,7 +45,8 @@ export class NotificationService {
     this.disconnect();
     this.currentToken = token;
 
-    const url = `${environment.apiUrl}/notifications/stream?token=${encodeURIComponent(token)}`;
+    // Evita que Angular Service Worker intercepte SSE (rompe streams en producción)
+    const url = `${environment.apiUrl}/notifications/stream?token=${encodeURIComponent(token)}&ngsw-bypass=true`;
 
     // EventSource se ejecuta fuera de la zona Angular → usamos zone.run() para signals
     this.zone.runOutsideAngular(() => {
