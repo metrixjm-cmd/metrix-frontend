@@ -2,6 +2,8 @@ import { Component, computed, input, model, output, signal } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { format24HourTo12Hour, parseFlexibleTimeTo24Hour } from '../../utils/time-format.util';
+
 export interface DayTimeValue {
   days: string[];
   startHour: number;
@@ -75,10 +77,10 @@ export class DayTimePicker {
 
   // ── Computed signals ─────────────────────────────────────────────────
   readonly startTimeFormatted = computed(() =>
-    `${this.pad(this.startHour())}:${this.pad(this.startMinute())}`
+    format24HourTo12Hour(`${this.pad(this.startHour())}:${this.pad(this.startMinute())}`)
   );
   readonly endTimeFormatted = computed(() =>
-    `${this.pad(this.endHour())}:${this.pad(this.endMinute())}`
+    format24HourTo12Hour(`${this.pad(this.endHour())}:${this.pad(this.endMinute())}`)
   );
 
   readonly timeError = computed(() => {
@@ -192,23 +194,15 @@ export class DayTimePicker {
   }
 
   private syncInputs(): void {
-    this.startInputRaw.set(`${this.pad(this.startHour())}:${this.pad(this.startMinute())}`);
-    this.endInputRaw.set(`${this.pad(this.endHour())}:${this.pad(this.endMinute())}`);
+    this.startInputRaw.set(format24HourTo12Hour(`${this.pad(this.startHour())}:${this.pad(this.startMinute())}`));
+    this.endInputRaw.set(format24HourTo12Hour(`${this.pad(this.endHour())}:${this.pad(this.endMinute())}`));
   }
 
   private parseLoose(raw: string): number | null {
-    const clean = (raw ?? '').replace(/[^0-9:]/g, '');
-    if (!clean) return null;
-    if (clean.includes(':')) {
-      const [hStr, mStr] = clean.split(':');
-      const h = Math.min(23, Math.max(0, Number(hStr) || 0));
-      const m = Math.min(59, Math.max(0, Number(mStr) || 0));
-      return h * 60 + m;
-    }
-    if (clean.length <= 2) return Math.min(23, Number(clean)) * 60;
-    const h = Number(clean.slice(0, -2));
-    const m = Number(clean.slice(-2));
-    return Math.min(23, Math.max(0, h)) * 60 + Math.min(59, Math.max(0, m));
+    const normalized = parseFlexibleTimeTo24Hour(raw);
+    if (!normalized) return null;
+    const [hStr, mStr] = normalized.split(':');
+    return (Number(hStr) || 0) * 60 + (Number(mStr) || 0);
   }
 
   private emitChange(): void {

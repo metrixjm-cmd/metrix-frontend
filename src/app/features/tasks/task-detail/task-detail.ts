@@ -7,12 +7,14 @@ import { TaskService } from '../services/task.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
+import { TimeFormatPipe } from '../../../shared/pipes/time-format.pipe';
 import { CATEGORY_LABELS, SHIFT_LABELS } from '../models/task.models';
+import { EvidenceUpload } from '../evidence-upload/evidence-upload';
 
 @Component({
   selector: 'app-task-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, StatusBadgeComponent, ButtonComponent, AppDatePipe],
+  imports: [ReactiveFormsModule, StatusBadgeComponent, ButtonComponent, AppDatePipe, TimeFormatPipe, EvidenceUpload],
   templateUrl: './task-detail.html',
 })
 export class TaskDetail implements OnInit {
@@ -68,6 +70,11 @@ export class TaskDetail implements OnInit {
   readonly canFail = computed(() => {
     const t = this.task();
     return t?.status === 'IN_PROGRESS' && this.isAssignee();
+  });
+
+  readonly canUploadEvidence = computed(() => {
+    const t = this.task();
+    return this.isAssignee() && t?.status === 'IN_PROGRESS';
   });
 
   readonly isEjecutador   = computed(() => this.auth.hasRole('EJECUTADOR'));
@@ -289,6 +296,10 @@ export class TaskDetail implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/tasks']);
+  }
+
+  onEvidenceUploaded(): void {
+    this.actionError.set(null);
   }
 
   private extractMsg(err: unknown): string {

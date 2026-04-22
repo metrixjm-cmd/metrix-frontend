@@ -69,12 +69,12 @@
                 (ngModelChange)="onInputChange('start', $event)"
                 (focus)="focusedField.set('start')"
                 (blur)="commitInput('start')"
-                maxlength="5"
+                maxlength="8"
                 inputmode="numeric"
-                placeholder="HH:MM"
+                placeholder="8:00 AM"
                 aria-label="Hora de inicio"
                 class="w-full bg-transparent border-none outline-none text-center text-[22px] font-bold text-stone-900 tabular-nums leading-none py-1.5" />
-              <span class="text-[10px] font-semibold text-stone-400 -mt-0.5 mb-0.5">hrs</span>
+              <span class="text-[10px] font-semibold text-stone-400 -mt-0.5 mb-0.5">AM/PM</span>
             </div>
           </div>
         </div>
@@ -115,12 +115,12 @@
                 (ngModelChange)="onInputChange('end', $event)"
                 (focus)="focusedField.set('end')"
                 (blur)="commitInput('end')"
-                maxlength="5"
+                maxlength="8"
                 inputmode="numeric"
-                placeholder="HH:MM"
+                placeholder="5:00 PM"
                 aria-label="Hora de fin"
                 class="w-full bg-transparent border-none outline-none text-center text-[22px] font-bold text-stone-900 tabular-nums leading-none py-1.5" />
-              <span class="text-[10px] font-semibold text-stone-400 -mt-0.5 mb-0.5">hrs</span>
+              <span class="text-[10px] font-semibold text-stone-400 -mt-0.5 mb-0.5">AM/PM</span>
             </div>
           </div>
         </div>
@@ -136,11 +136,11 @@
           </div>
         </div>
         <div class="flex justify-between px-0.5">
-          <span class="text-[10px] text-stone-400">06:00</span>
-          <span class="text-[10px] text-stone-400">10:00</span>
-          <span class="text-[10px] text-stone-400">14:00</span>
-          <span class="text-[10px] text-stone-400">18:00</span>
-          <span class="text-[10px] text-stone-400">22:00</span>
+          <span class="text-[10px] text-stone-400">6 AM</span>
+          <span class="text-[10px] text-stone-400">10 AM</span>
+          <span class="text-[10px] text-stone-400">2 PM</span>
+          <span class="text-[10px] text-stone-400">6 PM</span>
+          <span class="text-[10px] text-stone-400">10 PM</span>
         </div>
       </div>
 
@@ -166,10 +166,11 @@
             (ngModelChange)="onInputChange('start', $event)"
             (focus)="focusedField.set('start')"
             (blur)="commitInput('start')"
-            maxlength="5"
+            maxlength="8"
             inputmode="numeric"
+            placeholder="8:00 AM"
             class="w-full bg-transparent border-none outline-none text-center text-xl font-bold text-stone-900 tabular-nums py-1.5" />
-          <span class="text-[10px] text-stone-400 -mt-0.5 mb-0.5">hrs</span>
+          <span class="text-[10px] text-stone-400 -mt-0.5 mb-0.5">AM/PM</span>
         </div>
       </div>
     </div>

@@ -16,6 +16,7 @@ import { AddCatalogDialog } from '../../../shared/components/add-catalog-dialog/
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { DayTimePicker, DayTimeValue } from '../../../shared/components/day-time-picker/day-time-picker';
 import { CreateTaskRequest, TaskCategory, TaskShift, WEEK_DAYS, WeekDay, ProcessStepRequest } from '../models/task.models';
+import { Meridiem, to24HourString } from '../../../shared/utils/time-format.util';
 
 type EditableTemplateStep = {
   title: string;
@@ -393,12 +394,20 @@ export class TaskCreate implements OnInit {
 
   /** Horas y minutos para picker estilo Apple */
   readonly hours = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  readonly hours12 = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
   readonly minutes = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
+  readonly meridiems: Meridiem[] = ['AM', 'PM'];
 
   recStartHour = signal('08');
   recStartMin  = signal('00');
   recEndHour   = signal('17');
   recEndMin    = signal('00');
+  startHour12 = signal('');
+  startMinute = signal('');
+  startMeridiem = signal<Meridiem>('AM');
+  dueHour12 = signal('');
+  dueMinute = signal('');
+  dueMeridiem = signal<Meridiem>('PM');
 
   updateRecurrenceTime(): void {
     this.form.get('recurrenceStartTime')?.setValue(`${this.recStartHour()}:${this.recStartMin()}`);
@@ -409,6 +418,49 @@ export class TaskCreate implements OnInit {
   setRecStartMin(v: string): void  { this.recStartMin.set(v); this.updateRecurrenceTime(); }
   setRecEndHour(v: string): void   { this.recEndHour.set(v); this.updateRecurrenceTime(); }
   setRecEndMin(v: string): void    { this.recEndMin.set(v); this.updateRecurrenceTime(); }
+
+  updateSingleTime(field: 'start' | 'due'): void {
+    if (field === 'start') {
+      const hour = this.startHour12();
+      const minute = this.startMinute();
+      this.form.get('startTime')?.setValue(hour && minute ? to24HourString(hour, minute, this.startMeridiem()) : '');
+      return;
+    }
+
+    const hour = this.dueHour12();
+    const minute = this.dueMinute();
+    this.form.get('dueTime')?.setValue(hour && minute ? to24HourString(hour, minute, this.dueMeridiem()) : '');
+  }
+
+  setStartHour12(value: string): void {
+    this.startHour12.set(value);
+    this.updateSingleTime('start');
+  }
+
+  setStartMinute(value: string): void {
+    this.startMinute.set(value);
+    this.updateSingleTime('start');
+  }
+
+  setStartMeridiem(value: string): void {
+    this.startMeridiem.set((value as Meridiem) || 'AM');
+    this.updateSingleTime('start');
+  }
+
+  setDueHour12(value: string): void {
+    this.dueHour12.set(value);
+    this.updateSingleTime('due');
+  }
+
+  setDueMinute(value: string): void {
+    this.dueMinute.set(value);
+    this.updateSingleTime('due');
+  }
+
+  setDueMeridiem(value: string): void {
+    this.dueMeridiem.set((value as Meridiem) || 'PM');
+    this.updateSingleTime('due');
+  }
 
   /** Días seleccionados para el picker (two-way) */
   pickerDays = signal<string[]>([]);
@@ -707,6 +759,12 @@ export class TaskCreate implements OnInit {
     this.processSteps.set([]);
     this.selectedDays.set(new Set());
     this.isRecurring.set(false);
+    this.startHour12.set('');
+    this.startMinute.set('');
+    this.startMeridiem.set('AM');
+    this.dueHour12.set('');
+    this.dueMinute.set('');
+    this.dueMeridiem.set('PM');
     this.cancelEditStep();
     this.form.reset({
       title: '',
