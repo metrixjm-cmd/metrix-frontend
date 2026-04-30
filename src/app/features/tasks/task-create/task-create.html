@@ -261,6 +261,25 @@
                 }
               </div>
 
+              <!-- Material de referencia (opcional) -->
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                  Material de referencia (URL) <span class="text-xs font-normal text-stone-400">(opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  formControlName="referenceUrl"
+                  placeholder="https://..."
+                  class="input-field h-11"
+                  [class.input-error]="hasError('referenceUrl', 'pattern')" />
+                @if (hasError('referenceUrl', 'pattern')) {
+                  <p class="text-red-500 text-xs mt-1">Ingresa una URL válida (http/https).</p>
+                }
+                <p class="text-xs text-stone-400 mt-1">
+                  Se mostrará como link para que el ejecutador pueda consultarlo.
+                </p>
+              </div>
+
               <!-- Categoría + Crítica -->
               <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">

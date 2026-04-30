@@ -152,19 +152,31 @@
     <div class="flex flex-col items-center">
       <span class="text-[10px] text-stone-400 mb-1.5 tracking-wide font-semibold uppercase">Hora</span>
       <div class="flex items-center border border-stone-200 rounded-lg bg-white h-[42px] px-2">
-        <button type="button" (click)="incrementSingleHour()"
-          class="text-stone-400 hover:text-stone-600 p-0.5" aria-label="Incrementar hora">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
-          </svg>
-        </button>
-        <span class="text-lg font-medium tabular-nums text-stone-800 mx-2 min-w-[105px] text-center">
+        <!-- Left: hour up/down -->
+        <div class="flex flex-col">
+          <button type="button" (click)="incrementSingleHour()"
+            class="text-stone-400 hover:text-stone-600 p-0.5" aria-label="Subir hora">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+          </button>
+          <button type="button" (click)="decrementSingleHour()"
+            class="text-stone-400 hover:text-stone-600 p-0.5" aria-label="Bajar hora">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+        </div>
+
+        <span class="text-lg font-medium tabular-nums text-stone-800 mx-3 min-w-[105px] text-center">
           {{ singleTimeText }}
         </span>
+
+        <!-- Right: AM/PM toggle -->
         <button type="button" (click)="toggleSingleMeridiem()"
           class="text-stone-400 hover:text-stone-600 p-0.5" aria-label="Cambiar AM/PM">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h6m0 0v6m0-6L10 16"/>
           </svg>
         </button>
       </div>

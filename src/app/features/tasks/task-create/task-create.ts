@@ -541,6 +541,7 @@ export class TaskCreate implements OnInit {
   readonly form = this.fb.group({
     title:       ['', [Validators.required, Validators.minLength(4), Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
+    referenceUrl: ['', [Validators.pattern(/^https?:\/\/\S+$/i)]],
     category:    ['' as TaskCategory | '', Validators.required],
     isCritical:  [false],
     isRecurring: [false],
@@ -749,6 +750,7 @@ export class TaskCreate implements OnInit {
     const taskRequests = selectedUsers.map(user => ({
         title:        v.title!,
         description:  v.description!,
+        referenceUrl: (v.referenceUrl ?? '').trim() || undefined,
         category:     v.category as TaskCategory,
         isCritical:   v.isCritical ?? false,
         assignedToId: user.id,

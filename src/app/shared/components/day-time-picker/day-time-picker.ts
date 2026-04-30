@@ -150,6 +150,21 @@ export class DayTimePicker {
     this.emitChange();
   }
 
+  decrementSingleHour(): void {
+    const hour24 = this.startHour();
+    const minute = this.startMinute();
+
+    const meridiem = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = (hour24 % 12) || 12;
+    const nextHour12 = hour12 === 1 ? 12 : hour12 - 1;
+
+    const next24 = to24HourString(String(nextHour12), this.pad(minute), meridiem);
+    const [hStr, mStr] = next24.split(':');
+    this.startHour.set(Number(hStr));
+    this.startMinute.set(Number(mStr));
+    this.emitChange();
+  }
+
   toggleSingleMeridiem(): void {
     const hour24 = this.startHour();
     const minute = this.startMinute();
