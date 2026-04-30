@@ -22,6 +22,7 @@ export interface TaskResponse {
   id:          string;
   title:       string;
   description: string;
+  referenceUrl?: string | null;
   category:    TaskCategory;
   isCritical:  boolean;
 
@@ -87,6 +88,7 @@ export interface EvidenceUploadResponse {
 export interface CreateTaskRequest {
   title:       string;
   description: string;
+  referenceUrl?: string | null;
   category:    TaskCategory;
   isCritical:  boolean;
 
