@@ -43,77 +43,6 @@
       </div>
     </header>
 
-    <!-- ── Indicador de progreso ──────────────────────────────────────── -->
-    <div class="max-w-4xl mx-auto px-4 pt-6">
-      <div class="flex items-center mb-6">
-
-        <!-- Paso 1: Tarea -->
-        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
-               [class]="step1Done()
-                 ? 'bg-emerald-500 text-white ring-emerald-100'
-                 : 'bg-brand-600 text-white ring-brand-100'">
-            @if (step1Done()) {
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            } @else { 1 }
-          </div>
-          <span class="text-xs font-semibold hidden sm:block transition-colors"
-                [class]="step1Done() ? 'text-emerald-600' : 'text-brand-600'">Tarea</span>
-        </div>
-
-        <!-- Conector 1→2 -->
-        <div class="flex-1 h-1 mx-2 rounded-full transition-all duration-500"
-             [class]="step1Done() ? 'bg-emerald-400' : 'bg-stone-200'"></div>
-
-        <!-- Paso 2: Responsables -->
-        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
-               [class]="step2Done()
-                 ? 'bg-emerald-500 text-white ring-emerald-100'
-                 : step1Done()
-                   ? 'bg-brand-600 text-white ring-brand-100'
-                   : 'bg-stone-200 text-stone-400 ring-stone-50'">
-            @if (step2Done()) {
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            } @else { 2 }
-          </div>
-          <span class="text-xs font-semibold hidden sm:block transition-colors"
-                [class]="step2Done() ? 'text-emerald-600' : step1Done() ? 'text-brand-600' : 'text-stone-400'">
-            Responsables
-          </span>
-        </div>
-
-        <!-- Conector 2→3 -->
-        <div class="flex-1 h-1 mx-2 rounded-full transition-all duration-500"
-             [class]="step2Done() ? 'bg-emerald-400' : 'bg-stone-200'"></div>
-
-        <!-- Paso 3: Ejecución -->
-        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
-               [class]="step3Done()
-                 ? 'bg-emerald-500 text-white ring-emerald-100'
-                 : step2Done()
-                   ? 'bg-brand-600 text-white ring-brand-100'
-                   : 'bg-stone-200 text-stone-400 ring-stone-50'">
-            @if (step3Done()) {
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            } @else { 3 }
-          </div>
-          <span class="text-xs font-semibold hidden sm:block transition-colors"
-                [class]="step3Done() ? 'text-emerald-600' : step2Done() ? 'text-brand-600' : 'text-stone-400'">
-            Ejecución
-          </span>
-        </div>
-
-      </div>
-    </div>
-
     <!-- ── Contenido del formulario ───────────────────────────────────── -->
     <main class="max-w-4xl mx-auto px-4 pb-28">
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
@@ -582,33 +511,23 @@
              Cuándo y cómo: recurrencia, días, horarios y fechas de inicio/límite
         ═══════════════════════════════════════════════════════════════ -->
         <div class="rounded-xl border shadow-sm mb-4 overflow-hidden transition-all duration-200"
-             [class]="step3Done() ? 'border-emerald-200 bg-white' : step2Done() ? 'border-brand-200 bg-white' : 'border-stone-200 bg-stone-50/50'">
+             [class]="step2Done() ? 'border-stone-200 bg-white' : 'border-stone-200 bg-stone-50/50'">
 
           <button type="button" (click)="toggleSection('scheduling')"
                   class="w-full flex items-center justify-between p-4 transition-colors"
-                  [class]="step3Done() ? 'hover:bg-emerald-50/50' : step2Done() ? 'hover:bg-brand-50/40' : 'hover:bg-stone-100/60'">
+                  [class]="step2Done() ? 'hover:bg-stone-50' : 'hover:bg-stone-100/60'">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300"
-                   [class]="step3Done() ? 'bg-emerald-100' : step2Done() ? 'bg-brand-600/10' : 'bg-stone-200'">
-                @if (step3Done()) {
-                  <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                } @else {
-                  <svg class="w-5 h-5 transition-colors" [class]="step2Done() ? 'text-brand-600' : 'text-stone-400'"
-                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                  </svg>
-                }
+                   [class]="step2Done() ? 'bg-stone-100' : 'bg-stone-200'">
+                <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
               </div>
               <div class="text-left">
                 <div class="flex items-center gap-2">
                   <h2 class="font-semibold transition-colors"
                       [class]="step2Done() ? 'text-stone-900' : 'text-stone-400'">Ejecución</h2>
-                  @if (step3Done()) {
-                    <span class="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Completo</span>
-                  }
                 </div>
                 <p class="text-sm text-stone-500">Fechas, horarios y recurrencia</p>
               </div>
@@ -624,11 +543,11 @@
 
               <!-- Toggle: tarea repetitiva -->
               <div class="flex items-center justify-between p-4 rounded-lg border-2 transition-all"
-                   [class]="isRecurring() ? 'border-brand-400 bg-brand-50' : 'border-stone-200'">
+                   [class]="isRecurring() ? 'border-stone-300 bg-stone-50' : 'border-stone-200'">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                       [class]="isRecurring() ? 'bg-brand-600' : 'bg-stone-200'">
-                    <svg class="w-5 h-5" [class]="isRecurring() ? 'text-white' : 'text-stone-400'"
+                       [class]="isRecurring() ? 'bg-stone-700' : 'bg-stone-200'">
+                    <svg class="w-5 h-5" [class]="isRecurring() ? 'text-white' : 'text-stone-500'"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -644,11 +563,11 @@
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" formControlName="isRecurring"
                          (change)="toggleRecurring($any($event.target).checked)" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-300
+                  <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-stone-300
                               rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white
                               after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white
                               after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5
-                              after:transition-all peer-checked:bg-brand-600"></div>
+                              after:transition-all peer-checked:bg-stone-700"></div>
                 </label>
               </div>
 
@@ -674,7 +593,7 @@
               <!-- Fechas para tarea única -->
               @if (!isRecurring()) {
                 <div class="space-y-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                     <!-- Fecha de inicio -->
                     <div>
@@ -685,27 +604,30 @@
                         </svg>
                         Fecha y hora de inicio <span class="text-red-500">*</span>
                       </label>
-                      <div class="grid grid-cols-3 gap-2">
-                        <select formControlName="startDay" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Día</option>
-                          @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
-                        </select>
-                        <select formControlName="startMonth" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Mes</option>
-                          @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
-                        </select>
-                        <div class="grid grid-cols-3 gap-2">
-                          <select class="input-field h-11" [ngModel]="startHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartHour12($event); dueDateError.set(null)">
-                            <option value="">Hora</option>
-                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="startMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMinute($event); dueDateError.set(null)">
-                            <option value="">Min</option>
-                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="startMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMeridiem($event); dueDateError.set(null)">
-                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
-                          </select>
+                      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex flex-col">
+                          <div class="h-[22px] hidden sm:block"></div>
+                          <div class="flex gap-2">
+                            <select formControlName="startDay" class="input-field h-[42px] w-20" (change)="dueDateError.set(null)">
+                              <option value="">Día</option>
+                              @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
+                            </select>
+                            <select formControlName="startMonth" class="input-field h-[42px] w-28" (change)="dueDateError.set(null)">
+                              <option value="">Mes</option>
+                              @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="sm:flex sm:justify-end">
+                          <input type="hidden" formControlName="startTime" />
+                          <app-day-time-picker
+                            [showDays]="false"
+                            [showEndTime]="false"
+                            [startHour]="8"
+                            [startMinute]="0"
+                            (valueChange)="onSingleStartTimeChange($event); dueDateError.set(null)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -719,27 +641,30 @@
                         </svg>
                         Fecha y hora límite <span class="text-red-500">*</span>
                       </label>
-                      <div class="grid grid-cols-3 gap-2">
-                        <select formControlName="dueDay" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Día</option>
-                          @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
-                        </select>
-                        <select formControlName="dueMonth" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Mes</option>
-                          @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
-                        </select>
-                        <div class="grid grid-cols-3 gap-2">
-                          <select class="input-field h-11" [ngModel]="dueHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueHour12($event); dueDateError.set(null)">
-                            <option value="">Hora</option>
-                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="dueMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMinute($event); dueDateError.set(null)">
-                            <option value="">Min</option>
-                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="dueMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMeridiem($event); dueDateError.set(null)">
-                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
-                          </select>
+                      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex flex-col">
+                          <div class="h-[22px] hidden sm:block"></div>
+                          <div class="flex gap-2">
+                            <select formControlName="dueDay" class="input-field h-[42px] w-20" (change)="dueDateError.set(null)">
+                              <option value="">Día</option>
+                              @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
+                            </select>
+                            <select formControlName="dueMonth" class="input-field h-[42px] w-28" (change)="dueDateError.set(null)">
+                              <option value="">Mes</option>
+                              @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="sm:flex sm:justify-end">
+                          <input type="hidden" formControlName="dueTime" />
+                          <app-day-time-picker
+                            [showDays]="false"
+                            [showEndTime]="false"
+                            [startHour]="17"
+                            [startMinute]="0"
+                            (valueChange)="onSingleDueTimeChange($event); dueDateError.set(null)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -771,31 +696,7 @@
       <div class="max-w-4xl mx-auto px-4 py-3">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
 
-          <!-- Indicador de pasos en footer -->
-          <div class="hidden sm:flex items-center gap-3">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step1Done() ? 'bg-emerald-500' : 'bg-stone-300'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step1Done() ? 'text-emerald-600 font-medium' : 'text-stone-400'">Tarea</span>
-            </div>
-            <span class="text-stone-200">·</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step2Done() ? 'bg-emerald-500' : 'bg-stone-300'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step2Done() ? 'text-emerald-600 font-medium' : 'text-stone-400'">Responsables</span>
-            </div>
-            <span class="text-stone-200">·</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step3Done() ? 'bg-emerald-500' : 'bg-stone-300'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step3Done() ? 'text-emerald-600 font-medium' : 'text-stone-400'">Ejecución</span>
-            </div>
-          </div>
-
-          <div class="flex gap-3 w-full sm:w-auto">
+          <div class="flex gap-3 w-full sm:w-auto justify-end ml-auto">
             <button type="button" (click)="goToList()"
               class="flex-1 sm:flex-none h-11 px-6 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors">
               Cancelar
