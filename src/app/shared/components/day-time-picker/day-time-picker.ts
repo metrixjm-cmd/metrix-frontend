@@ -1,8 +1,8 @@
-import { Component, computed, input, model, output, signal } from '@angular/core';
+import { Component, computed, effect, input, model, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { format24HourTo12Hour, parseFlexibleTimeTo24Hour } from '../../utils/time-format.util';
+import { format24HourTo12Hour, parseFlexibleTimeTo24Hour, to24HourString } from '../../utils/time-format.util';
 
 export interface DayTimeValue {
   days: string[];
@@ -70,8 +70,8 @@ export class DayTimePicker {
   readonly presets = PRESETS;
 
   // ── Raw input buffers (while user types) ──────────────────────────────
-  startInputRaw = signal('08:00');
-  endInputRaw   = signal('17:00');
+  startInputRaw = signal('8:00 AM');
+  endInputRaw   = signal('5:00 PM');
   focusedField  = signal<'start' | 'end' | null>(null);
   activePreset  = signal<string | null>(null);
 
@@ -118,6 +118,52 @@ export class DayTimePicker {
                      (this.startHour() * 60 + this.startMinute());
     return Math.max(0, Math.min(100 - this.barLeft(), (diff / rangeMin) * 100));
   });
+
+  constructor() {
+    effect(() => {
+      const start = format24HourTo12Hour(`${this.pad(this.startHour())}:${this.pad(this.startMinute())}`);
+      const end = format24HourTo12Hour(`${this.pad(this.endHour())}:${this.pad(this.endMinute())}`);
+
+      // Keep inputs synced, but don't override while the user is typing.
+      if (this.focusedField() !== 'start') this.startInputRaw.set(start);
+      if (this.showEndTime() && this.focusedField() !== 'end') this.endInputRaw.set(end);
+    });
+  }
+
+  // ── Compact single-time (V0 style) ────────────────────────────────────
+  get singleTimeText(): string {
+    return this.startTimeFormatted();
+  }
+
+  incrementSingleHour(): void {
+    const hour24 = this.startHour();
+    const minute = this.startMinute();
+
+    const meridiem = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = (hour24 % 12) || 12;
+    const nextHour12 = hour12 === 12 ? 1 : hour12 + 1;
+
+    const next24 = to24HourString(String(nextHour12), this.pad(minute), meridiem);
+    const [hStr, mStr] = next24.split(':');
+    this.startHour.set(Number(hStr));
+    this.startMinute.set(Number(mStr));
+    this.emitChange();
+  }
+
+  toggleSingleMeridiem(): void {
+    const hour24 = this.startHour();
+    const minute = this.startMinute();
+
+    const currentMeridiem = hour24 >= 12 ? 'PM' : 'AM';
+    const nextMeridiem = currentMeridiem === 'AM' ? 'PM' : 'AM';
+    const hour12 = (hour24 % 12) || 12;
+
+    const next24 = to24HourString(String(hour12), this.pad(minute), nextMeridiem);
+    const [hStr, mStr] = next24.split(':');
+    this.startHour.set(Number(hStr));
+    this.startMinute.set(Number(mStr));
+    this.emitChange();
+  }
 
   // ── Day interactions ─────────────────────────────────────────────────
   isDaySelected(day: string): boolean {

@@ -473,6 +473,18 @@ export class TaskCreate implements OnInit {
     this.form.get('recurrenceEndTime')?.setValue(`${pad(val.endHour)}:${pad(val.endMinute)}`);
   }
 
+  /** Hora única (no repetitiva): inicio */
+  onSingleStartTimeChange(val: DayTimeValue): void {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    this.form.get('startTime')?.setValue(`${pad(val.startHour)}:${pad(val.startMinute)}`);
+  }
+
+  /** Hora única (no repetitiva): límite */
+  onSingleDueTimeChange(val: DayTimeValue): void {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    this.form.get('dueTime')?.setValue(`${pad(val.startHour)}:${pad(val.startMinute)}`);
+  }
+
   /** Días de la semana disponibles */
   readonly weekDays = WEEK_DAYS;
 
@@ -575,11 +587,17 @@ export class TaskCreate implements OnInit {
     const dateFields = ['startDay', 'startMonth', 'startTime', 'dueDay', 'dueMonth', 'dueTime'];
     if (value) {
       dateFields.forEach(f => { this.form.get(f)?.clearValidators(); this.form.get(f)?.setValue(''); });
+      // Defaults para recurrencia (el picker solo emite al interactuar).
+      this.form.get('recurrenceStartTime')?.setValue(this.form.get('recurrenceStartTime')?.value || '08:00');
+      this.form.get('recurrenceEndTime')?.setValue(this.form.get('recurrenceEndTime')?.value || '17:00');
     } else {
       dateFields.forEach(f => { this.form.get(f)?.setValidators(Validators.required); });
       this.selectedDays.set(new Set());
       this.form.get('recurrenceStartTime')?.setValue('');
       this.form.get('recurrenceEndTime')?.setValue('');
+      // Defaults para tarea única (si el usuario no toca el picker).
+      this.form.get('startTime')?.setValue(this.form.get('startTime')?.value || '08:00');
+      this.form.get('dueTime')?.setValue(this.form.get('dueTime')?.value || '17:00');
     }
     dateFields.forEach(f => this.form.get(f)?.updateValueAndValidity());
     this.dueDateError.set(null);
@@ -598,6 +616,21 @@ export class TaskCreate implements OnInit {
   }
 
   ngOnInit(): void {
+    // Precargar fecha de inicio con el día/mes de hoy (tarea no repetitiva).
+    const today = new Date();
+    this.form.patchValue({
+      startDay: today.getDate(),
+      startMonth: today.getMonth() + 1,
+      dueDay: today.getDate(),
+      dueMonth: today.getMonth() + 1,
+      // Precargar horas por defecto para que el submit no quede inválido
+      // si el usuario no interactúa con el picker.
+      startTime: this.form.get('startTime')?.value || '08:00',
+      dueTime: this.form.get('dueTime')?.value || '17:00',
+      recurrenceStartTime: this.form.get('recurrenceStartTime')?.value || '08:00',
+      recurrenceEndTime: this.form.get('recurrenceEndTime')?.value || '17:00',
+    }, { emitEvent: false });
+
     const storeId = this.auth.currentUser()?.storeId;
     if (storeId) {
       this.rhSvc.loadUsersByStore(storeId);
@@ -744,6 +777,7 @@ export class TaskCreate implements OnInit {
 
   resetForNewTask(): void {
     const storeId = this.auth.currentUser()?.storeId ?? '';
+    const today = new Date();
     this.submitted.set(false);
     this.createdTasksCount.set(0);
     this.submitError.set(null);
@@ -776,12 +810,12 @@ export class TaskCreate implements OnInit {
       recurrenceEndTime: '',
       assignedToIds: [],
       storeId,
-      startDay: '',
-      startMonth: '',
-      startTime: '',
-      dueDay: '',
-      dueMonth: '',
-      dueTime: '',
+      startDay: today.getDate(),
+      startMonth: today.getMonth() + 1,
+      startTime: '08:00',
+      dueDay: today.getDate(),
+      dueMonth: today.getMonth() + 1,
+      dueTime: '17:00',
     });
     if (storeId) {
       this.rhSvc.loadUsersByStore(storeId);
