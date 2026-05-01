@@ -24,7 +24,17 @@
       "Read(//c/Program Files/MongoDB/**)",
       "Read(//c/Program Files/**)",
       "Bash(python3 -c ':*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(npm run *)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\carlo\\\\Documents\\\\proyectosWEB\\\\Metrix-multitask\\\\MetrixDesarrollo\\\\frontend-web\"; $env:NODE_OPTIONS=\"--max-old-space-size=4096\"; npm run lint 2>&1 | Select-Object -Last 30)",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 4200 -InformationLevel Quiet)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\carlo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-carlo-Documents-proyectosWEB-Metrix-multitask-MetrixDesarrollo-frontend-web\\\\e13a1106-f892-466a-b52f-1b5727b3adca\\\\tasks\\\\byn09ilrm.output' -Wait | Select-String --line-buffered 'Local:|compiled|error|Error|OOM|failed'\")",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npx tsc *)",
+      "Bash(NODE_OPTIONS=--max-old-space-size=4096 npx ng build --configuration=development)",
+      "Bash(set NODE_OPTIONS=--max-old-space-size=4096)",
+      "Bash(ng build *)"
     ]
   }
 }

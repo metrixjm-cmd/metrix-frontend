@@ -3,8 +3,8 @@
   <!-- Header -->
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-stone-900">Trainer</h1>
-      <p class="text-stone-500 text-sm mt-1">Evaluaciones y capacitaciones por examen</p>
+      <h1 class="text-2xl font-bold text-white">Trainer</h1>
+      <p class="text-white/50 text-sm mt-1">Evaluaciones y capacitaciones por examen</p>
     </div>
     @if (isManager()) {
       <a routerLink="/trainer/new"
@@ -20,40 +20,40 @@
   <!-- Manager stats -->
   @if (isManager()) {
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-        <p class="text-xs text-stone-500 uppercase tracking-wide">Exámenes activos</p>
-        <p class="text-3xl font-bold text-stone-900 mt-1">{{ statsCards().total }}</p>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+        <p class="text-xs text-white/50 uppercase tracking-wide">Exámenes activos</p>
+        <p class="text-3xl font-bold text-white mt-1">{{ statsCards().total }}</p>
       </div>
-      <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-        <p class="text-xs text-stone-500 uppercase tracking-wide">Tasa de aprobación prom.</p>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+        <p class="text-xs text-white/50 uppercase tracking-wide">Tasa de aprobación prom.</p>
         <p class="text-3xl font-bold mt-1" [class]="scoreClass(statsCards().avgPass)">{{ statsCards().avgPass }}%</p>
       </div>
-      <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-        <p class="text-xs text-stone-500 uppercase tracking-wide">Total de intentos</p>
-        <p class="text-3xl font-bold text-stone-900 mt-1">{{ statsCards().totalSubs }}</p>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+        <p class="text-xs text-white/50 uppercase tracking-wide">Total de intentos</p>
+        <p class="text-3xl font-bold text-white mt-1">{{ statsCards().totalSubs }}</p>
       </div>
     </div>
   }
 
   <!-- Mis resultados (colaborador) -->
   @if (!isManager() && mySubs().length > 0) {
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-      <div class="px-5 py-4 border-b border-stone-100">
-        <h2 class="font-semibold text-stone-800">Mis últimos resultados</h2>
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-white/[0.06]">
+        <h2 class="font-semibold text-white/80">Mis últimos resultados</h2>
       </div>
-      <div class="divide-y divide-stone-100">
+      <div class="divide-y divide-white/[0.06]">
         @for (sub of mySubs().slice(0, 5); track sub.id) {
           <div class="px-5 py-3 flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-stone-800">{{ sub.examTitle }}</p>
-              <p class="text-xs text-stone-400">{{ sub.submittedAt | appDate:'relative' }}</p>
+              <p class="text-sm font-medium text-white/80">{{ sub.examTitle }}</p>
+              <p class="text-xs text-white/40">{{ sub.submittedAt | appDate:'relative' }}</p>
             </div>
             <div class="flex items-center gap-3">
               <span class="text-lg font-bold" [class]="scoreClass(sub.score)">{{ sub.score | number:'1.0-1' }}%</span>
               @if (sub.passed) {
-                <span class="text-xs font-medium bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">Aprobado</span>
+                <span class="text-xs font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full">Aprobado</span>
               } @else {
-                <span class="text-xs font-medium bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Reprobado</span>
+                <span class="text-xs font-medium bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full">Reprobado</span>
               }
             </div>
           </div>
@@ -66,22 +66,22 @@
   @if (loading()) {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       @for (i of [1,2,3]; track i) {
-        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card animate-pulse">
-          <div class="h-4 bg-stone-200 rounded w-3/4 mb-3"></div>
-          <div class="h-3 bg-stone-200 rounded w-1/2 mb-6"></div>
-          <div class="h-8 bg-stone-200 rounded"></div>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 animate-pulse">
+          <div class="h-4 bg-white/[0.08] rounded w-3/4 mb-3"></div>
+          <div class="h-3 bg-white/[0.08] rounded w-1/2 mb-6"></div>
+          <div class="h-8 bg-white/[0.08] rounded"></div>
         </div>
       }
     </div>
   } @else if (exams().length === 0) {
-    <div class="bg-white border border-stone-200 rounded-xl p-12 text-center shadow-card">
-      <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-12 text-center">
+      <svg class="w-12 h-12 mx-auto text-white/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
       </svg>
-      <p class="text-stone-500 text-sm">No hay exámenes activos</p>
+      <p class="text-white/50 text-sm">No hay exámenes activos</p>
       @if (isManager()) {
-        <a routerLink="/trainer/new" class="mt-3 inline-block text-orange-600 text-sm font-medium hover:underline">
+        <a routerLink="/trainer/new" class="mt-3 inline-block text-orange-500 text-sm font-medium hover:underline">
           Crear el primer examen →
         </a>
       }
@@ -89,21 +89,21 @@
   } @else {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       @for (exam of exams(); track exam.id) {
-        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card flex flex-col">
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 flex flex-col">
           <!-- Header card -->
           <div class="flex-1">
             <div class="flex items-start justify-between gap-2 mb-2">
-              <h3 class="font-semibold text-stone-900 text-sm leading-snug">{{ exam.title }}</h3>
+              <h3 class="font-semibold text-white text-sm leading-snug">{{ exam.title }}</h3>
               @if (exam.timeLimitMinutes) {
-                <span class="text-xs text-stone-400 whitespace-nowrap flex-shrink-0">
+                <span class="text-xs text-white/40 whitespace-nowrap flex-shrink-0">
                   ⏱ {{ exam.timeLimitMinutes }}min
                 </span>
               }
             </div>
             @if (exam.description) {
-              <p class="text-xs text-stone-500 line-clamp-2 mb-3">{{ exam.description }}</p>
+              <p class="text-xs text-white/50 line-clamp-2 mb-3">{{ exam.description }}</p>
             }
-            <div class="flex flex-wrap items-center gap-2 text-xs text-stone-500 mb-4">
+            <div class="flex flex-wrap items-center gap-2 text-xs text-white/50 mb-4">
               <span>{{ exam.questions.length }} preguntas</span>
               <span>·</span>
               <span>Mín. {{ exam.passingScore }}%</span>
@@ -111,10 +111,10 @@
                 @let used = attemptCountByExam().get(exam.id) ?? 0;
                 @let left = exam.maxAttempts - used;
                 <span class="ml-auto" [class]="left === 0
-                    ? 'bg-red-50 text-red-600 border border-red-200 rounded-full px-2 py-0.5'
+                    ? 'bg-red-500/15 text-red-400 border border-red-500/25 rounded-full px-2 py-0.5'
                     : left === 1
-                    ? 'bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5'
-                    : 'bg-stone-50 text-stone-500 border border-stone-200 rounded-full px-2 py-0.5'">
+                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25 rounded-full px-2 py-0.5'
+                    : 'bg-white/[0.02] text-white/50 border border-white/10 rounded-full px-2 py-0.5'">
                   {{ left === 0 ? 'Sin intentos' : left + ' intento' + (left === 1 ? '' : 's') }}
                 </span>
               }
@@ -123,37 +123,37 @@
             <!-- Pass rate bar (manager) -->
             @if (isManager()) {
               <div class="mb-4">
-                <div class="flex justify-between text-xs text-stone-500 mb-1">
+                <div class="flex justify-between text-xs text-white/50 mb-1">
                   <span>Tasa de aprobación</span>
                   <span class="font-medium">{{ exam.passRate }}%</span>
                 </div>
-                <div class="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                <div class="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                   <div class="h-full rounded-full transition-all" [class]="passRateColor(exam.passRate)"
                        [style.width.%]="exam.passRate"></div>
                 </div>
-                <p class="text-xs text-stone-400 mt-1">{{ exam.submissionCount }} intentos</p>
+                <p class="text-xs text-white/40 mt-1">{{ exam.submissionCount }} intentos</p>
               </div>
             }
 
             <!-- Mi último resultado (colaborador) -->
             @if (!isManager() && lastSub().has(exam.id)) {
               @let sub = lastSub().get(exam.id)!;
-              <div class="mb-3 p-2 rounded-lg" [class]="sub.passed ? 'bg-emerald-50' : 'bg-red-50'">
+              <div class="mb-3 p-2 rounded-lg" [class]="sub.passed ? 'bg-emerald-500/15' : 'bg-red-500/15'">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs" [class]="sub.passed ? 'text-emerald-700' : 'text-red-700'">
+                  <span class="text-xs" [class]="sub.passed ? 'text-emerald-400' : 'text-red-400'">
                     {{ sub.passed ? '✓ Aprobado' : '✗ Reprobado' }} — {{ sub.score | number:'1.0-1' }}%
                   </span>
-                  <span class="text-xs text-stone-400">{{ sub.submittedAt | appDate:'relative' }}</span>
+                  <span class="text-xs text-white/40">{{ sub.submittedAt | appDate:'relative' }}</span>
                 </div>
               </div>
             }
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-2 mt-auto pt-3 border-t border-stone-100">
+          <div class="flex gap-2 mt-auto pt-3 border-t border-white/[0.06]">
             @if (isManager()) {
               <button (click)="goResults(exam)"
-                      class="flex-1 text-xs font-medium text-stone-600 border border-stone-200 rounded-lg px-3 py-2 hover:bg-stone-50 transition-colors">
+                      class="flex-1 text-xs font-medium text-white/60 border border-white/10 rounded-lg px-3 py-2 hover:bg-white/[0.04] transition-colors">
                 Ver resultados
               </button>
             }

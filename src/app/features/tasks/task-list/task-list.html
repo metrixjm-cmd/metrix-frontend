@@ -3,19 +3,19 @@
   <!-- ── Page Header ──────────────────────────────────────────────────── -->
   <div class="flex items-center justify-between flex-wrap gap-3">
     <div>
-      <div class="flex items-center gap-1.5 text-xs text-stone-400 mb-1">
-        <a routerLink="/dashboard" class="hover:text-brand-600 transition-colors">Dashboard</a>
+      <div class="flex items-center gap-1.5 text-xs text-white/40 mb-1">
+        <a routerLink="/dashboard" class="hover:text-cyan-400 transition-colors">Dashboard</a>
         <span>/</span>
-        <span class="text-stone-600 font-medium">Tareas</span>
+        <span class="text-white/60 font-medium">Tareas</span>
       </div>
-      <h1 class="text-lg font-bold text-stone-900">
+      <h1 class="text-lg font-bold text-white">
         @if (isAdmin()) { Panel de Tareas }
         @else if (isGerente()) {
           @if (activeTab() === 'mis-tareas') { Mis Tareas } @else { Tareas Delegadas }
         }
         @else { Mis Tareas }
       </h1>
-      <p class="text-stone-400 text-xs mt-0.5">
+      <p class="text-white/40 text-xs mt-0.5">
         @if (isAdmin()) { Vista completa de todas las actividades de la sucursal }
         @else if (isGerente()) {
           @if (activeTab() === 'mis-tareas') { Tareas asignadas a ti por el administrador }
@@ -27,7 +27,7 @@
     @if (isManagerView()) {
       <button
         (click)="goToCreate()"
-        class="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+        class="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg transition-colors"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -39,13 +39,13 @@
 
   <!-- ── Tabs GERENTE ──────────────────────────────────────────────────── -->
   @if (isGerente()) {
-    <div class="flex border-b border-stone-200">
+    <div class="flex border-b border-white/10">
       <button
         (click)="switchTab('mis-tareas')"
         class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px"
         [class]="activeTab() === 'mis-tareas'
           ? 'text-brand-600 border-brand-600'
-          : 'text-stone-400 border-transparent hover:text-stone-600 hover:border-stone-300'"
+          : 'text-white/40 border-transparent hover:text-white/60 hover:border-white/20'"
       >
         Mis Tareas
       </button>
@@ -54,7 +54,7 @@
         class="px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px"
         [class]="activeTab() === 'delegadas'
           ? 'text-brand-600 border-brand-600'
-          : 'text-stone-400 border-transparent hover:text-stone-600 hover:border-stone-300'"
+          : 'text-white/40 border-transparent hover:text-white/60 hover:border-white/20'"
       >
         Tareas Delegadas
       </button>
@@ -64,57 +64,57 @@
   <!-- ── Contadores clickeables ──────────────────────────────────────── -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
     <button (click)="filterByStatus('PENDING')"
-      class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
-      [class]="selectedStatus() === 'PENDING' ? 'border-amber-400 ring-1 ring-amber-200' : 'border-stone-200'">
-      <p class="text-xs text-stone-400 font-semibold uppercase tracking-wide mb-1">Pendientes</p>
+      class="bg-white/[0.04] border rounded-xl p-4 text-left transition-all"
+      [class]="selectedStatus() === 'PENDING' ? 'border-amber-400 ring-1 ring-amber-200' : 'border-white/10'">
+      <p class="text-xs text-white/40 font-semibold uppercase tracking-wide mb-1">Pendientes</p>
       <p class="text-2xl font-bold text-amber-600">{{ filteredPending() }}</p>
     </button>
     <button (click)="filterByStatus('IN_PROGRESS')"
-      class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
-      [class]="selectedStatus() === 'IN_PROGRESS' ? 'border-brand-400 ring-1 ring-brand-200' : 'border-stone-200'">
-      <p class="text-xs text-stone-400 font-semibold uppercase tracking-wide mb-1">En Progreso</p>
+      class="bg-white/[0.04] border rounded-xl p-4 text-left transition-all"
+      [class]="selectedStatus() === 'IN_PROGRESS' ? 'border-brand-400 ring-1 ring-brand-200' : 'border-white/10'">
+      <p class="text-xs text-white/40 font-semibold uppercase tracking-wide mb-1">En Progreso</p>
       <p class="text-2xl font-bold text-brand-600">{{ filteredInProgress() }}</p>
     </button>
     <button (click)="filterByStatus('COMPLETED')"
-      class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
-      [class]="selectedStatus() === 'COMPLETED' ? 'border-emerald-400 ring-1 ring-emerald-200' : 'border-stone-200'">
-      <p class="text-xs text-stone-400 font-semibold uppercase tracking-wide mb-1">Completadas</p>
+      class="bg-white/[0.04] border rounded-xl p-4 text-left transition-all"
+      [class]="selectedStatus() === 'COMPLETED' ? 'border-emerald-400 ring-1 ring-emerald-200' : 'border-white/10'">
+      <p class="text-xs text-white/40 font-semibold uppercase tracking-wide mb-1">Completadas</p>
       <p class="text-2xl font-bold text-emerald-600">{{ filteredCompleted() }}</p>
     </button>
     <button (click)="filterByStatus('FAILED')"
-      class="bg-white border rounded-xl p-4 shadow-card text-left transition-all hover:shadow-card-md"
-      [class]="selectedStatus() === 'FAILED' ? 'border-red-400 ring-1 ring-red-200' : 'border-stone-200'">
-      <p class="text-xs text-stone-400 font-semibold uppercase tracking-wide mb-1">Fallidas</p>
+      class="bg-white/[0.04] border rounded-xl p-4 text-left transition-all"
+      [class]="selectedStatus() === 'FAILED' ? 'border-red-400 ring-1 ring-red-200' : 'border-white/10'">
+      <p class="text-xs text-white/40 font-semibold uppercase tracking-wide mb-1">Fallidas</p>
       <p class="text-2xl font-bold text-red-600">{{ filteredFailed() }}</p>
     </button>
   </div>
 
   <!-- ── Buscador + Filtros ──────────────────────────────────────────── -->
-  <div class="bg-white border border-stone-200 rounded-xl shadow-card p-4 space-y-3">
+  <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 space-y-3">
     <div class="relative">
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
       </svg>
       <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
         placeholder="Buscar por titulo, descripcion, colaborador o categoria..."
-        class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 text-stone-700 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder:text-stone-400" />
+        class="w-full pl-10 pr-4 py-2.5 bg-white/[0.05] border border-white/10 text-white/70 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 placeholder:text-white/30" />
     </div>
     <div class="flex flex-wrap gap-2 items-center">
-      <span class="text-stone-400 text-xs font-semibold uppercase tracking-wide">Filtros:</span>
-      <select [ngModel]="selectedShift()" (ngModelChange)="onShiftChange($event)" class="bg-stone-50 border border-stone-200 text-stone-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      <span class="text-white/40 text-xs font-semibold uppercase tracking-wide">Filtros:</span>
+      <select [ngModel]="selectedShift()" (ngModelChange)="onShiftChange($event)" class="appearance-none bg-white/[0.05] border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
         <option value="">Turno</option>
         <option value="MATUTINO">Matutino</option>
         <option value="VESPERTINO">Vespertino</option>
         <option value="NOCTURNO">Nocturno</option>
       </select>
-      <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" class="bg-stone-50 border border-stone-200 text-stone-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" class="appearance-none bg-white/[0.05] border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
         <option value="">Estado</option>
         <option value="PENDING">Pendiente</option>
         <option value="IN_PROGRESS">En Progreso</option>
         <option value="COMPLETED">Completada</option>
         <option value="FAILED">Fallida</option>
       </select>
-      <select [ngModel]="selectedCategory()" (ngModelChange)="onCategoryChange($event)" class="bg-stone-50 border border-stone-200 text-stone-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      <select [ngModel]="selectedCategory()" (ngModelChange)="onCategoryChange($event)" class="appearance-none bg-white/[0.05] border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
         <option value="">Categoria</option>
         @for (cat of catalogSvc.categorias(); track cat.id) {
           <option [value]="cat.value">{{ cat.label || cat.value }}</option>
@@ -123,23 +123,23 @@
         <option value="RH">Capital Humano</option>
         <option value="CAPACITACION">Capacitacion</option>
       </select>
-      <select [ngModel]="selectedCritical()" (ngModelChange)="onCriticalChange($event)" class="bg-stone-50 border border-stone-200 text-stone-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      <select [ngModel]="selectedCritical()" (ngModelChange)="onCriticalChange($event)" class="appearance-none bg-white/[0.05] border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
         <option value="">Prioridad</option>
         <option value="true">Criticas</option>
         <option value="false">Normales</option>
       </select>
-      <select [ngModel]="selectedRecurring()" (ngModelChange)="onRecurringChange($event)" class="bg-stone-50 border border-stone-200 text-stone-700 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+      <select [ngModel]="selectedRecurring()" (ngModelChange)="onRecurringChange($event)" class="appearance-none bg-white/[0.05] border border-white/10 text-white/70 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
         <option value="">Tipo</option>
         <option value="true">Repetitivas</option>
         <option value="false">Unicas</option>
       </select>
       @if (hasActiveFilters()) {
-        <button (click)="clearFilters()" class="text-brand-600 hover:text-brand-700 text-xs font-medium flex items-center gap-1 ml-1">
+        <button (click)="clearFilters()" class="text-cyan-400 hover:text-cyan-300 text-xs font-medium flex items-center gap-1 ml-1">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           Limpiar
         </button>
       }
-      <span class="ml-auto text-stone-400 text-xs font-medium">{{ filteredTasks().length }} de {{ taskSvc.tasks().length }} tarea(s)</span>
+      <span class="ml-auto text-white/40 text-xs font-medium">{{ filteredTasks().length }} de {{ taskSvc.tasks().length }} tarea(s)</span>
     </div>
   </div>
 
@@ -151,21 +151,21 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
-        <p class="text-stone-400 text-sm">Cargando tareas...</p>
+        <p class="text-white/40 text-sm">Cargando tareas...</p>
       </div>
     </div>
   }
 
   <!-- ── Error ─────────────────────────────────────────────────────────── -->
   @if (!taskSvc.loading() && taskSvc.error()) {
-    <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+    <div class="bg-red-500/15 border border-red-500/25 rounded-xl p-4 flex items-start gap-3">
       <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <div>
-        <p class="text-red-700 font-medium text-sm">Error al cargar tareas</p>
+        <p class="text-red-400 font-medium text-sm">Error al cargar tareas</p>
         <p class="text-red-500 text-xs mt-1">{{ taskSvc.error() }}</p>
-        <button (click)="loadTasks()" class="text-red-600 hover:text-red-700 text-xs mt-2 underline font-medium">Reintentar</button>
+        <button (click)="loadTasks()" class="text-red-400 hover:text-red-400 text-xs mt-2 underline font-medium">Reintentar</button>
       </div>
     </div>
   }
@@ -173,14 +173,14 @@
   <!-- ── Lista de tarjetas expandibles ────────────────────────────────── -->
   @if (!taskSvc.loading() && !taskSvc.error()) {
     @if (filteredTasks().length === 0) {
-      <div class="bg-white border border-stone-200 rounded-xl p-12 text-center shadow-card">
-        <div class="w-12 h-12 bg-stone-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-12 text-center">
+        <div class="w-12 h-12 bg-white/[0.05] rounded-xl flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
           </svg>
         </div>
-        <p class="text-stone-600 font-semibold text-sm">Sin tareas</p>
-        <p class="text-stone-400 text-xs mt-1">
+        <p class="text-white/60 font-semibold text-sm">Sin tareas</p>
+        <p class="text-white/40 text-xs mt-1">
           @if (hasActiveFilters()) { No se encontraron tareas con los filtros actuales. }
           @else if (isManagerView()) { Crea la primera tarea para tu equipo. }
           @else { No tienes tareas asignadas por el momento. }
@@ -189,7 +189,7 @@
     } @else {
       <div class="space-y-3">
         @for (task of filteredTasks(); track trackById($index, task)) {
-          <div class="bg-white border border-stone-200 rounded-xl shadow-sm overflow-hidden transition-all hover:shadow-md">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden transition-all hover:shadow-md">
 
             <!-- ═══ HEADER COMPACTO ═══ -->
             <div class="p-4">
@@ -200,28 +200,28 @@
                   <div class="flex items-center gap-2 flex-wrap mb-2">
                     <app-status-badge [status]="task.status" />
                     @if (task.isCritical) {
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 border border-red-200 rounded-full text-xs font-medium">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/15 text-red-400 border border-red-500/25 rounded-full text-xs font-medium">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 19.7h20L12 2zm0 3.3l7.5 13H4.5L12 5.3zM11 10v4h2v-4h-2zm0 5v2h2v-2h-2z"/></svg>
                         Critica
                       </span>
                     }
                     @if (task.isRecurring) {
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 border border-violet-200 rounded-full text-xs font-medium">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-500/15 text-violet-400 border border-violet-200 rounded-full text-xs font-medium">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                         Repetitiva
                       </span>
                     }
-                    <span class="px-2 py-0.5 bg-stone-100 text-stone-500 rounded-full text-xs">
+                    <span class="px-2 py-0.5 bg-white/[0.05] text-white/50 rounded-full text-xs">
                       {{ getCategoryLabel(task.category) }}
                     </span>
                   </div>
 
                   <!-- Titulo + descripcion -->
-                  <h3 class="text-base font-semibold text-stone-900">{{ task.title }}</h3>
-                  <p class="text-sm text-stone-500 mt-0.5 line-clamp-2">{{ task.description }}</p>
+                  <h3 class="text-base font-semibold text-white">{{ task.title }}</h3>
+                  <p class="text-sm text-white/50 mt-0.5 line-clamp-2">{{ task.description }}</p>
 
                   <!-- Info resumida -->
-                  <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-stone-500">
+                  <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-white/50">
                     <span class="flex items-center gap-1.5">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                       {{ task.assignedToName }}
@@ -249,14 +249,14 @@
                         {{ task.qualityRating }}
                       </span>
                     }
-                    <span class="text-stone-400">{{ getTimeAgo(task.createdAt) }}</span>
+                    <span class="text-white/40">{{ getTimeAgo(task.createdAt) }}</span>
                   </div>
                 </div>
 
                 <!-- Botones derecha -->
                 <div class="flex items-center gap-2 shrink-0">
                   <button (click)="toggleExpand(task.id)"
-                    class="inline-flex items-center gap-1 px-3 py-2 text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors font-medium">
+                    class="inline-flex items-center gap-1 px-3 py-2 text-sm text-white/50 hover:text-white hover:bg-white/[0.06] rounded-lg transition-colors font-medium">
                     {{ expandedTaskId() === task.id ? 'Cerrar' : 'Ver más' }}
                     <svg class="w-4 h-4 transition-transform" [class.rotate-180]="expandedTaskId() === task.id" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -278,7 +278,7 @@
 
                   <!-- ADMIN: eliminar -->
                   @if (isAdmin()) {
-                    <button (click)="confirmDelete(task.id, $event)" class="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                    <button (click)="confirmDelete(task.id, $event)" class="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/15 rounded-lg transition-colors" title="Eliminar">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                   }
@@ -288,23 +288,23 @@
 
             <!-- ═══ ZONA INLINE: Progreso + Checklist + Acciones (IN_PROGRESS) ═══ -->
             @if (canCompleteTask(task) && expandedTaskId() !== task.id) {
-              <div class="border-t border-stone-200/60 px-5 py-4">
+              <div class="border-t border-white/10 px-5 py-4">
 
                 <!-- Barra de progreso -->
                 @if (task.processes && task.processes.length > 0) {
                   <div class="flex items-center gap-3 mb-4">
-                    <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-brand-100 shrink-0">
-                      <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <div class="flex items-center justify-center h-8 w-8 rounded-lg bg-cyan-500/10 shrink-0">
+                      <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center justify-between mb-1.5">
-                        <span class="text-sm font-medium text-stone-800">Progreso</span>
+                        <span class="text-sm font-medium text-white/80">Progreso</span>
                         @if (getProcessProgress(task); as prog) {
-                          <span class="text-sm font-semibold text-brand-600">{{ prog.done }}/{{ prog.total }}</span>
+                          <span class="text-sm font-semibold text-cyan-400">{{ prog.done }}/{{ prog.total }}</span>
                         }
                       </div>
                       @if (getProcessProgress(task); as prog) {
-                        <div class="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                        <div class="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
                           <div class="h-full rounded-full transition-all duration-500" [class]="prog.percent === 100 ? 'bg-emerald-500' : 'bg-brand-500'" [style.width.%]="prog.percent"></div>
                         </div>
                       }
@@ -318,13 +318,13 @@
                         (click)="onProcessStepToggle(task, step, $event)"
                         [disabled]="togglingStepId() === step.stepId"
                         class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group text-left"
-                        [class]="step.completed ? 'bg-brand-50/50 hover:bg-brand-50' : 'hover:bg-stone-50'">
+                        [class]="step.completed ? 'bg-brand-50/50 hover:bg-brand-50' : 'hover:bg-white/[0.04]'">
 
                         <!-- Checkbox visual -->
                         <div class="shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
                           [class]="step.completed
                             ? 'border-brand-500 bg-brand-500 text-white'
-                            : 'border-stone-300 group-hover:border-brand-400'">
+                            : 'border-white/[0.15] group-hover:border-brand-400'">
                           @if (togglingStepId() === step.stepId) {
                             <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                           } @else if (step.completed) {
@@ -334,26 +334,26 @@
 
                         <!-- Label -->
                         <span class="flex-1 text-sm transition-colors"
-                          [class]="step.completed ? 'text-stone-400 line-through' : 'text-stone-800'">
+                          [class]="step.completed ? 'text-white/30 line-through' : 'text-white/80'">
                           {{ step.title }}
                         </span>
 
                         <!-- Numero sutil -->
-                        <span class="text-xs text-stone-300 opacity-0 group-hover:opacity-100 transition-opacity">#{{ i + 1 }}</span>
+                        <span class="text-xs text-white/30 opacity-0 group-hover:opacity-100 transition-opacity">#{{ i + 1 }}</span>
                       </button>
                     }
                   </div>
 
                   @if (task.evidenceImages.length > 0 || task.evidenceVideos.length > 0) {
-                    <div class="mb-4 rounded-xl border border-stone-200 bg-stone-50 p-3">
+                    <div class="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
                       <div class="flex items-center justify-between mb-2">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Evidencias</p>
-                        <span class="text-xs text-stone-400">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-white/50">Evidencias</p>
+                        <span class="text-xs text-white/40">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
                       </div>
                       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                         @for (img of task.evidenceImages; track img) {
                           <button type="button" (click)="openLightbox(img, 'image')"
-                            class="group relative block rounded-lg overflow-hidden border border-stone-200 bg-white hover:border-brand-300 transition-colors aspect-[4/3]">
+                            class="group relative block rounded-lg overflow-hidden border border-white/10 bg-white/[0.04] hover:border-cyan-500/35 transition-colors aspect-[4/3]">
                             <img [src]="img" alt="Evidencia imagen"
                               class="w-full h-full object-cover object-center"
                               loading="lazy" />
@@ -364,7 +364,7 @@
                         }
                         @for (vid of task.evidenceVideos; track vid) {
                           <button type="button" (click)="openLightbox(vid, 'video')"
-                            class="group relative rounded-lg overflow-hidden border border-stone-200 bg-stone-900/80 hover:border-brand-300 transition-colors aspect-[4/3] w-full">
+                            class="group relative rounded-lg overflow-hidden border border-white/10 bg-stone-900/80 hover:border-cyan-500/35 transition-colors aspect-[4/3] w-full">
                             <video [src]="vid" class="absolute inset-0 w-full h-full object-cover object-center opacity-70" muted playsinline preload="metadata"></video>
                             <div class="absolute inset-0 flex items-center justify-center">
                               <span class="flex h-10 w-10 items-center justify-center rounded-full bg-black/45 border border-white/30">
@@ -385,9 +385,9 @@
                 }
 
                 <!-- Acciones separadas por línea -->
-                <div class="flex items-center gap-3 pt-3" [class.border-t]="task.processes && task.processes.length > 0" [class.border-stone-200/60]="task.processes && task.processes.length > 0">
+                <div class="flex items-center gap-3 pt-3" [class.border-t]="task.processes && task.processes.length > 0" [class.border-white/10]="task.processes && task.processes.length > 0">
                   <button (click)="askCompleteTask(task, $event)" [disabled]="completingTaskId() === task.id"
-                    class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                    class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                     @if (completingTaskId() === task.id) {
                       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                     } @else {
@@ -401,14 +401,14 @@
 
             <!-- ═══ MENSAJE DE ÉXITO (animación) ═══ -->
             @if (successTaskId() === task.id) {
-              <div class="border-t border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-5 text-center animate-[fadeInUp_0.5s_ease-out]">
-                <div class="inline-flex items-center justify-center w-14 h-14 bg-emerald-100 rounded-full mb-3 animate-[bounceIn_0.6s_ease-out]">
-                  <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="border-t border-emerald-500/25 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 px-4 py-5 text-center animate-[fadeInUp_0.5s_ease-out]">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-emerald-500/15 rounded-full mb-3 animate-[bounceIn_0.6s_ease-out]">
+                  <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                   </svg>
                 </div>
-                <p class="text-emerald-800 font-bold text-base">Excelente trabajo</p>
-                <p class="text-emerald-600 text-sm mt-1">Tarea completada exitosamente</p>
+                <p class="text-emerald-300 font-bold text-base">Excelente trabajo</p>
+                <p class="text-emerald-400 text-sm mt-1">Tarea completada exitosamente</p>
                 <div class="flex items-center justify-center gap-1 mt-2">
                   <span class="text-lg animate-[bounce_1s_ease-in-out_infinite]" style="animation-delay: 0s">&#127881;</span>
                   <span class="text-lg animate-[bounce_1s_ease-in-out_infinite]" style="animation-delay: 0.15s">&#11088;</span>
@@ -419,15 +419,15 @@
 
             <!-- ═══ MODAL CONFIRMACIÓN COMPLETAR ═══ -->
             @if (confirmCompleteId() === task.id) {
-              <div class="border-t border-brand-100 bg-brand-50 px-4 py-4 flex items-center gap-3">
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100">
-                  <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div class="border-t border-cyan-500/25 bg-cyan-500/[0.05] px-4 py-4 flex items-center gap-3">
+                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-500/10">
+                  <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <div class="flex-1">
-                  <p class="text-brand-800 text-sm font-semibold">¿Confirmas que terminaste esta tarea?</p>
-                  <p class="text-brand-600 text-xs mt-0.5">Esta acción marcará la tarea como completada.</p>
+                  <p class="text-cyan-300 text-sm font-semibold">¿Confirmas que terminaste esta tarea?</p>
+                  <p class="text-cyan-400 text-xs mt-0.5">Esta acción marcará la tarea como completada.</p>
                 </div>
-                <button (click)="cancelComplete()" class="px-3 py-1.5 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-white">Cancelar</button>
+                <button (click)="cancelComplete()" class="px-3 py-1.5 text-xs text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04]">Cancelar</button>
                 <button (click)="confirmAndComplete(task)" [disabled]="completingTaskId() === task.id"
                   class="px-4 py-1.5 text-xs font-semibold bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50">
                   @if (completingTaskId() === task.id) { Completando... } @else { Sí, terminar }
@@ -437,10 +437,10 @@
 
             <!-- Confirmacion de eliminacion -->
             @if (confirmingDeleteId() === task.id) {
-              <div class="border-t border-red-100 bg-red-50 px-4 py-3 flex items-center gap-3">
+              <div class="border-t border-red-500/25 bg-red-500/15 px-4 py-3 flex items-center gap-3">
                 <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <p class="text-red-700 text-xs flex-1">Eliminar <strong>{{ task.title }}</strong>?</p>
-                <button (click)="cancelDelete()" class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-white">Cancelar</button>
+                <p class="text-red-400 text-xs flex-1">Eliminar <strong>{{ task.title }}</strong>?</p>
+                <button (click)="cancelDelete()" class="px-3 py-1 text-xs text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04]">Cancelar</button>
                 <button (click)="executeDelete(task.id, $event)" [disabled]="deletingId() === task.id"
                   class="px-3 py-1 text-xs font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
                   @if (deletingId() === task.id) { Eliminando... } @else { Eliminar }
@@ -450,70 +450,70 @@
 
             <!-- ═══ CONTENIDO EXPANDIDO ═══ -->
             @if (expandedTaskId() === task.id) {
-              <div class="border-t border-stone-100 px-4 py-5 bg-gradient-to-b from-stone-50/60 to-white space-y-5">
+              <div class="border-t border-white/[0.06] px-4 py-5 bg-white/[0.02] space-y-5">
 
                 <!-- Grid: Asignacion + Ejecucion + Procesos (3 cols en desktop) -->
                 <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
 
                   <!-- ── Asignación ────────────────────────── -->
-                  <div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
-                    <div class="flex items-center gap-3 px-4 py-3 border-b border-stone-100 bg-stone-50">
-                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
+                  <div class="bg-white/[0.04] rounded-xl border border-white/10 overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.03]">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                       </div>
-                      <h4 class="text-sm font-semibold text-stone-800">Asignación</h4>
+                      <h4 class="text-sm font-semibold text-white/80">Asignación</h4>
                     </div>
-                    <div class="divide-y divide-stone-100/80">
-                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                          <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <div class="divide-y divide-white/[0.06]">
+                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                          <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                         </div>
                         <div class="min-w-0 flex-1">
-                          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Colaborador</p>
-                          <p class="text-sm font-semibold text-stone-900 truncate">{{ task.assignedToName }}</p>
+                          <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Colaborador</p>
+                          <p class="text-sm font-semibold text-white truncate">{{ task.assignedToName }}</p>
                         </div>
                       </div>
-                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                          <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.193 23.193 0 0112 15c-3.183 0-6.22-.64-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                          <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.193 23.193 0 0112 15c-3.183 0-6.22-.64-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
                         <div class="min-w-0 flex-1">
-                          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Puesto</p>
-                          <p class="text-sm font-medium text-stone-700 truncate">{{ task.position }}</p>
+                          <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Puesto</p>
+                          <p class="text-sm font-medium text-white/70 truncate">{{ task.position }}</p>
                         </div>
                       </div>
                       @if (task.shift) {
-                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors">
+                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                            <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                           </div>
                           <div class="min-w-0 flex-1">
-                            <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Turno</p>
-                            <span class="inline-flex mt-0.5 px-2.5 py-0.5 bg-brand-100 text-brand-700 rounded-full text-xs font-semibold">{{ shiftLabels[task.shift] }}</span>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Turno</p>
+                            <span class="inline-flex mt-0.5 px-2.5 py-0.5 bg-cyan-500/10 text-cyan-300 rounded-full text-xs font-semibold">{{ shiftLabels[task.shift] }}</span>
                           </div>
                         </div>
                       }
-                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                          <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <div class="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                          <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
                         <div class="min-w-0 flex-1">
                           @if (!task.isRecurring) {
-                            <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Vencimiento</p>
-                            <p class="text-sm font-semibold text-stone-900">{{ task.dueAt | appDate:'due' }}</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Vencimiento</p>
+                            <p class="text-sm font-semibold text-white">{{ task.dueAt | appDate:'due' }}</p>
                           } @else {
-                            <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Horario</p>
-                            <p class="text-sm font-bold text-stone-900">{{ task.recurrenceStartTime | timeFormat }} - {{ task.recurrenceEndTime | timeFormat }}</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Horario</p>
+                            <p class="text-sm font-bold text-white">{{ task.recurrenceStartTime | timeFormat }} - {{ task.recurrenceEndTime | timeFormat }}</p>
                           }
                         </div>
                       </div>
                       @if (task.isRecurring && task.recurrenceDays.length > 0) {
-                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-colors">
-                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-100">
-                            <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors">
+                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.05]">
+                            <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                           </div>
                           <div class="min-w-0 flex-1">
-                            <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Días</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Días</p>
                             <div class="flex gap-1.5 mt-1 flex-wrap">
                               @for (day of task.recurrenceDays; track day) {
                                 <span class="px-2 py-0.5 bg-brand-600 text-white rounded text-[10px] font-bold">{{ day }}</span>
@@ -526,46 +526,46 @@
                   </div>
 
                   <!-- ── Ejecución ─────────────────────────── -->
-                  <div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
-                    <div class="flex items-center gap-3 px-4 py-3 border-b border-stone-100 bg-stone-50">
-                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
+                  <div class="bg-white/[0.04] rounded-xl border border-white/10 overflow-hidden">
+                    <div class="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.03]">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                       </div>
-                      <h4 class="text-sm font-semibold text-stone-800">Ejecución</h4>
+                      <h4 class="text-sm font-semibold text-white/80">Ejecución</h4>
                     </div>
                     <div class="p-4 space-y-3">
-                      <div class="rounded-xl border border-stone-100 bg-gradient-to-br from-stone-50 to-white p-4">
-                        <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Estado actual</p>
+                      <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                        <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Estado actual</p>
                         <div class="mt-2 flex items-center gap-2.5">
                           @if (task.status === 'IN_PROGRESS') {
                             <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-500"></span></span>
                             <p class="text-base font-semibold text-brand-700">En progreso</p>
                           } @else if (task.status === 'COMPLETED') {
                             <span class="flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                            <p class="text-base font-semibold text-emerald-700">Completada</p>
+                            <p class="text-base font-semibold text-emerald-400">Completada</p>
                           } @else if (task.status === 'FAILED') {
                             <span class="flex h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                            <p class="text-base font-semibold text-red-700">Fallida</p>
+                            <p class="text-base font-semibold text-red-400">Fallida</p>
                           } @else {
                             <span class="flex h-2.5 w-2.5 rounded-full bg-amber-400"></span>
-                            <p class="text-base font-semibold text-amber-700">Pendiente</p>
+                            <p class="text-base font-semibold text-amber-400">Pendiente</p>
                           }
                         </div>
                       </div>
                       <div class="grid grid-cols-2 gap-3">
-                        <div class="rounded-xl border border-stone-100 bg-stone-50/50 p-3">
-                          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Iniciada</p>
-                          <p class="mt-1 text-sm font-medium text-stone-800">{{ getRelativeTime(task.startedAt) }}</p>
+                        <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                          <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Iniciada</p>
+                          <p class="mt-1 text-sm font-medium text-white/80">{{ getRelativeTime(task.startedAt) }}</p>
                         </div>
-                        <div class="rounded-xl border border-stone-100 bg-stone-50/50 p-3">
-                          <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-400">Finalizada</p>
-                          <p class="mt-1 text-sm font-medium text-stone-800">{{ getRelativeTime(task.finishedAt) }}</p>
+                        <div class="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+                          <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Finalizada</p>
+                          <p class="mt-1 text-sm font-medium text-white/80">{{ getRelativeTime(task.finishedAt) }}</p>
                         </div>
                       </div>
                       <div class="flex items-center gap-2 flex-wrap">
                         @if (task.onTime !== null) {
                           <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium"
-                            [class]="task.onTime ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'">
+                            [class]="task.onTime ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25' : 'bg-red-500/15 text-red-400 border border-red-500/25'">
                             @if (task.onTime) {
                               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                               A tiempo
@@ -576,13 +576,13 @@
                           </div>
                         }
                         @if (task.reworkCount > 0) {
-                          <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-200">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                             {{ task.reworkCount }} retrabajo{{ task.reworkCount > 1 ? 's' : '' }}
                           </div>
                         }
                         @if (task.qualityRating !== null) {
-                          <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+                          <div class="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-200">
                             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                             {{ task.qualityRating }}/5
                           </div>
@@ -593,27 +593,27 @@
 
                   <!-- ── Procesos (tarjeta con scroll) ─────── -->
                   @if (task.processes && task.processes.length > 0) {
-                    <div class="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm md:col-span-2 lg:col-span-1">
-                      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 bg-stone-50">
+                    <div class="bg-white/[0.04] rounded-xl border border-white/10 overflow-hidden md:col-span-2 lg:col-span-1">
+                      <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.06] bg-white/[0.03]">
                         <div class="flex items-center gap-3">
-                          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-sm">
+                          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
                             <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                           </div>
-                          <h4 class="text-sm font-semibold text-stone-800">Procesos</h4>
+                          <h4 class="text-sm font-semibold text-white/80">Procesos</h4>
                         </div>
                         @if (getProcessProgress(task); as prog) {
                           <div class="flex items-center gap-2">
-                            <div class="w-20 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                            <div class="w-20 h-1.5 bg-white/[0.08] rounded-full overflow-hidden">
                               <div class="h-full rounded-full transition-all" [class]="prog.percent === 100 ? 'bg-emerald-500' : 'bg-brand-500'" [style.width.%]="prog.percent"></div>
                             </div>
-                            <span class="text-xs text-stone-500 font-medium">{{ prog.done }}/{{ prog.total }}</span>
+                            <span class="text-xs text-white/50 font-medium">{{ prog.done }}/{{ prog.total }}</span>
                           </div>
                         }
                       </div>
                       <div class="max-h-64 overflow-y-auto p-3 space-y-1.5">
                         @for (step of task.processes; track step.stepId) {
                           <div class="flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors"
-                            [class]="step.completed ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50/60 border-red-100'">
+                            [class]="step.completed ? 'bg-emerald-500/15 border-emerald-500/25' : 'bg-red-500/15 border-red-500/25'">
                             <!-- Ícono estado -->
                             <div class="mt-0.5 shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                               [class]="step.completed ? 'bg-emerald-500 text-white' : 'bg-red-400 text-white'">
@@ -626,15 +626,15 @@
                             <!-- Contenido -->
                             <div class="flex-1 min-w-0">
                               <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-sm font-medium text-stone-800">{{ step.title }}</span>
+                                <span class="text-sm font-medium text-white/80">{{ step.title }}</span>
                                 @if (step.completed) {
-                                  <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-semibold">Completado</span>
+                                  <span class="px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 rounded-full text-[10px] font-semibold">Completado</span>
                                 } @else {
-                                  <span class="px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-semibold">No completado</span>
+                                  <span class="px-1.5 py-0.5 bg-red-500/15 text-red-400 rounded-full text-[10px] font-semibold">No completado</span>
                                 }
                               </div>
                               @if (!step.completed && getTaskProcessReason(task, step.title)) {
-                                <p class="text-xs text-red-600 mt-1">
+                                <p class="text-xs text-red-400 mt-1">
                                   <span class="font-semibold">Motivo: </span>{{ getTaskProcessReason(task, step.title) }}
                                 </p>
                               }
@@ -643,15 +643,15 @@
                         }
                       </div>
                     @if (task.evidenceImages.length > 0 || task.evidenceVideos.length > 0) {
-                      <div class="border-t border-stone-100 p-3 bg-stone-50">
+                      <div class="border-t border-white/[0.06] p-3 bg-white/[0.03]">
                         <div class="flex items-center justify-between mb-2">
-                          <p class="text-xs font-semibold uppercase tracking-wide text-stone-500">Evidencias</p>
-                          <span class="text-xs text-stone-400">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
+                          <p class="text-xs font-semibold uppercase tracking-wide text-white/50">Evidencias</p>
+                          <span class="text-xs text-white/40">{{ task.evidenceImages.length + task.evidenceVideos.length }} archivo(s)</span>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                           @for (img of task.evidenceImages; track img) {
                             <button type="button" (click)="openLightbox(img, 'image')"
-                              class="group relative block rounded-lg overflow-hidden border border-stone-200 bg-white hover:border-brand-300 transition-colors aspect-[4/3]">
+                              class="group relative block rounded-lg overflow-hidden border border-white/10 bg-white/[0.04] hover:border-cyan-500/35 transition-colors aspect-[4/3]">
                               <img [src]="img" alt="Evidencia imagen"
                                 class="w-full h-full object-cover object-center"
                                 loading="lazy" />
@@ -662,7 +662,7 @@
                           }
                           @for (vid of task.evidenceVideos; track vid) {
                             <button type="button" (click)="openLightbox(vid, 'video')"
-                              class="group relative rounded-lg overflow-hidden border border-stone-200 bg-stone-900/80 hover:border-brand-300 transition-colors aspect-[4/3] w-full">
+                              class="group relative rounded-lg overflow-hidden border border-white/10 bg-stone-900/80 hover:border-cyan-500/35 transition-colors aspect-[4/3] w-full">
                               <video [src]="vid" class="absolute inset-0 w-full h-full object-cover object-center opacity-70" muted playsinline preload="metadata"></video>
                               <div class="absolute inset-0 flex items-center justify-center">
                                 <span class="flex h-10 w-10 items-center justify-center rounded-full bg-black/45 border border-white/30">
@@ -686,8 +686,8 @@
 
                 <!-- Error de accion -->
                 @if (actionError()) {
-                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p class="text-red-600 text-sm">{{ actionError() }}</p>
+                  <div class="bg-red-500/15 border border-red-500/25 rounded-lg p-3">
+                    <p class="text-red-400 text-sm">{{ actionError() }}</p>
                   </div>
                 }
 
@@ -701,7 +701,7 @@
                     </h4>
 
                     @if (canStartTask(task)) {
-                      <p class="text-sm text-stone-500 mb-3">¿Listo para comenzar esta tarea?</p>
+                      <p class="text-sm text-white/50 mb-3">¿Listo para comenzar esta tarea?</p>
                       <button (click)="quickStartTask(task)" [disabled]="startingTaskId() === task.id"
                         class="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -710,7 +710,7 @@
                     }
 
                     @if (canCompleteTask(task)) {
-                      <p class="text-sm text-stone-500 mb-3">La tarea está en progreso. ¿Deseas finalizarla?</p>
+                      <p class="text-sm text-white/50 mb-3">La tarea está en progreso. ¿Deseas finalizarla?</p>
                       <button (click)="askCompleteTask(task)" [disabled]="completingTaskId() === task.id"
                         class="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
                         @if (completingTaskId() === task.id) {
@@ -734,24 +734,24 @@
   }
 
   @if (processActionModalOpen()) {
-    <div class="fixed inset-0 z-[100] bg-stone-900/45 backdrop-blur-[1px] flex items-center justify-center p-4">
-      <div class="w-full max-w-md bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-stone-100 flex items-start justify-between gap-3">
+    <div class="fixed inset-0 z-[100] bg-black/45 backdrop-blur-[1px] flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-white/[0.06] flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-wide text-brand-600">Evidencia del proceso</p>
-            <h3 class="mt-1 text-base font-semibold text-stone-900">
+            <p class="text-xs font-semibold uppercase tracking-wide text-cyan-400">Evidencia del proceso</p>
+            <h3 class="mt-1 text-base font-semibold text-white">
               @if (processActionPendingFiles().length > 0) {
                 ¿Agregar más evidencia?
               } @else {
                 ¿Quieres agregar evidencia?
               }
             </h3>
-            <p class="mt-1 text-sm text-stone-500 line-clamp-2">{{ processActionTitle() }}</p>
+            <p class="mt-1 text-sm text-white/50 line-clamp-2">{{ processActionTitle() }}</p>
           </div>
           <button type="button"
             (click)="closeProcessActionModal()"
             [disabled]="processActionUploading()"
-            class="text-stone-400 hover:text-stone-700 disabled:opacity-40 transition-colors">
+            class="text-white/40 hover:text-white/80 disabled:opacity-40 transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -763,15 +763,15 @@
           <button type="button"
             (click)="openEvidenceFilePicker()"
             [disabled]="processActionUploading()"
-            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
-            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+            class="w-full flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-left hover:border-cyan-500/35 hover:bg-cyan-500/[0.05] transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center text-white/60">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
             </span>
             <span>
-              <span class="block text-sm font-semibold text-stone-900">Seleccionar archivo</span>
-              <span class="block text-xs text-stone-500">Sube una imagen desde tu dispositivo</span>
+              <span class="block text-sm font-semibold text-white">Seleccionar archivo</span>
+              <span class="block text-xs text-white/50">Sube una imagen desde tu dispositivo</span>
             </span>
           </button>
 
@@ -779,24 +779,24 @@
           <button type="button"
             (click)="openEvidenceCameraPicker()"
             [disabled]="processActionUploading()"
-            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
-            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+            class="w-full flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-left hover:border-cyan-500/35 hover:bg-cyan-500/[0.05] transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center text-white/60">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
             </span>
             <span>
-              <span class="block text-sm font-semibold text-stone-900">Tomar foto</span>
-              <span class="block text-xs text-stone-500">Captura una foto con tu cámara</span>
+              <span class="block text-sm font-semibold text-white">Tomar foto</span>
+              <span class="block text-xs text-white/50">Captura una foto con tu cámara</span>
             </span>
           </button>
 
           <!-- Visor de cámara (foto) -->
           @if (processActionCameraOpen()) {
-            <div class="rounded-xl border border-stone-200 p-3 bg-stone-50">
+            <div class="rounded-xl border border-white/10 p-3 bg-white/[0.02]">
               @if (processActionCameraStarting()) {
-                <div class="flex items-center justify-center gap-2 py-8 text-stone-500">
+                <div class="flex items-center justify-center gap-2 py-8 text-white/50">
                   <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -809,13 +809,13 @@
                   <button type="button"
                     (click)="takePhotoFromCamera()"
                     [disabled]="processActionUploading()"
-                    class="px-3 py-2 rounded-lg border border-brand-200 text-brand-700 text-xs font-semibold hover:bg-brand-50 disabled:opacity-50">
+                    class="px-3 py-2 rounded-lg border border-cyan-500/25 text-cyan-300 text-xs font-semibold hover:bg-cyan-500/[0.05] disabled:opacity-50">
                     Tomar foto
                   </button>
                   <button type="button"
                     (click)="closeCameraCapture()"
                     [disabled]="processActionUploading()"
-                    class="px-3 py-2 rounded-lg border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-100 disabled:opacity-50">
+                    class="px-3 py-2 rounded-lg border border-white/10 text-white/60 text-xs font-semibold hover:bg-white/[0.06] disabled:opacity-50">
                     Cerrar camara
                   </button>
                 </div>
@@ -827,31 +827,31 @@
           <button type="button"
             (click)="openEvidenceVideoPicker()"
             [disabled]="processActionUploading()"
-            class="w-full flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-left hover:border-brand-300 hover:bg-brand-50/40 transition-colors disabled:opacity-50">
-            <span class="w-9 h-9 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600">
+            class="w-full flex items-center gap-3 rounded-xl border border-white/10 px-4 py-3 text-left hover:border-cyan-500/35 hover:bg-cyan-500/[0.05] transition-colors disabled:opacity-50">
+            <span class="w-9 h-9 rounded-lg bg-white/[0.05] flex items-center justify-center text-white/60">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
               </svg>
             </span>
             <span>
-              <span class="block text-sm font-semibold text-stone-900">Subir video</span>
-              <span class="block text-xs text-stone-500">Selecciona un video desde tu dispositivo</span>
+              <span class="block text-sm font-semibold text-white">Subir video</span>
+              <span class="block text-xs text-white/50">Selecciona un video desde tu dispositivo</span>
             </span>
           </button>
 
           <!-- Galería de evidencias en cola -->
           @if (processActionPendingFiles().length > 0) {
-            <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
-              <p class="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wide">
+            <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+              <p class="text-xs font-semibold text-white/50 mb-2 uppercase tracking-wide">
                 En cola · {{ processActionPendingFiles().length }} archivo{{ processActionPendingFiles().length > 1 ? 's' : '' }}
               </p>
               <div class="flex flex-wrap gap-2">
                 @for (item of processActionPendingFiles(); track item.previewUrl; let i = $index) {
                   <div class="relative group">
                     @if (item.evidenceType === 'IMAGE') {
-                      <img [src]="item.previewUrl" alt="evidencia" class="w-16 h-16 rounded-lg object-cover border border-stone-200"/>
+                      <img [src]="item.previewUrl" alt="evidencia" class="w-16 h-16 rounded-lg object-cover border border-white/10"/>
                     } @else {
-                      <div class="w-16 h-16 rounded-lg bg-stone-200 border border-stone-300 flex items-center justify-center text-stone-500">
+                      <div class="w-16 h-16 rounded-lg bg-white/[0.08] border border-white/[0.15] flex items-center justify-center text-white/50">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                         </svg>
@@ -870,7 +870,7 @@
           <button type="button"
             (click)="chooseOnlyCheck()"
             [disabled]="processActionUploading()"
-            class="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50">
+            class="w-full flex items-center justify-center gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/15 px-4 py-3 text-emerald-400 hover:bg-emerald-500/15 transition-colors disabled:opacity-50">
             @if (processActionUploading()) {
               <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -891,7 +891,7 @@
           </button>
 
           @if (processActionError()) {
-            <p class="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p class="text-xs text-red-400 bg-red-500/15 border border-red-500/25 rounded-lg px-3 py-2">
               {{ processActionError() }}
             </p>
           }
@@ -905,22 +905,22 @@
 
   <!-- Modal justificación de procesos incompletos -->
   @if (justifyTask()) {
-    <div class="fixed inset-0 z-[110] bg-stone-900/50 backdrop-blur-[1px] flex items-center justify-center p-4">
-      <div class="w-full max-w-md bg-white rounded-2xl border border-stone-200 shadow-xl">
-        <div class="px-5 py-4 border-b border-stone-100">
+    <div class="fixed inset-0 z-[110] bg-black/50 backdrop-blur-[1px] flex items-center justify-center p-4">
+      <div class="w-full max-w-md bg-white/[0.04] border border-white/10 rounded-2xl">
+        <div class="px-5 py-4 border-b border-white/[0.06]">
           <div class="flex items-center justify-between mb-1">
-            <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Proceso incompleto</p>
-            <span class="text-xs text-stone-400 font-medium">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Proceso incompleto</p>
+            <span class="text-xs text-white/40 font-medium">
               {{ justifyIndex() + 1 }} de {{ justifySteps().length }}
             </span>
           </div>
-          <h3 class="text-base font-semibold text-stone-900">{{ justifySteps()[justifyIndex()].title }}</h3>
-          <p class="mt-1 text-xs text-stone-500">{{ justifyTask()!.title }}</p>
+          <h3 class="text-base font-semibold text-white">{{ justifySteps()[justifyIndex()].title }}</h3>
+          <p class="mt-1 text-xs text-white/50">{{ justifyTask()!.title }}</p>
         </div>
 
         <div class="px-5 py-4 space-y-3">
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1.5">
+            <label class="block text-sm font-medium text-white/70 mb-1.5">
               ¿Por qué no se completó este proceso?
             </label>
             <textarea
@@ -928,14 +928,14 @@
               (input)="justifyComment.set($any($event.target).value)"
               rows="4"
               placeholder="Describe brevemente el motivo..."
-              class="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-400 resize-none">
+              class="w-full rounded-xl border border-white/10 px-3 py-2 text-sm text-white placeholder-white/30 bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50 resize-none">
             </textarea>
           </div>
         </div>
 
         <div class="px-5 pb-5 flex gap-3">
           <button type="button" (click)="cancelJustify()"
-            class="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 text-sm font-semibold text-stone-600 hover:bg-stone-50 transition-colors">
+            class="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-sm font-semibold text-white/60 hover:bg-white/[0.04] transition-colors">
             Revisar tarea
           </button>
           <button type="button" (click)="nextJustify()"

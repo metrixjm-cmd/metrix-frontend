@@ -3,14 +3,14 @@
   <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <a routerLink="/banco-info"
-         class="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500 hover:text-stone-700">
+         class="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-white/50 hover:text-white/80">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Categorias</h1>
-        <p class="text-sm text-stone-500">Catalogo de categorias disponibles en el sistema</p>
+        <h1 class="text-2xl font-bold text-white">Categorias</h1>
+        <p class="text-sm text-white/50">Catalogo de categorias disponibles en el sistema</p>
       </div>
     </div>
 
@@ -27,7 +27,7 @@
   </div>
 
   @if (error()) {
-    <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+    <div class="p-3 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
       {{ error() }}
     </div>
   }
@@ -35,24 +35,24 @@
   @if (showCreateForm()) {
     <form [formGroup]="createForm"
           (ngSubmit)="submitCreate()"
-          class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-3">
-      <p class="text-sm font-medium text-emerald-800">Nueva categoria</p>
+          class="bg-emerald-500/15 border border-emerald-500/25 rounded-xl p-4 space-y-3">
+      <p class="text-sm font-medium text-emerald-300">Nueva categoria</p>
 
       <div>
-        <label class="block text-xs font-medium text-stone-600 mb-1">Nombre *</label>
+        <label class="block text-xs font-medium text-white/60 mb-1">Nombre *</label>
         <input formControlName="value"
                type="text"
                placeholder="Ej. Limpieza, Inventario, Apertura"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-emerald-500">
         @if (createForm.get('value')?.invalid && createForm.get('value')?.touched) {
-          <p class="text-xs text-red-600 mt-1">El nombre es obligatorio (min. 2 caracteres)</p>
+          <p class="text-xs text-red-400 mt-1">El nombre es obligatorio (min. 2 caracteres)</p>
         }
       </div>
 
       <div class="flex justify-end gap-2">
         <button type="button"
                 (click)="cancelCreate()"
-                class="px-3 py-1.5 text-sm text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
+                class="px-3 py-1.5 text-sm text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
           Cancelar
         </button>
         <button type="submit"
@@ -64,16 +64,16 @@
     </form>
   }
 
-  <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-    <div class="px-5 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-      <span class="text-sm font-medium text-stone-600">
+  <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+    <div class="px-5 py-3 bg-white/[0.02] border-b border-white/10 flex items-center justify-between">
+      <span class="text-sm font-medium text-white/60">
         {{ catalogSvc.categorias().length }} categoria(s) registrada(s)
       </span>
-      <span class="text-xs text-stone-400">Solo alta de categorias</span>
+      <span class="text-xs text-white/40">Solo alta de categorias</span>
     </div>
 
     @if (catalogSvc.categorias().length === 0) {
-      <div class="py-12 text-center text-stone-400">
+      <div class="py-12 text-center text-white/40">
         <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                 d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
@@ -82,7 +82,7 @@
         @if (isManager()) {
           <button type="button"
                   (click)="startCreate()"
-                  class="mt-3 text-sm text-emerald-600 hover:underline">
+                  class="mt-3 text-sm text-emerald-400 hover:underline">
             Agregar la primera
           </button>
         }
@@ -90,12 +90,12 @@
     }
 
     @for (entry of catalogSvc.categorias(); track entry.id) {
-      <div class="px-5 py-3 border-b border-stone-100 last:border-b-0 flex items-center gap-4">
-        <span class="font-mono text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded min-w-[3rem] text-center">
+      <div class="px-5 py-3 border-b border-white/[0.06] last:border-b-0 flex items-center gap-4">
+        <span class="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/15 px-2 py-1 rounded min-w-[3rem] text-center">
           {{ entry.value.substring(0, 3).toUpperCase() }}
         </span>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-stone-900 truncate">{{ entry.value }}</p>
+          <p class="text-sm font-medium text-white truncate">{{ entry.value }}</p>
         </div>
       </div>
     }

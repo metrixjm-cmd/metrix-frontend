@@ -1,10 +1,10 @@
-﻿<div class="p-4 md:p-6 space-y-5">
+<div class="p-4 md:p-6 space-y-5">
 
   <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <div class="flex items-center justify-between flex-wrap gap-3">
     <div>
-      <h1 class="text-2xl font-bold text-stone-900">Incidencias</h1>
-      <p class="text-sm text-stone-500 mt-0.5">Registro y seguimiento de incidencias operativas</p>
+      <h1 class="text-2xl font-bold text-white">Incidencias</h1>
+      <p class="text-sm text-white/50 mt-0.5">Registro y seguimiento de incidencias operativas</p>
     </div>
     <a routerLink="create"
        class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-lg hover:bg-brand-700 transition-colors">
@@ -17,21 +17,21 @@
 
   <!-- ── Contadores ─────────────────────────────────────────────────────── -->
   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <p class="text-xs text-stone-500 mb-1">Abiertas</p>
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+      <p class="text-xs text-white/50 mb-1">Abiertas</p>
       <p class="text-2xl font-bold text-red-600">{{ incidentSvc.openCount() }}</p>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <p class="text-xs text-stone-500 mb-1">En Resolución</p>
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+      <p class="text-xs text-white/50 mb-1">En Resolución</p>
       <p class="text-2xl font-bold text-blue-600">{{ incidentSvc.inResolutionCount() }}</p>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <p class="text-xs text-stone-500 mb-1">Cerradas</p>
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+      <p class="text-xs text-white/50 mb-1">Cerradas</p>
       <p class="text-2xl font-bold text-emerald-600">{{ incidentSvc.closedCount() }}</p>
     </div>
-    <div class="bg-white border border-red-200 rounded-xl p-4 bg-red-50">
-      <p class="text-xs text-stone-500 mb-1">Críticas Activas</p>
-      <p class="text-2xl font-bold text-red-700">{{ incidentSvc.criticalOpenCount() }}</p>
+    <div class="bg-white/[0.04] border border-red-500/25 rounded-xl p-4 bg-red-500/15">
+      <p class="text-xs text-white/50 mb-1">Críticas Activas</p>
+      <p class="text-2xl font-bold text-red-400">{{ incidentSvc.criticalOpenCount() }}</p>
     </div>
   </div>
 
@@ -40,7 +40,7 @@
     <select
       [value]="selectedSeverity()"
       (change)="selectedSeverity.set($any($event.target).value)"
-      class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+      class="border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
     >
       <option value="">Todas las severidades</option>
       <option value="BAJA">Baja</option>
@@ -52,16 +52,16 @@
 
   <!-- ── Loading ────────────────────────────────────────────────────────── -->
   @if (incidentSvc.loading()) {
-    <div class="bg-white border border-stone-200 rounded-xl p-6 space-y-3 animate-pulse">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-6 space-y-3 animate-pulse">
       @for (i of [1,2,3]; track i) {
-        <div class="h-16 bg-stone-100 rounded-lg"></div>
+        <div class="h-16 bg-white/[0.05] rounded-lg"></div>
       }
     </div>
   }
 
   <!-- ── Error ──────────────────────────────────────────────────────────── -->
   @if (incidentSvc.error()) {
-    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+    <div class="p-4 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
       {{ incidentSvc.error() }}
     </div>
   }
@@ -70,17 +70,17 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
 
     <!-- ══ SECCIÓN: ACTIVAS ═══════════════════════════════════════════════ -->
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
 
       <!-- Header acordeón -->
       <button type="button"
               (click)="showActive.set(!showActive())"
-              class="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-50 transition-colors">
+              class="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.04] transition-colors">
         <div class="flex items-center gap-3">
           <div class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></div>
-          <span class="text-sm font-semibold text-stone-800">Activas</span>
+          <span class="text-sm font-semibold text-white/80">Activas</span>
           <span class="inline-flex items-center justify-center min-w-[1.4rem] h-5 px-1.5 rounded-full text-xs font-bold
-                       bg-red-100 text-red-700">
+                       bg-red-500/15 text-red-400">
             {{ activeIncidents().length }}
           </span>
           @if (incidentSvc.criticalOpenCount() > 0) {
@@ -93,7 +93,7 @@
             </span>
           }
         </div>
-        <svg class="w-4 h-4 text-stone-400 transition-transform"
+        <svg class="w-4 h-4 text-white/40 transition-transform"
              [class.rotate-180]="showActive()"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -102,29 +102,29 @@
 
       @if (showActive()) {
         @if (activeIncidents().length === 0) {
-          <div class="py-10 text-center border-t border-stone-100">
-            <svg class="w-10 h-10 mx-auto text-stone-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="py-10 text-center border-t border-white/[0.06]">
+            <svg class="w-10 h-10 mx-auto text-white/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-stone-500 font-medium text-sm">Sin incidencias activas</p>
-            <p class="text-stone-400 text-xs mt-1">No hay incidencias abiertas ni en resolución.</p>
+            <p class="text-white/50 font-medium text-sm">Sin incidencias activas</p>
+            <p class="text-white/40 text-xs mt-1">No hay incidencias abiertas ni en resolución.</p>
           </div>
         } @else {
-          <div class="divide-y divide-stone-100 border-t border-stone-100 max-h-[520px] overflow-y-auto">
+          <div class="divide-y divide-white/[0.06] border-t border-white/[0.06] max-h-[520px] overflow-y-auto">
             @for (incident of activeIncidents(); track incident.id) {
               <div (click)="goToDetail(incident)"
-                   class="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 cursor-pointer transition-colors">
+                   class="flex items-start gap-4 px-5 py-4 hover:bg-white/[0.04] cursor-pointer transition-colors">
                 <div class="w-1 self-stretch rounded-full shrink-0 mt-1"
                   [class]="incident.severity === 'CRITICA' ? 'bg-red-500' :
                            incident.severity === 'ALTA'    ? 'bg-brand-500' :
-                           incident.severity === 'MEDIA'   ? 'bg-brand-400' : 'bg-stone-300'">
+                           incident.severity === 'MEDIA'   ? 'bg-brand-400' : 'bg-white/20'">
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-start justify-between gap-3 flex-wrap">
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-semibold text-stone-900 truncate">{{ incident.title }}</p>
-                      <p class="text-xs text-stone-500 mt-0.5 line-clamp-1">{{ incident.description }}</p>
+                      <p class="text-sm font-semibold text-white truncate">{{ incident.title }}</p>
+                      <p class="text-xs text-white/50 mt-0.5 line-clamp-1">{{ incident.description }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5 shrink-0">
                       <span [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + severityBadgeClass(incident.severity)">
@@ -135,33 +135,33 @@
                       </span>
                     </div>
                   </div>
-                  <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-stone-400">
+                  <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-white/40">
                     <span [class]="'px-1.5 py-0.5 rounded text-xs ' + categoryBadgeClass(incident.category)">
                       {{ categoryLabels[incident.category] }}
                     </span>
                     @if (incident.reporterRole) {
                       <span [class]="incident.reporterRole === 'GERENTE'
-                        ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700'
+                        ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-violet-500/20 text-violet-300'
                         : incident.reporterRole === 'ADMIN'
-                          ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-700'
-                          : 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-600'">
+                          ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300'
+                          : 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white/60'">
                         {{ incident.reporterRole === 'EJECUTADOR' ? 'Ejecutador' : incident.reporterRole === 'GERENTE' ? 'Gerente' : 'Admin' }}
                       </span>
                     }
-                    <span class="font-medium text-stone-600">{{ incident.reporterName }}</span>
+                    <span class="font-medium text-white/60">{{ incident.reporterName }}</span>
                     @if (incident.reporterPosition) {
-                      <span class="text-stone-300">·</span>
+                      <span class="text-white/30">·</span>
                       <span class="italic">{{ incident.reporterPosition }}</span>
                     }
-                    <span class="text-stone-300">·</span>
+                    <span class="text-white/30">·</span>
                     <span>{{ getStoreName(incident.storeId) }}</span>
-                    <span class="text-stone-300">·</span>
+                    <span class="text-white/30">·</span>
                     <span>{{ incident.shift }}</span>
-                    <span class="text-stone-300">·</span>
+                    <span class="text-white/30">·</span>
                     <span>{{ incident.createdAt | appDate:'relative' }}</span>
                   </div>
                 </div>
-                <svg class="w-4 h-4 text-stone-300 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-white/30 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
               </div>
@@ -173,21 +173,21 @@
     </div>
 
     <!-- ══ SECCIÓN: CERRADAS ══════════════════════════════════════════════ -->
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
 
       <!-- Header acordeón -->
       <button type="button"
               (click)="showClosed.set(!showClosed())"
-              class="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-50 transition-colors">
+              class="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.04] transition-colors">
         <div class="flex items-center gap-3">
           <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></div>
-          <span class="text-sm font-semibold text-stone-800">Cerradas</span>
+          <span class="text-sm font-semibold text-white/80">Cerradas</span>
           <span class="inline-flex items-center justify-center min-w-[1.4rem] h-5 px-1.5 rounded-full text-xs font-bold
-                       bg-emerald-100 text-emerald-700">
+                       bg-emerald-500/15 text-emerald-400">
             {{ closedIncidents().length }}
           </span>
         </div>
-        <svg class="w-4 h-4 text-stone-400 transition-transform"
+        <svg class="w-4 h-4 text-white/40 transition-transform"
              [class.rotate-180]="showClosed()"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -196,56 +196,56 @@
 
       @if (showClosed()) {
         @if (closedIncidents().length === 0) {
-          <div class="py-10 text-center border-t border-stone-100">
-            <svg class="w-10 h-10 mx-auto text-stone-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="py-10 text-center border-t border-white/[0.06]">
+            <svg class="w-10 h-10 mx-auto text-white/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                 d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
-            <p class="text-stone-500 font-medium text-sm">Sin incidencias cerradas</p>
-            <p class="text-stone-400 text-xs mt-1">El historial de incidencias resueltas aparecerá aquí.</p>
+            <p class="text-white/50 font-medium text-sm">Sin incidencias cerradas</p>
+            <p class="text-white/40 text-xs mt-1">El historial de incidencias resueltas aparecerá aquí.</p>
           </div>
         } @else {
-          <div class="divide-y divide-stone-100 border-t border-stone-100 max-h-[520px] overflow-y-auto">
+          <div class="divide-y divide-white/[0.06] border-t border-white/[0.06] max-h-[520px] overflow-y-auto">
             @for (incident of closedIncidents(); track incident.id) {
               <div (click)="goToDetail(incident)"
-                   class="flex items-start gap-4 px-5 py-4 hover:bg-stone-50 cursor-pointer transition-colors opacity-80 hover:opacity-100">
+                   class="flex items-start gap-4 px-5 py-4 hover:bg-white/[0.04] cursor-pointer transition-colors opacity-80 hover:opacity-100">
                 <div class="w-1 self-stretch rounded-full shrink-0 mt-1 bg-emerald-400"></div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-start justify-between gap-3 flex-wrap">
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm font-semibold text-stone-700 truncate">{{ incident.title }}</p>
-                      <p class="text-xs text-stone-400 mt-0.5 line-clamp-1">{{ incident.description }}</p>
+                      <p class="text-sm font-semibold text-white/70 truncate">{{ incident.title }}</p>
+                      <p class="text-xs text-white/40 mt-0.5 line-clamp-1">{{ incident.description }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5 shrink-0">
                       <span [class]="'px-2 py-0.5 rounded-full text-xs font-medium ' + severityBadgeClass(incident.severity)">
                         {{ severityLabels[incident.severity] }}
                       </span>
-                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                      <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400">
                         Cerrada
                       </span>
                     </div>
                   </div>
-                  <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-stone-400">
+                  <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-white/40">
                     <span [class]="'px-1.5 py-0.5 rounded text-xs ' + categoryBadgeClass(incident.category)">
                       {{ categoryLabels[incident.category] }}
                     </span>
                     @if (incident.reporterRole) {
                       <span [class]="incident.reporterRole === 'GERENTE'
-                        ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 text-violet-700'
+                        ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-violet-500/20 text-violet-300'
                         : incident.reporterRole === 'ADMIN'
-                          ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-700'
-                          : 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-stone-100 text-stone-600'">
+                          ? 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300'
+                          : 'px-1.5 py-0.5 rounded-full text-xs font-semibold bg-white/10 text-white/60'">
                         {{ incident.reporterRole === 'EJECUTADOR' ? 'Ejecutador' : incident.reporterRole === 'GERENTE' ? 'Gerente' : 'Admin' }}
                       </span>
                     }
-                    <span class="font-medium text-stone-600">{{ incident.reporterName }}</span>
+                    <span class="font-medium text-white/60">{{ incident.reporterName }}</span>
                     @if (incident.reporterPosition) {
-                      <span class="text-stone-300">·</span>
+                      <span class="text-white/30">·</span>
                       <span class="italic">{{ incident.reporterPosition }}</span>
                     }
-                    <span class="text-stone-300">·</span>
+                    <span class="text-white/30">·</span>
                     <span>{{ getStoreName(incident.storeId) }}</span>
-                    <span class="text-stone-300">·</span>
+                    <span class="text-white/30">·</span>
                     <span>{{ incident.shift }}</span>
                     @if (incident.closedByName) {
                       <span>·</span>
@@ -258,7 +258,7 @@
                     }
                   </div>
                 </div>
-                <svg class="w-4 h-4 text-stone-300 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 text-white/30 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
               </div>

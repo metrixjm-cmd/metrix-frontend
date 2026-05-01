@@ -3,16 +3,16 @@
   <div class="flex items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <a routerLink="/banco-info"
-         class="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500 hover:text-stone-700">
+         class="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-white/50 hover:text-white/80">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">
+        <h1 class="text-2xl font-bold text-white">
           @if (showForm() && !isEditing()) { Plantilla nueva } @else { Plantillas de tareas }
         </h1>
-        <p class="text-sm text-stone-500">
+        <p class="text-sm text-white/50">
           @if (showForm() && !isEditing()) { Crea una plantilla reutilizable para tareas } @else { Plantillas reutilizables para prellenar el alta de tareas }
         </p>
       </div>
@@ -31,7 +31,7 @@
   </div>
 
   @if (error()) {
-    <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+    <div class="p-3 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
       {{ error() }}
     </div>
   }
@@ -39,9 +39,9 @@
   @if (showForm()) {
     <form [formGroup]="form"
           (ngSubmit)="submit()"
-          class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-      <div class="px-5 py-4 bg-sky-50 border-b border-sky-100">
-        <p class="text-sm font-semibold text-sky-800">
+          class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+      <div class="px-5 py-4 bg-sky-500/[0.05] border-b border-sky-500/15">
+        <p class="text-sm font-semibold text-sky-400">
           @if (isEditing()) { Editar plantilla } @else { Datos de la plantilla }
         </p>
       </div>
@@ -49,46 +49,46 @@
       <div class="p-5 space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Titulo *</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Titulo *</label>
             <input formControlName="title"
                    type="text"
                    placeholder="Ej. Limpieza de zona de carga"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-sky-500">
             @if (hasError('title', 'required') || hasError('title', 'minlength')) {
-              <p class="text-xs text-red-600 mt-1">El titulo debe tener al menos 4 caracteres</p>
+              <p class="text-xs text-red-400 mt-1">El titulo debe tener al menos 4 caracteres</p>
             }
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Categoria *</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Categoria *</label>
             <select formControlName="category"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-sky-500">
               <option value="">Seleccionar categoria...</option>
               @for (cat of catalogSvc.categorias(); track cat.id) {
                 <option [value]="cat.value">{{ cat.label || cat.value }}</option>
               }
             </select>
             @if (hasError('category', 'required')) {
-              <p class="text-xs text-red-600 mt-1">La categoria es obligatoria</p>
+              <p class="text-xs text-red-400 mt-1">La categoria es obligatoria</p>
             }
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-stone-600 mb-1">Descripcion *</label>
+          <label class="block text-xs font-medium text-white/60 mb-1">Descripcion *</label>
           <textarea formControlName="description"
                     rows="3"
                     placeholder="Describe que se debe hacer cuando se use esta plantilla"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
           @if (hasError('description', 'required') || hasError('description', 'minlength')) {
-            <p class="text-xs text-red-600 mt-1">La descripcion debe tener al menos 10 caracteres</p>
+            <p class="text-xs text-red-400 mt-1">La descripcion debe tener al menos 10 caracteres</p>
           }
         </div>
 
-        <div class="border border-stone-200 rounded-xl overflow-hidden">
-          <div class="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-            <span class="text-sm font-medium text-stone-700">Checklist</span>
-            <span class="text-xs text-stone-400">{{ checklist().length }} paso(s)</span>
+        <div class="border border-white/10 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 bg-white/[0.02] border-b border-white/10 flex items-center justify-between">
+            <span class="text-sm font-medium text-white/70">Checklist</span>
+            <span class="text-xs text-white/40">{{ checklist().length }} paso(s)</span>
           </div>
 
           <div class="p-4 space-y-3">
@@ -98,7 +98,7 @@
                      (keydown.enter)="$event.preventDefault(); addChecklistStep()"
                      type="text"
                      placeholder="Agregar paso del checklist"
-                     class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                     class="flex-1 border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-sky-500">
               <button type="button"
                       (click)="addChecklistStep()"
                       class="px-3 py-2 text-sm font-medium bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors">
@@ -107,18 +107,18 @@
             </div>
 
             @if (checklist().length === 0) {
-              <p class="text-sm text-stone-400 text-center py-4">Sin pasos en el checklist.</p>
+              <p class="text-sm text-white/40 text-center py-4">Sin pasos en el checklist.</p>
             }
 
             @for (step of checklist(); track $index) {
-              <div class="flex items-center gap-3 rounded-lg border border-stone-200 px-3 py-2">
-                <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-700 text-xs font-bold flex items-center justify-center">
+              <div class="flex items-center gap-3 rounded-lg border border-white/10 px-3 py-2">
+                <span class="w-6 h-6 rounded-full bg-blue-500/15 text-blue-400 text-xs font-bold flex items-center justify-center">
                   {{ $index + 1 }}
                 </span>
-                <p class="flex-1 min-w-0 text-sm font-medium text-stone-800 truncate">{{ step.title }}</p>
+                <p class="flex-1 min-w-0 text-sm font-medium text-white/80 truncate">{{ step.title }}</p>
                 <button type="button"
                         (click)="moveChecklistStep($index, -1)"
-                        class="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                        class="p-1.5 text-white/40 hover:text-white/70 hover:bg-white/[0.06] rounded-lg transition-colors"
                         title="Subir">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
@@ -126,7 +126,7 @@
                 </button>
                 <button type="button"
                         (click)="moveChecklistStep($index, 1)"
-                        class="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                        class="p-1.5 text-white/40 hover:text-white/70 hover:bg-white/[0.06] rounded-lg transition-colors"
                         title="Bajar">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -134,7 +134,7 @@
                 </button>
                 <button type="button"
                         (click)="removeChecklistStep($index)"
-                        class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        class="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/15 rounded-lg transition-colors"
                         title="Quitar">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -146,18 +146,18 @@
         </div>
       </div>
 
-      <div class="px-5 py-4 bg-stone-50 border-t border-stone-200 flex justify-end gap-2">
+      <div class="px-5 py-4 bg-white/[0.02] border-t border-white/10 flex justify-end gap-2">
         @if (isEditing()) {
           <button type="button"
                   (click)="deleteEditingTemplate()"
                   [disabled]="saving()"
-                  class="px-3 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors">
+                  class="px-3 py-1.5 text-sm font-medium text-red-400 border border-red-500/25 rounded-lg hover:bg-red-500/15 disabled:opacity-50 transition-colors">
             Eliminar
           </button>
         }
         <button type="button"
                 (click)="cancelForm()"
-                class="px-3 py-1.5 text-sm text-stone-600 border border-stone-200 rounded-lg hover:bg-white transition-colors">
+                class="px-3 py-1.5 text-sm text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
           Cancelar
         </button>
         <button type="submit"
@@ -170,35 +170,35 @@
   }
 
   @if (viewingTemplate()) {
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-      <div class="px-5 py-4 bg-sky-50 border-b border-sky-100 flex items-center justify-between gap-3">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+      <div class="px-5 py-4 bg-sky-500/[0.05] border-b border-sky-500/15 flex items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-semibold text-sky-900">{{ viewingTemplate()!.title }}</h2>
-          <p class="text-xs text-sky-700 mt-0.5">{{ viewingTemplate()!.category }}</p>
+          <h2 class="text-sm font-semibold text-sky-400">{{ viewingTemplate()!.title }}</h2>
+          <p class="text-xs text-sky-300 mt-0.5">{{ viewingTemplate()!.category }}</p>
         </div>
         <button type="button"
                 (click)="closeView()"
-                class="px-3 py-1.5 text-sm text-stone-600 border border-stone-200 rounded-lg bg-white hover:bg-stone-50 transition-colors">
+                class="px-3 py-1.5 text-sm text-white/60 border border-white/10 rounded-lg bg-white/[0.04] hover:bg-white/[0.06] transition-colors">
           Cerrar
         </button>
       </div>
       <div class="p-5 space-y-4">
         <div>
-          <p class="text-xs font-medium text-stone-400 uppercase tracking-wide mb-1">Descripcion</p>
-          <p class="text-sm text-stone-700">{{ viewingTemplate()!.description }}</p>
+          <p class="text-xs font-medium text-white/40 uppercase tracking-wide mb-1">Descripcion</p>
+          <p class="text-sm text-white/70">{{ viewingTemplate()!.description }}</p>
         </div>
         <div>
-          <p class="text-xs font-medium text-stone-400 uppercase tracking-wide mb-2">Checklist</p>
+          <p class="text-xs font-medium text-white/40 uppercase tracking-wide mb-2">Checklist</p>
           @if (viewingTemplate()!.steps.length === 0) {
-            <p class="text-sm text-stone-400">Sin pasos.</p>
+            <p class="text-sm text-white/40">Sin pasos.</p>
           } @else {
             <div class="space-y-2">
               @for (step of viewingTemplate()!.steps; track $index) {
-                <div class="flex items-center gap-3 rounded-lg border border-stone-200 px-3 py-2">
-                  <span class="w-6 h-6 rounded-full bg-sky-100 text-sky-700 text-xs font-bold flex items-center justify-center">
+                <div class="flex items-center gap-3 rounded-lg border border-white/10 px-3 py-2">
+                  <span class="w-6 h-6 rounded-full bg-blue-500/15 text-blue-400 text-xs font-bold flex items-center justify-center">
                     {{ $index + 1 }}
                   </span>
-                  <span class="text-sm text-stone-800">{{ step.title }}</span>
+                  <span class="text-sm text-white/80">{{ step.title }}</span>
                 </div>
               }
             </div>
@@ -211,8 +211,8 @@
   @if (templateSvc.templates().length > 0 && !showForm()) {
     <div class="space-y-3">
       @for (template of templateSvc.templates(); track template.id) {
-        <div class="relative bg-white border border-stone-200 rounded-xl shadow-card px-5 py-4 flex items-start gap-4">
-          <div class="w-10 h-10 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+        <div class="relative bg-white/[0.04] border border-white/10 rounded-xl px-5 py-4 flex items-start gap-4">
+          <div class="w-10 h-10 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
@@ -221,21 +221,21 @@
 
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="text-sm font-semibold text-stone-900">{{ template.title }}</h3>
-              <span class="text-xs bg-stone-100 text-stone-600 rounded-full px-2 py-0.5">
+              <h3 class="text-sm font-semibold text-white">{{ template.title }}</h3>
+              <span class="text-xs bg-white/[0.05] text-white/60 rounded-full px-2 py-0.5">
                 {{ template.category }}
               </span>
-              <span class="text-xs bg-sky-50 text-sky-700 rounded-full px-2 py-0.5">
+              <span class="text-xs bg-blue-500/15 text-blue-400 rounded-full px-2 py-0.5">
                 {{ template.steps.length }} paso(s)
               </span>
             </div>
-            <p class="text-sm text-stone-500 mt-1">{{ template.description }}</p>
+            <p class="text-sm text-white/50 mt-1">{{ template.description }}</p>
             @if (template.steps.length > 0) {
               <div class="space-y-1.5 mt-3">
                 @for (step of template.steps; track $index) {
-                  <div class="flex items-start gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
-                    <span class="text-xs font-semibold text-sky-700 shrink-0">{{ $index + 1 }}.</span>
-                    <span class="text-xs text-stone-700 leading-relaxed break-words min-w-0">{{ step.title }}</span>
+                  <div class="flex items-start gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                    <span class="text-xs font-semibold text-sky-400 shrink-0">{{ $index + 1 }}.</span>
+                    <span class="text-xs text-white/70 leading-relaxed break-words min-w-0">{{ step.title }}</span>
                   </div>
                 }
               </div>
@@ -245,27 +245,27 @@
           <div class="flex items-center gap-2">
             <button type="button"
                     (click)="startView(template)"
-                    class="px-3 py-1.5 text-xs font-medium text-stone-700 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                    class="px-3 py-1.5 text-xs font-medium text-white/70 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
               Ver
             </button>
             <button type="button"
                     (click)="startEdit(template)"
-                    class="px-3 py-1.5 text-xs font-medium text-sky-700 border border-sky-200 rounded-lg hover:bg-sky-50 transition-colors">
+                    class="px-3 py-1.5 text-xs font-medium text-sky-400 border border-sky-500/25 rounded-lg hover:bg-blue-500/15 transition-colors">
               Editar
             </button>
             <button type="button"
                     (click)="confirmDelete(template.id)"
-                    class="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+                    class="px-3 py-1.5 text-xs font-medium text-red-400 border border-red-500/25 rounded-lg hover:bg-red-500/15 transition-colors">
               Eliminar
             </button>
           </div>
 
           @if (deletingId() === template.id) {
-            <div class="absolute left-5 right-5 top-full mt-2 flex items-center gap-3 bg-red-50 border border-red-100 rounded-lg p-3 z-10">
-              <p class="text-sm text-red-700 flex-1">Eliminar <strong>{{ template.title }}</strong>?</p>
+            <div class="absolute left-5 right-5 top-full mt-2 flex items-center gap-3 bg-red-500/15 border border-red-500/25 rounded-lg p-3 z-10">
+              <p class="text-sm text-red-400 flex-1">Eliminar <strong>{{ template.title }}</strong>?</p>
               <button type="button"
                       (click)="cancelDelete()"
-                      class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg bg-white hover:bg-stone-50 transition-colors">
+                      class="px-3 py-1 text-xs text-white/60 border border-white/10 rounded-lg bg-white/[0.04] hover:bg-white/[0.06] transition-colors">
                 Cancelar
               </button>
               <button type="button"

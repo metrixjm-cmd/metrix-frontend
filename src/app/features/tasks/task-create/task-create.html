@@ -3,14 +3,14 @@
   <!-- ── Éxito ──────────────────────────────────────────────────────────── -->
   @if (submitted()) {
     <div class="max-w-4xl mx-auto px-4 pt-12">
-      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-10 text-center shadow-card">
-        <div class="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="bg-emerald-500/15 border border-emerald-500/25 rounded-xl p-10 text-center">
+        <div class="w-14 h-14 bg-emerald-500/15 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 class="text-xl font-bold text-stone-900 mb-2">¡Tarea creada exitosamente!</h2>
-        <p class="text-stone-500 text-sm mb-6">La tarea ha sido asignada y está lista para ejecutarse.</p>
+        <h2 class="text-xl font-bold text-white mb-2">¡Tarea creada exitosamente!</h2>
+        <p class="text-white/50 text-sm mb-6">La tarea ha sido asignada y está lista para ejecutarse.</p>
         <div class="flex justify-center gap-3">
           <app-button variant="primary" (click)="resetForNewTask()">Crear otra tarea</app-button>
           <app-button variant="secondary" (click)="goToList()">Ver lista de tareas</app-button>
@@ -22,26 +22,97 @@
   @if (!submitted()) {
 
     <!-- ── Header sticky ──────────────────────────────────────────────── -->
-    <header class="sticky top-0 z-10 bg-white border-b border-stone-200 shadow-sm">
+    <header class="sticky top-0 z-10 bg-white/[0.04] border-b border-white/10">
       <div class="max-w-4xl mx-auto px-4 py-4">
         <div class="flex items-center gap-3">
           <button (click)="goToList()" type="button"
-            class="p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors shrink-0">
+            class="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
           <div>
-            <div class="flex items-center gap-2 text-sm text-stone-400">
+            <div class="flex items-center gap-2 text-sm text-white/40">
               <span>Tareas</span>
               <span>/</span>
-              <span class="text-brand-600 font-medium">Nueva Tarea</span>
+              <span class="text-cyan-400 font-medium">Nueva Tarea</span>
             </div>
-            <h1 class="text-xl font-semibold text-stone-900">Asignar Nueva Tarea</h1>
+            <h1 class="text-xl font-semibold text-white">Asignar Nueva Tarea</h1>
           </div>
         </div>
       </div>
     </header>
+
+    <!-- ── Indicador de progreso ──────────────────────────────────────── -->
+    <div class="max-w-4xl mx-auto px-4 pt-6">
+      <div class="flex items-center mb-6">
+
+        <!-- Paso 1: Tarea -->
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
+               [class]="step1Done()
+                 ? 'bg-emerald-500 text-white ring-emerald-100'
+                 : 'bg-brand-600 text-white ring-brand-100'">
+            @if (step1Done()) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            } @else { 1 }
+          </div>
+          <span class="text-xs font-semibold hidden sm:block transition-colors"
+                [class]="step1Done() ? 'text-emerald-600' : 'text-brand-600'">Tarea</span>
+        </div>
+
+        <!-- Conector 1→2 -->
+        <div class="flex-1 h-1 mx-2 rounded-full transition-all duration-500"
+             [class]="step1Done() ? 'bg-emerald-400' : 'bg-white/[0.08]'"></div>
+
+        <!-- Paso 2: Responsables -->
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
+               [class]="step2Done()
+                 ? 'bg-emerald-500 text-white ring-emerald-100'
+                 : step1Done()
+                   ? 'bg-brand-600 text-white ring-brand-100'
+                   : 'bg-white/[0.08] text-white/40 ring-white/[0.02]'">
+            @if (step2Done()) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            } @else { 2 }
+          </div>
+          <span class="text-xs font-semibold hidden sm:block transition-colors"
+                [class]="step2Done() ? 'text-emerald-600' : step1Done() ? 'text-brand-600' : 'text-white/40'">
+            Responsables
+          </span>
+        </div>
+
+        <!-- Conector 2→3 -->
+        <div class="flex-1 h-1 mx-2 rounded-full transition-all duration-500"
+             [class]="step2Done() ? 'bg-emerald-400' : 'bg-white/[0.08]'"></div>
+
+        <!-- Paso 3: Ejecución -->
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ring-4"
+               [class]="step3Done()
+                 ? 'bg-emerald-500 text-white ring-emerald-100'
+                 : step2Done()
+                   ? 'bg-brand-600 text-white ring-brand-100'
+                   : 'bg-white/[0.08] text-white/40 ring-white/[0.02]'">
+            @if (step3Done()) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            } @else { 3 }
+          </div>
+          <span class="text-xs font-semibold hidden sm:block transition-colors"
+                [class]="step3Done() ? 'text-emerald-600' : step2Done() ? 'text-brand-600' : 'text-white/40'">
+            Ejecución
+          </span>
+        </div>
+
+      </div>
+    </div>
 
     <!-- ── Contenido del formulario ───────────────────────────────────── -->
     <main class="max-w-4xl mx-auto px-4 pb-28">
@@ -49,11 +120,11 @@
 
         <!-- Error global -->
         @if (submitError()) {
-          <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 flex items-start gap-3">
+          <div class="bg-red-500/15 border border-red-500/25 rounded-xl p-4 mb-4 flex items-start gap-3">
             <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-red-600 text-sm">{{ submitError() }}</p>
+            <p class="text-red-400 text-sm">{{ submitError() }}</p>
           </div>
         }
 
@@ -61,12 +132,12 @@
              SECCIÓN 1 — TAREA
              Qué es la tarea: título, descripción, categoría, criticidad, checklist
         ═══════════════════════════════════════════════════════════════ -->
-        <div class="rounded-xl border shadow-sm mb-4 overflow-hidden transition-all duration-200"
-             [class]="step1Done() ? 'border-emerald-200 bg-white' : 'border-brand-200 bg-white'">
+        <div class="rounded-xl border mb-4 overflow-hidden transition-all duration-200"
+             [class]="step1Done() ? 'border-emerald-200 bg-white/[0.04]' : 'border-cyan-500/25 bg-white/[0.04]'">
 
           <button type="button" (click)="toggleSection('definition')"
                   class="w-full flex items-center justify-between p-4 transition-colors"
-                  [class]="step1Done() ? 'hover:bg-emerald-50/50' : 'hover:bg-brand-50/40'">
+                  [class]="step1Done() ? 'hover:bg-emerald-50/50' : 'hover:bg-cyan-500/[0.05]'">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300"
                    [class]="step1Done() ? 'bg-emerald-100' : 'bg-brand-600/10'">
@@ -83,27 +154,27 @@
               </div>
               <div class="text-left">
                 <div class="flex items-center gap-2">
-                  <h2 class="font-semibold text-stone-900">Tarea</h2>
+                  <h2 class="font-semibold text-white">Tarea</h2>
                   @if (step1Done()) {
                     <span class="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Completo</span>
                   }
                 </div>
-                <p class="text-sm text-stone-500">Título, descripción, categoría y checklist</p>
+                <p class="text-sm text-white/50">Título, descripción, categoría y checklist</p>
               </div>
             </div>
-            <svg class="w-5 h-5 text-stone-400 transition-transform" [class.rotate-180]="sectionOpen().definition"
+            <svg class="w-5 h-5 text-white/40 transition-transform" [class.rotate-180]="sectionOpen().definition"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
           @if (sectionOpen().definition) {
-            <div class="px-4 pb-6 space-y-5 border-t border-stone-100 pt-4">
+            <div class="px-4 pb-6 space-y-5 border-t border-white/[0.06] pt-4">
 
               <div class="flex justify-end">
                 <button type="button"
                         (click)="loadTaskTemplatePicker()"
-                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-brand-700 border border-brand-200 rounded-lg hover:bg-brand-50 transition-colors">
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg hover:bg-cyan-500/[0.05] transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -114,37 +185,37 @@
 
               <!-- Título con combobox de categorias -->
               <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                <label class="block text-sm font-medium text-white/70 mb-1.5">
                   Título <span class="text-red-500">*</span>
-                  <span class="ml-2 text-xs font-normal text-stone-400">Escribe manualmente o usa "Cargar una plantilla de tarea"</span>
+                  <span class="ml-2 text-xs font-normal text-white/40">Escribe manualmente o usa "Cargar una plantilla de tarea"</span>
                 </label>
 
                 @if (selectedTemplate()) {
-                  <div class="flex items-center gap-2 mb-2 px-3 py-2 bg-brand-50 border border-brand-200 rounded-lg">
-                    <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="flex items-center gap-2 mb-2 px-3 py-2 bg-cyan-500/[0.05] border border-cyan-500/25 rounded-lg">
+                    <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
-                    <span class="text-xs text-brand-700 font-medium flex-1">
+                    <span class="text-xs text-cyan-300 font-medium flex-1">
                       Tomado de categorias · {{ selectedTemplate()!.title }}
                       @if ((selectedTemplate()!.media?.length ?? 0) > 0) {
                         · {{ selectedTemplate()!.media!.length }} multimedia
                       }
                     </span>
                     <button type="button" (click)="clearTemplate()"
-                      class="text-brand-400 hover:text-brand-700 transition-colors" title="Volver a modo manual">
+                      class="text-cyan-400 hover:text-cyan-300 transition-colors" title="Volver a modo manual">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                       </svg>
                     </button>
                   </div>
                   @if ((selectedTemplate()!.media?.length ?? 0) > 0) {
-                    <div class="mb-2 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
-                      <p class="text-xs font-medium text-stone-500 mb-1">Contenido multimedia de categorias</p>
+                    <div class="mb-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2">
+                      <p class="text-xs font-medium text-white/50 mb-1">Contenido multimedia de categorias</p>
                       <div class="flex flex-wrap gap-2">
                         @for (media of selectedTemplate()!.media; track media.url) {
                           <a [href]="media.url" target="_blank" rel="noopener"
-                             class="inline-flex items-center gap-1.5 rounded-full bg-white border border-stone-200 px-2 py-1 text-xs text-stone-600 hover:text-brand-700 hover:border-brand-300 transition-colors">
+                             class="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] border border-white/10 px-2 py-1 text-xs text-white/60 hover:text-cyan-300 hover:border-cyan-500/35 transition-colors">
                             <span>{{ media.type }}</span>
                             <span>{{ media.title || media.url }}</span>
                           </a>
@@ -167,7 +238,7 @@
                       autocomplete="off" />
                     @if (templateSearching()) {
                       <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg class="w-4 h-4 text-stone-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-white/40 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                         </svg>
@@ -175,7 +246,7 @@
                     }
                     @if (!templateSearching() && form.get('title')?.value) {
                       <div class="absolute right-3 top-1/2 -translate-y-1/2">
-                        <svg class="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
                         </svg>
                       </div>
@@ -183,14 +254,14 @@
                   </div>
 
                   @if (templateDropdownOpen() && templateResults().length > 0) {
-                    <div class="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg overflow-hidden max-h-72 overflow-y-auto">
-                      <div class="px-3 py-2 border-b border-stone-100 bg-stone-50 flex items-center justify-between">
-                        <span class="text-xs font-medium text-stone-500">Categorias</span>
-                        <span class="text-xs text-stone-400">{{ templateResults().length }} resultados</span>
+                    <div class="absolute z-50 w-full mt-1 bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+                      <div class="px-3 py-2 border-b border-white/[0.06] bg-white/[0.03] flex items-center justify-between">
+                        <span class="text-xs font-medium text-white/50">Categorias</span>
+                        <span class="text-xs text-white/40">{{ templateResults().length }} resultados</span>
                       </div>
                       @for (tpl of templateResults(); track tpl.id) {
                         <button type="button" (mousedown)="selectTemplate(tpl)"
-                          class="w-full text-left px-4 py-3 hover:bg-brand-50 border-b border-stone-50 last:border-0 transition-colors group">
+                          class="w-full text-left px-4 py-3 hover:bg-cyan-500/[0.05] border-b border-white/[0.04] last:border-0 transition-colors group">
                           <div class="flex items-start gap-3">
                             <div class="w-7 h-7 rounded-lg bg-brand-600/10 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-brand-600/20 transition-colors">
                               <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,33 +270,33 @@
                               </svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium text-stone-900 truncate">{{ tpl.title }}</p>
+                              <p class="text-sm font-medium text-white truncate">{{ tpl.title }}</p>
                               @if (tpl.description) {
-                                <p class="text-xs text-stone-400 mt-0.5 line-clamp-1">{{ tpl.description }}</p>
+                                <p class="text-xs text-white/40 mt-0.5 line-clamp-1">{{ tpl.description }}</p>
                               }
                               <div class="flex items-center gap-2 mt-1">
                                 @if (tpl.category) {
-                                  <span class="inline-flex items-center text-xs text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded font-medium">
+                                  <span class="inline-flex items-center text-xs text-cyan-400 bg-cyan-500/[0.05] px-1.5 py-0.5 rounded font-medium">
                                     {{ tpl.category }}
                                   </span>
                                 }
                                 @if (tpl.steps && tpl.steps.length > 0) {
-                                  <span class="text-xs text-stone-400">{{ tpl.steps.length }} pasos</span>
+                                  <span class="text-xs text-white/40">{{ tpl.steps.length }} pasos</span>
                                 }
                                 @if (tpl.media && tpl.media.length > 0) {
-                                  <span class="text-xs text-stone-400">{{ tpl.media.length }} multimedia</span>
+                                  <span class="text-xs text-white/40">{{ tpl.media.length }} multimedia</span>
                                 }
                               </div>
                             </div>
-                            <svg class="w-4 h-4 text-stone-300 group-hover:text-brand-500 shrink-0 mt-1 transition-colors"
+                            <svg class="w-4 h-4 text-white/30 group-hover:text-cyan-400 shrink-0 mt-1 transition-colors"
                                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                           </div>
                         </button>
                       }
-                      <div class="px-4 py-2.5 bg-stone-50 border-t border-stone-100">
-                        <p class="text-xs text-stone-400 text-center">
+                      <div class="px-4 py-2.5 bg-white/[0.02] border-t border-white/[0.06]">
+                        <p class="text-xs text-white/40 text-center">
                           O continúa escribiendo para crear una tarea nueva sin usar categorias
                         </p>
                       </div>
@@ -233,9 +304,9 @@
                   }
 
                   @if (templateDropdownOpen() && !templateSearching() && templateResults().length === 0 && (form.get('title')?.value?.length ?? 0) >= 1) {
-                    <div class="absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg overflow-hidden">
+                    <div class="absolute z-50 w-full mt-1 bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
                       <div class="px-4 py-3 text-center">
-                        <p class="text-xs text-stone-400">Sin coincidencias en categorias. Continúa escribiendo para crear manualmente.</p>
+                        <p class="text-xs text-white/40">Sin coincidencias en categorias. Continúa escribiendo para crear manualmente.</p>
                       </div>
                     </div>
                   }
@@ -248,7 +319,7 @@
 
               <!-- Descripción -->
               <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                <label class="block text-sm font-medium text-white/70 mb-1.5">
                   Descripción <span class="text-red-500">*</span>
                 </label>
                 <textarea formControlName="description" rows="4"
@@ -283,7 +354,7 @@
               <!-- Categoría + Crítica -->
               <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                  <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label class="block text-sm font-medium text-white/70 mb-1.5">
                     Categoría <span class="text-red-500">*</span>
                   </label>
                   <div class="flex gap-2">
@@ -295,7 +366,7 @@
                       }
                     </select>
                     <button type="button" (click)="categoriaDialogOpen.set(true)"
-                      class="h-11 w-11 shrink-0 flex items-center justify-center border border-stone-300 rounded-lg text-stone-500 hover:text-brand-600 hover:border-brand-300 transition-colors">
+                      class="h-11 w-11 shrink-0 flex items-center justify-center border border-white/[0.15] rounded-lg text-white/50 hover:text-cyan-400 hover:border-cyan-500/35 transition-colors">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                       </svg>
@@ -309,17 +380,17 @@
                 <div class="flex items-center sm:pt-7">
                   <label (click)="form.get('isCritical')?.setValue(!form.get('isCritical')?.value)"
                     class="flex items-center gap-3 px-4 py-2.5 rounded-lg border-2 cursor-pointer transition-all"
-                    [class]="form.get('isCritical')?.value ? 'border-red-400 bg-red-50' : 'border-stone-200 hover:border-stone-300'">
+                    [class]="form.get('isCritical')?.value ? 'border-red-400 bg-red-500/15' : 'border-white/10 hover:border-white/[0.15]'">
                     <input type="checkbox" formControlName="isCritical"
-                           class="w-4 h-4 rounded border-stone-300 text-red-600 focus:ring-red-500" />
+                           class="w-4 h-4 rounded border-white/[0.15] text-red-600 focus:ring-red-500" />
                     <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4" [class]="form.get('isCritical')?.value ? 'text-red-500' : 'text-stone-400'"
+                      <svg class="w-4 h-4" [class]="form.get('isCritical')?.value ? 'text-red-500' : 'text-white/40'"
                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                       </svg>
                       <span class="text-sm font-medium"
-                            [class]="form.get('isCritical')?.value ? 'text-red-700' : 'text-stone-700'">
+                            [class]="form.get('isCritical')?.value ? 'text-red-400' : 'text-white/70'">
                         Tarea Crítica
                       </span>
                     </div>
@@ -330,8 +401,8 @@
               <!-- Checklist / Procesos -->
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                  <label class="text-sm font-medium text-stone-700">Checklist de pasos</label>
-                  <span class="text-xs font-medium text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">
+                  <label class="text-sm font-medium text-white/70">Checklist de pasos</label>
+                  <span class="text-xs font-medium text-white/40 bg-white/[0.05] px-2 py-0.5 rounded-full">
                     {{ processSteps().length }} pasos
                   </span>
                 </div>
@@ -352,16 +423,16 @@
                 @if (processSteps().length > 0) {
                   <div class="space-y-2">
                     @for (step of processSteps(); track $index; let i = $index) {
-                      <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg border border-stone-200 group hover:border-brand-300 transition-colors">
-                        <svg class="w-4 h-4 text-stone-300 cursor-grab shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div class="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg border border-white/10 group hover:border-cyan-500/35 transition-colors">
+                        <svg class="w-4 h-4 text-white/30 cursor-grab shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
                         </svg>
                         <span class="w-6 h-6 rounded-full bg-brand-600/10 text-brand-600 text-xs font-medium flex items-center justify-center shrink-0">
                           {{ i + 1 }}
                         </span>
-                        <span class="flex-1 text-sm text-stone-800">{{ step.title }}</span>
+                        <span class="flex-1 text-sm text-white/80">{{ step.title }}</span>
                         <button type="button" (click)="removeProcessStep(i)"
-                          class="p-1.5 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all rounded">
+                          class="p-1.5 text-white/30 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all rounded">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -371,12 +442,12 @@
                     }
                   </div>
                 } @else {
-                  <div class="text-center py-8 bg-stone-50 rounded-lg border-2 border-dashed border-stone-200">
-                    <svg class="w-8 h-8 text-stone-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div class="text-center py-8 bg-white/[0.02] rounded-lg border-2 border-dashed border-white/10">
+                    <svg class="w-8 h-8 text-white/30 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
-                    <p class="text-sm text-stone-400">Sin pasos. Agrega un checklist para estructurar la tarea.</p>
+                    <p class="text-sm text-white/40">Sin pasos. Agrega un checklist para estructurar la tarea.</p>
                   </div>
                 }
               </div>
@@ -389,21 +460,21 @@
              SECCIÓN 2 — RESPONSABLES
              Quién ejecuta y dónde: sucursal y colaboradores asignados
         ═══════════════════════════════════════════════════════════════ -->
-        <div class="rounded-xl border shadow-sm mb-4 overflow-hidden transition-all duration-200"
-             [class]="step2Done() ? 'border-emerald-200 bg-white' : step1Done() ? 'border-brand-200 bg-white' : 'border-stone-200 bg-stone-50/50'">
+        <div class="rounded-xl border mb-4 overflow-hidden transition-all duration-200"
+             [class]="step2Done() ? 'border-emerald-200 bg-white/[0.04]' : step1Done() ? 'border-cyan-500/25 bg-white/[0.04]' : 'border-white/10 bg-white/[0.02]'">
 
           <button type="button" (click)="toggleSection('assignment')"
                   class="w-full flex items-center justify-between p-4 transition-colors"
-                  [class]="step2Done() ? 'hover:bg-emerald-50/50' : step1Done() ? 'hover:bg-brand-50/40' : 'hover:bg-stone-100/60'">
+                  [class]="step2Done() ? 'hover:bg-emerald-50/50' : step1Done() ? 'hover:bg-cyan-500/[0.05]' : 'hover:bg-white/[0.06]'">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300"
-                   [class]="step2Done() ? 'bg-emerald-100' : step1Done() ? 'bg-brand-600/10' : 'bg-stone-200'">
+                   [class]="step2Done() ? 'bg-emerald-100' : step1Done() ? 'bg-brand-600/10' : 'bg-white/[0.08]'">
                 @if (step2Done()) {
                   <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
                 } @else {
-                  <svg class="w-5 h-5 transition-colors" [class]="step1Done() ? 'text-brand-600' : 'text-stone-400'"
+                  <svg class="w-5 h-5 transition-colors" [class]="step1Done() ? 'text-brand-600' : 'text-white/40'"
                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -413,38 +484,38 @@
               <div class="text-left">
                 <div class="flex items-center gap-2">
                   <h2 class="font-semibold transition-colors"
-                      [class]="step1Done() ? 'text-stone-900' : 'text-stone-400'">Responsables</h2>
+                      [class]="step1Done() ? 'text-white' : 'text-white/40'">Responsables</h2>
                   @if (step2Done()) {
                     <span class="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Completo</span>
                   }
                 </div>
-                <p class="text-sm text-stone-500">Sucursal y colaboradores que ejecutan la tarea</p>
+                <p class="text-sm text-white/50">Sucursal y colaboradores que ejecutan la tarea</p>
               </div>
             </div>
-            <svg class="w-5 h-5 text-stone-400 transition-transform" [class.rotate-180]="sectionOpen().assignment"
+            <svg class="w-5 h-5 text-white/40 transition-transform" [class.rotate-180]="sectionOpen().assignment"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
           @if (sectionOpen().assignment) {
-            <div class="px-4 pb-6 space-y-5 border-t border-stone-100 pt-4">
+            <div class="px-4 pb-6 space-y-5 border-t border-white/[0.06] pt-4">
 
               <!-- Banner informativo de rol -->
-              <div class="flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-200">
+              <div class="flex items-start gap-3 p-4 bg-amber-500/15 rounded-lg border border-amber-200">
                 <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <p class="text-sm text-amber-800">
+                <p class="text-sm text-amber-400">
                   Solo puedes asignar tareas a <strong>{{ targetRoleLabel() }}s</strong>. Puedes seleccionar uno o varios.
                 </p>
               </div>
 
               <!-- Sucursal -->
               <div>
-                <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center gap-1.5">
-                  <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <label class="text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                  <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                   </svg>
@@ -461,7 +532,7 @@
                   </select>
                 } @else {
                   <input type="hidden" formControlName="storeId" />
-                  <div class="input-field h-11 flex items-center bg-stone-50 text-stone-600 text-sm cursor-not-allowed">
+                  <div class="input-field h-11 flex items-center bg-white/[0.02] text-white/60 text-sm cursor-not-allowed">
                     {{ currentStoreName() }}
                   </div>
                 }
@@ -470,9 +541,9 @@
 
               <!-- Colaboradores -->
               <div>
-                <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center justify-between">
+                <label class="text-sm font-medium text-white/70 mb-1.5 flex items-center justify-between">
                   <span class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
@@ -480,14 +551,14 @@
                   </span>
                   @if (filteredUsers().length > 0) {
                     <button type="button" (click)="selectAllUsers()"
-                            class="text-xs text-brand-600 hover:text-brand-700 font-medium">
+                            class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">
                       Seleccionar todos
                     </button>
                   }
                 </label>
 
                 @if (rhSvc.loading()) {
-                  <div class="input-field h-11 flex items-center bg-stone-50 text-stone-400 text-sm gap-2">
+                  <div class="input-field h-11 flex items-center bg-white/[0.02] text-white/40 text-sm gap-2">
                     <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -495,22 +566,22 @@
                     Cargando...
                   </div>
                 } @else if (!form.get('storeId')?.value && isAdmin()) {
-                  <div class="input-field h-11 flex items-center bg-stone-50 text-stone-400 text-sm">
+                  <div class="input-field h-11 flex items-center bg-white/[0.02] text-white/40 text-sm">
                     Primero selecciona una sucursal
                   </div>
                 } @else {
-                  <div class="space-y-2 mt-2 max-h-48 overflow-y-auto p-2 border border-stone-200 rounded-lg">
+                  <div class="space-y-2 mt-2 max-h-48 overflow-y-auto p-2 border border-white/10 rounded-lg">
                     @for (user of filteredUsers(); track user.id) {
-                      <label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded cursor-pointer">
+                      <label class="flex items-center gap-3 p-2 hover:bg-white/[0.04] rounded cursor-pointer">
                         <input type="checkbox" [value]="user.id"
                                (change)="toggleUser(user.id)"
                                [checked]="isUserSelected(user.id)"
-                               class="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500" />
-                        <span class="text-sm text-stone-700">{{ user.nombre }} — {{ user.puesto }} ({{ user.numeroUsuario }})</span>
+                               class="w-4 h-4 text-brand-600 rounded border-white/[0.15] focus:ring-cyan-500/40" />
+                        <span class="text-sm text-white/70">{{ user.nombre }} — {{ user.puesto }} ({{ user.numeroUsuario }})</span>
                       </label>
                     }
                     @if (filteredUsers().length === 0) {
-                      <p class="text-stone-500 text-sm text-center py-2">
+                      <p class="text-white/50 text-sm text-center py-2">
                         No hay {{ targetRoleLabel() | lowercase }}s activos en esta sucursal.
                       </p>
                     }
@@ -529,52 +600,62 @@
              SECCIÓN 3 — EJECUCIÓN
              Cuándo y cómo: recurrencia, días, horarios y fechas de inicio/límite
         ═══════════════════════════════════════════════════════════════ -->
-        <div class="rounded-xl border shadow-sm mb-4 overflow-hidden transition-all duration-200"
-             [class]="step2Done() ? 'border-stone-200 bg-white' : 'border-stone-200 bg-stone-50/50'">
+        <div class="rounded-xl border mb-4 overflow-hidden transition-all duration-200"
+             [class]="step3Done() ? 'border-emerald-200 bg-white/[0.04]' : step2Done() ? 'border-cyan-500/25 bg-white/[0.04]' : 'border-white/10 bg-white/[0.02]'">
 
           <button type="button" (click)="toggleSection('scheduling')"
                   class="w-full flex items-center justify-between p-4 transition-colors"
-                  [class]="step2Done() ? 'hover:bg-stone-50' : 'hover:bg-stone-100/60'">
+                  [class]="step3Done() ? 'hover:bg-emerald-50/50' : step2Done() ? 'hover:bg-cyan-500/[0.05]' : 'hover:bg-white/[0.06]'">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300"
-                   [class]="step2Done() ? 'bg-stone-100' : 'bg-stone-200'">
-                <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+                   [class]="step3Done() ? 'bg-emerald-100' : step2Done() ? 'bg-brand-600/10' : 'bg-white/[0.08]'">
+                @if (step3Done()) {
+                  <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                } @else {
+                  <svg class="w-5 h-5 transition-colors" [class]="step2Done() ? 'text-brand-600' : 'text-white/40'"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                }
               </div>
               <div class="text-left">
                 <div class="flex items-center gap-2">
                   <h2 class="font-semibold transition-colors"
-                      [class]="step2Done() ? 'text-stone-900' : 'text-stone-400'">Ejecución</h2>
+                      [class]="step2Done() ? 'text-white' : 'text-white/40'">Ejecución</h2>
+                  @if (step3Done()) {
+                    <span class="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Completo</span>
+                  }
                 </div>
-                <p class="text-sm text-stone-500">Fechas, horarios y recurrencia</p>
+                <p class="text-sm text-white/50">Fechas, horarios y recurrencia</p>
               </div>
             </div>
-            <svg class="w-5 h-5 text-stone-400 transition-transform" [class.rotate-180]="sectionOpen().scheduling"
+            <svg class="w-5 h-5 text-white/40 transition-transform" [class.rotate-180]="sectionOpen().scheduling"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
           @if (sectionOpen().scheduling) {
-            <div class="px-4 pb-6 space-y-5 border-t border-stone-100 pt-4">
+            <div class="px-4 pb-6 space-y-5 border-t border-white/[0.06] pt-4">
 
               <!-- Toggle: tarea repetitiva -->
               <div class="flex items-center justify-between p-4 rounded-lg border-2 transition-all"
-                   [class]="isRecurring() ? 'border-stone-300 bg-stone-50' : 'border-stone-200'">
+                   [class]="isRecurring() ? 'border-brand-400 bg-cyan-500/[0.05]' : 'border-white/10'">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-                       [class]="isRecurring() ? 'bg-stone-700' : 'bg-stone-200'">
-                    <svg class="w-5 h-5" [class]="isRecurring() ? 'text-white' : 'text-stone-500'"
+                       [class]="isRecurring() ? 'bg-brand-600' : 'bg-white/[0.08]'">
+                    <svg class="w-5 h-5" [class]="isRecurring() ? 'text-white' : 'text-white/40'"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                     </svg>
                   </div>
                   <div>
-                    <p class="font-medium text-stone-900">Tarea repetitiva</p>
-                    <p class="text-sm text-stone-500">
+                    <p class="font-medium text-white">Tarea repetitiva</p>
+                    <p class="text-sm text-white/50">
                       {{ isRecurring() ? 'Se repite según la configuración de días y horario' : 'Se ejecuta una sola vez en las fechas indicadas' }}
                     </p>
                   </div>
@@ -582,18 +663,18 @@
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" formControlName="isRecurring"
                          (change)="toggleRecurring($any($event.target).checked)" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-stone-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-stone-300
+                  <div class="w-11 h-6 bg-white/[0.08] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyan-500/40
                               rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white
                               after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white
-                              after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5
-                              after:transition-all peer-checked:bg-stone-700"></div>
+                              after:border-white/[0.15] after:border after:rounded-full after:h-5 after:w-5
+                              after:transition-all peer-checked:bg-brand-600"></div>
                 </label>
               </div>
 
               <!-- Configuración de repetición -->
               @if (isRecurring()) {
-                <div class="p-5 bg-stone-50 rounded-lg border border-stone-200">
-                  <p class="text-xs font-medium text-stone-500 uppercase tracking-wide mb-3">Días y horario de repetición</p>
+                <div class="p-5 bg-white/[0.02] rounded-lg border border-white/10">
+                  <p class="text-xs font-medium text-white/50 uppercase tracking-wide mb-3">Días y horario de repetición</p>
                   <input type="hidden" formControlName="recurrenceStartTime" />
                   <input type="hidden" formControlName="recurrenceEndTime" />
                   <app-day-time-picker
@@ -616,8 +697,8 @@
 
                     <!-- Fecha de inicio -->
                     <div>
-                      <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <label class="text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
@@ -653,8 +734,8 @@
 
                     <!-- Fecha límite -->
                     <div>
-                      <label class="text-sm font-medium text-stone-700 mb-1.5 flex items-center gap-1.5">
-                        <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <label class="text-sm font-medium text-white/70 mb-1.5 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
@@ -689,15 +770,15 @@
                     </div>
 
                   </div>
-                  <p class="text-xs text-stone-400">Se asume el año actual ({{ currentYear }}).</p>
+                  <p class="text-xs text-white/40">Se asume el año actual ({{ currentYear }}).</p>
 
                   @if (dueDateError()) {
-                    <div class="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start gap-2 p-3 bg-red-500/15 border border-red-500/25 rounded-lg">
                       <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                       </svg>
-                      <p class="text-red-600 text-xs font-medium">{{ dueDateError() }}</p>
+                      <p class="text-red-400 text-xs font-medium">{{ dueDateError() }}</p>
                     </div>
                   }
                 </div>
@@ -711,18 +792,18 @@
     </main>
 
     <!-- ── Footer fijo ────────────────────────────────────────────────── -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-10">
+    <footer class="fixed bottom-0 left-0 right-0 bg-white/[0.04] border-t border-white/10 z-10">
       <div class="max-w-4xl mx-auto px-4 py-3">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
 
           <div class="flex gap-3 w-full sm:w-auto justify-end ml-auto">
             <button type="button" (click)="goToList()"
-              class="flex-1 sm:flex-none h-11 px-6 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors">
+              class="flex-1 sm:flex-none h-11 px-6 border border-white/10 text-white/60 hover:bg-white/[0.04] text-sm font-medium rounded-lg transition-colors">
               Cancelar
             </button>
             <button type="button" (click)="onSubmit()"
               [disabled]="submitting()"
-              class="flex-1 sm:flex-none h-11 px-6 inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+              class="flex-1 sm:flex-none h-11 px-6 inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors">
               @if (submitting()) {
                 <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
@@ -750,10 +831,10 @@
   />
   @if (templateDecisionOpen()) {
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/55 px-4">
-      <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl">
-        <div class="border-b border-stone-200 px-6 py-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-brand-600">Plantilla detectada</p>
-          <h3 class="mt-1 text-lg font-semibold text-stone-900">
+      <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
+        <div class="border-b border-white/10 px-6 py-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-400">Plantilla detectada</p>
+          <h3 class="mt-1 text-lg font-semibold text-white">
             @if (!templateNamingOpen()) {
               ¿Qué quieres hacer con los cambios?
             } @else {
@@ -764,9 +845,9 @@
 
         <div class="px-6 py-5">
           @if (!templateNamingOpen()) {
-            <p class="text-sm leading-6 text-stone-600">
+            <p class="text-sm leading-6 text-white/60">
               Detectamos que modificaste la plantilla
-              <span class="font-semibold text-stone-900">"{{ selectedTemplate()?.title }}"</span>.
+              <span class="font-semibold text-white">"{{ selectedTemplate()?.title }}"</span>.
               Puedes actualizar la plantilla actual o guardar estos cambios como una nueva antes de crear la tarea.
             </p>
 
@@ -775,12 +856,12 @@
                 type="button"
                 (click)="applyTemplateUpdate()"
                 [disabled]="templateDecisionSaving()"
-                class="flex items-center justify-between rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-left transition-colors hover:bg-brand-100 disabled:opacity-60">
+                class="flex items-center justify-between rounded-xl border border-cyan-500/25 bg-cyan-500/[0.05] px-4 py-3 text-left transition-colors hover:bg-cyan-500/10 disabled:opacity-60">
                 <div>
-                  <p class="text-sm font-semibold text-brand-800">Actualizar plantilla actual</p>
-                  <p class="mt-1 text-xs text-brand-700">Sobrescribe la plantilla seleccionada con tus cambios.</p>
+                  <p class="text-sm font-semibold text-cyan-300">Actualizar plantilla actual</p>
+                  <p class="mt-1 text-xs text-cyan-400">Sobrescribe la plantilla seleccionada con tus cambios.</p>
                 </div>
-                <svg class="h-5 w-5 text-brand-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
               </button>
@@ -789,36 +870,36 @@
                 type="button"
                 (click)="askCreateNewTemplate()"
                 [disabled]="templateDecisionSaving()"
-                class="flex items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3 text-left transition-colors hover:bg-stone-50 disabled:opacity-60">
+                class="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:bg-white/[0.06] disabled:opacity-60">
                 <div>
-                  <p class="text-sm font-semibold text-stone-900">Guardar como nueva</p>
-                  <p class="mt-1 text-xs text-stone-500">Conserva la original y crea otra plantilla con tus cambios.</p>
+                  <p class="text-sm font-semibold text-white">Guardar como nueva</p>
+                  <p class="mt-1 text-xs text-white/50">Conserva la original y crea otra plantilla con tus cambios.</p>
                 </div>
-                <svg class="h-5 w-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-5 w-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
               </button>
             </div>
           } @else {
-            <label class="mb-2 block text-sm font-medium text-stone-700">Nuevo nombre de la plantilla</label>
+            <label class="mb-2 block text-sm font-medium text-white/70">Nuevo nombre de la plantilla</label>
             <input
               type="text"
               [value]="newTemplateName()"
               (input)="newTemplateName.set($any($event.target).value)"
               placeholder="Ej. Cierre de limpieza premium"
               class="input-field h-11" />
-            <p class="mt-2 text-xs text-stone-500">
+            <p class="mt-2 text-xs text-white/50">
               La plantilla original se conserva y esta nueva se guardará con el nombre que indiques.
             </p>
           }
         </div>
 
-        <div class="flex items-center justify-end gap-3 border-t border-stone-200 bg-stone-50 px-6 py-4">
+        <div class="flex items-center justify-end gap-3 border-t border-white/10 bg-white/[0.02] px-6 py-4">
           <button
             type="button"
             (click)="templateNamingOpen() ? templateNamingOpen.set(false) : cancelTemplateDecision()"
             [disabled]="templateDecisionSaving()"
-            class="inline-flex h-10 items-center justify-center rounded-lg border border-stone-200 bg-white px-4 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-60">
+            class="inline-flex h-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-white/60 transition-colors hover:bg-white/[0.06] disabled:opacity-60">
             @if (templateNamingOpen()) { Volver } @else { Cancelar }
           </button>
 

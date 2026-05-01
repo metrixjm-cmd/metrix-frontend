@@ -3,8 +3,8 @@
   <!-- ── Encabezado ───────────────────────────────────────────────────── -->
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div class="space-y-1">
-      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">Capacitaciones</h1>
-      <p class="text-sm text-stone-500 max-w-2xl">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Capacitaciones</h1>
+      <p class="text-sm text-white/50 max-w-2xl">
         @if (isAdmin()) { Vista global — monitorea el estado de las capacitaciones en todas las sucursales }
         @else if (isGerente()) { Da seguimiento a la formación interna de tu sucursal }
         @else { Revisa tus capacitaciones asignadas y continúa tu progreso }
@@ -12,7 +12,7 @@
     </div>
     @if (isGerente()) {
       <a routerLink="/training/create"
-         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-brand-700 transition-colors">
+         class="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
         </svg>
@@ -25,19 +25,19 @@
   @if (loading()) {
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       @for (i of [1,2,3,4]; track i) {
-        <div class="h-24 bg-stone-100 rounded-xl animate-pulse"></div>
+        <div class="h-24 bg-white/[0.05] rounded-xl animate-pulse"></div>
       }
     </div>
     <div class="space-y-3">
       @for (i of [1,2,3,4,5]; track i) {
-        <div class="h-14 bg-stone-100 rounded-xl animate-pulse"></div>
+        <div class="h-14 bg-white/[0.05] rounded-xl animate-pulse"></div>
       }
     </div>
   }
 
   <!-- ── Error ────────────────────────────────────────────────────────── -->
   @if (error()) {
-    <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+    <div class="p-4 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
       {{ error() }}
     </div>
   }
@@ -51,47 +51,47 @@
 
       <!-- KPIs globales -->
       <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
-        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
-          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Total</p>
-          <p class="text-3xl sm:text-4xl font-bold text-stone-900 mt-2">{{ globalStats().total }}</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
+          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Total</p>
+          <p class="text-3xl sm:text-4xl font-bold text-white mt-2">{{ globalStats().total }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
-          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Programadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
+          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Programadas</p>
           <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-2">{{ globalStats().programadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
-          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">En curso</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
+          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">En curso</p>
           <p class="text-3xl sm:text-4xl font-bold text-brand-600 mt-2">{{ globalStats().enCurso }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card">
-          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">Completadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
+          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Completadas</p>
           <p class="text-3xl sm:text-4xl font-bold text-emerald-600 mt-2">{{ globalStats().completadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-card col-span-2 xl:col-span-1">
-          <p class="text-[11px] sm:text-xs text-stone-400 uppercase tracking-[0.18em]">No completadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5 col-span-2 xl:col-span-1">
+          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">No completadas</p>
           <p class="text-3xl sm:text-4xl font-bold text-red-500 mt-2">{{ globalStats().noCompletadas }}</p>
         </div>
       </div>
 
       <!-- Resumen por sucursal (clickeable para filtrar) -->
       @if (storeSummaries().length > 0) {
-        <div class="bg-white border border-stone-200 rounded-2xl shadow-card overflow-hidden">
-          <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between gap-3">
+        <div class="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between gap-3">
             <div>
-              <h2 class="font-semibold text-stone-900 text-sm">Resumen por sucursal</h2>
-              <p class="text-xs text-stone-400 mt-0.5">Comparativo rápido del desempeño por tienda</p>
+              <h2 class="font-semibold text-white text-sm">Resumen por sucursal</h2>
+              <p class="text-xs text-white/40 mt-0.5">Comparativo rápido del desempeño por tienda</p>
             </div>
             @if (filterStore()) {
               <button (click)="filterStore.set('')"
-                      class="text-xs text-brand-600 hover:text-brand-700 font-medium">
+                      class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">
                 ✕ Quitar filtro
               </button>
             }
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-stone-50/80">
-                <tr class="text-xs text-stone-400 uppercase tracking-wide">
+              <thead class="bg-white/[0.02]">
+                <tr class="text-xs text-white/40 uppercase tracking-wide">
                   <th class="px-5 py-2 text-left font-medium">Sucursal</th>
                   <th class="px-4 py-2 text-right font-medium">Prog.</th>
                   <th class="px-4 py-2 text-right font-medium">Curso</th>
@@ -100,14 +100,14 @@
                   <th class="px-5 py-2 text-left font-medium">Tasa aprobación</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-stone-100">
+              <tbody class="divide-y divide-white/[0.06]">
                 @for (s of storeSummaries(); track s.storeId) {
-                  <tr class="hover:bg-stone-50 cursor-pointer transition-colors"
+                  <tr class="hover:bg-white/[0.04] cursor-pointer transition-colors"
                       [class.bg-orange-50]="filterStore() === s.storeId"
                       (click)="filterByStore(s.storeId)">
-                    <td class="px-5 py-3 font-medium text-stone-800">
+                    <td class="px-5 py-3 font-medium text-white/80">
                       {{ storeLabel(s.storeId) }}
-                      <span class="ml-1 text-xs text-stone-400">({{ s.total }})</span>
+                      <span class="ml-1 text-xs text-white/40">({{ s.total }})</span>
                     </td>
                     <td class="px-4 py-3 text-right text-amber-600 font-medium">{{ s.programadas }}</td>
                     <td class="px-4 py-3 text-right text-blue-600 font-medium">{{ s.enCurso }}</td>
@@ -115,12 +115,12 @@
                     <td class="px-4 py-3 text-right text-red-500 font-medium">{{ s.noCompletadas }}</td>
                     <td class="px-5 py-3">
                       <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-stone-100 rounded-full h-1.5 min-w-[80px]">
+                        <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[80px]">
                           <div class="h-1.5 rounded-full transition-all"
                                [class]="completionBarClass(s.completionRate)"
                                [style.width.%]="s.completionRate"></div>
                         </div>
-                        <span class="text-xs text-stone-500 tabular-nums w-8 text-right">{{ s.completionRate }}%</span>
+                        <span class="text-xs text-white/50 tabular-nums w-8 text-right">{{ s.completionRate }}%</span>
                       </div>
                     </td>
                   </tr>
@@ -140,54 +140,54 @@
 
       <!-- KPIs de la sucursal -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-xs text-white/40 uppercase tracking-wide">Programadas</p>
           <p class="text-3xl font-bold text-amber-600 mt-1">{{ storeStats().programadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-xs text-white/40 uppercase tracking-wide">En Curso</p>
           <p class="text-3xl font-bold text-blue-600 mt-1">{{ storeStats().enCurso }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-xs text-white/40 uppercase tracking-wide">Completadas</p>
           <p class="text-3xl font-bold text-emerald-600 mt-1">{{ storeStats().completadas }}</p>
         </div>
-        <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-          <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-xs text-white/40 uppercase tracking-wide">No Completadas</p>
           <p class="text-3xl font-bold text-red-500 mt-1">{{ storeStats().noCompletadas }}</p>
         </div>
       </div>
 
-      <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card space-y-3">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 space-y-3">
         <div class="flex items-center justify-between gap-2">
-          <p class="text-sm font-semibold text-stone-900">Resultados del equipo ejecutador</p>
-          <span class="text-xs text-stone-500">{{ gerenteTeamStats().total }} capacitaciones</span>
+          <p class="text-sm font-semibold text-white">Resultados del equipo ejecutador</p>
+          <span class="text-xs text-white/50">{{ gerenteTeamStats().total }} capacitaciones</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="rounded-lg bg-stone-50 px-3 py-2">
-            <p class="text-[11px] text-stone-500 uppercase tracking-wide">Programadas</p>
+          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide">Programadas</p>
             <p class="text-lg font-bold text-amber-600">{{ gerenteTeamStats().programadas }}</p>
           </div>
-          <div class="rounded-lg bg-stone-50 px-3 py-2">
-            <p class="text-[11px] text-stone-500 uppercase tracking-wide">En curso</p>
+          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide">En curso</p>
             <p class="text-lg font-bold text-blue-600">{{ gerenteTeamStats().enCurso }}</p>
           </div>
-          <div class="rounded-lg bg-stone-50 px-3 py-2">
-            <p class="text-[11px] text-stone-500 uppercase tracking-wide">Completadas</p>
+          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide">Completadas</p>
             <p class="text-lg font-bold text-emerald-600">{{ gerenteTeamStats().completadas }}</p>
           </div>
-          <div class="rounded-lg bg-stone-50 px-3 py-2">
-            <p class="text-[11px] text-stone-500 uppercase tracking-wide">% cierre</p>
+          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide">% cierre</p>
             <p class="text-lg font-bold text-brand-700">{{ gerenteTeamStats().completionRate }}%</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white border border-stone-200 rounded-xl p-1 inline-flex gap-1 shadow-card">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-1 inline-flex gap-1">
         <button
           (click)="setGerenteTab('created')"
           class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
-          [class]="gerenteTab() === 'created' ? 'bg-brand-600 text-white' : 'text-stone-600 hover:bg-stone-100'"
+          [class]="gerenteTab() === 'created' ? 'bg-brand-600 text-white' : 'text-white/60 hover:bg-white/[0.06]'"
         >
           Capacitaciones creadas
           <span class="ml-1 text-xs opacity-80">({{ gerenteCreatedTrainings().length }})</span>
@@ -195,7 +195,7 @@
         <button
           (click)="setGerenteTab('todo')"
           class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
-          [class]="gerenteTab() === 'todo' ? 'bg-brand-600 text-white' : 'text-stone-600 hover:bg-stone-100'"
+          [class]="gerenteTab() === 'todo' ? 'bg-brand-600 text-white' : 'text-white/60 hover:bg-white/[0.06]'"
         >
           Capacitaciones por hacer
           <span class="ml-1 text-xs opacity-80">({{ gerenteToDoTrainings().length }})</span>
@@ -210,34 +210,34 @@
     @if (isEjecutador()) {
       <div class="space-y-5">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-            <p class="text-xs text-stone-400 uppercase tracking-wide">Programadas</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-xs text-white/40 uppercase tracking-wide">Programadas</p>
             <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
           </div>
-          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-            <p class="text-xs text-stone-400 uppercase tracking-wide">En Curso</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-xs text-white/40 uppercase tracking-wide">En Curso</p>
             <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
           </div>
-          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-            <p class="text-xs text-stone-400 uppercase tracking-wide">Completadas</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-xs text-white/40 uppercase tracking-wide">Completadas</p>
             <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
           </div>
-          <div class="bg-white border border-stone-200 rounded-xl p-4 shadow-card">
-            <p class="text-xs text-stone-400 uppercase tracking-wide">No Completadas</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-xs text-white/40 uppercase tracking-wide">No Completadas</p>
             <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-3">
           <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
-                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todos los estados</option>
             @for (s of statuses; track s) {
               <option [value]="s">{{ statusLabels[s] ?? s }}</option>
             }
           </select>
           <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todos los niveles</option>
             @for (l of levels; track l) {
               <option [value]="l">{{ levelLabels[l] ?? l }}</option>
@@ -245,32 +245,32 @@
           </select>
         </div>
 
-        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
           @if (filteredTrainings().length === 0) {
-            <div class="py-16 text-center text-stone-400">
+            <div class="py-16 text-center text-white/40">
               <p class="text-sm">Sin capacitaciones asignadas</p>
               <p class="text-xs mt-1">Tu gerente te asignará cursos cuando estén disponibles.</p>
             </div>
           } @else {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
-                <thead class="bg-stone-50 border-b border-stone-200">
+                <thead class="bg-white/[0.02] border-b border-white/10">
                   <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Capacitación</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Nivel</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Vencimiento</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Creada</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Estado</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Avance</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Capacitación</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Nivel</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Vencimiento</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Creada</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Estado</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Avance</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-stone-100">
+                <tbody class="divide-y divide-white/[0.06]">
                   @for (t of filteredTrainings(); track t.id) {
                     <tr [class]="trainingRowClass(t)"
                         (click)="goToDetail(t)">
                       <td [class]="trainingFirstCellClass(t)">
-                        <div class="font-medium text-stone-900">{{ t.title }}</div>
-                        <div class="text-xs text-stone-400 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
+                        <div class="font-medium text-white">{{ t.title }}</div>
+                        <div class="text-xs text-white/40 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
                       </td>
                       <td class="px-4 py-3">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -278,8 +278,8 @@
                           {{ levelLabels[t.level] ?? t.level }}
                         </span>
                       </td>
-                      <td class="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">{{ t.dueAt | appDate:'due' }}</td>
-                      <td class="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
+                      <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.dueAt | appDate:'due' }}</td>
+                      <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
                       <td class="px-4 py-3">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
                               [class]="statusBadgeClass(t.status)">
@@ -288,12 +288,12 @@
                       </td>
                       <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                          <div class="flex-1 bg-stone-100 rounded-full h-1.5 min-w-[80px]">
+                          <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[80px]">
                             <div class="h-1.5 rounded-full transition-all"
                                  [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
                                  [style.width.%]="t.percentage"></div>
                           </div>
-                          <span class="text-xs text-stone-500 tabular-nums">{{ t.percentage }}%</span>
+                          <span class="text-xs text-white/50 tabular-nums">{{ t.percentage }}%</span>
                         </div>
                       </td>
                     </tr>
@@ -314,14 +314,14 @@
       <!-- Filtros -->
       <div class="flex flex-wrap gap-3">
         <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
-                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
           <option value="">Todos los estados</option>
           @for (s of statuses; track s) {
             <option [value]="s">{{ statusLabels[s] ?? s }}</option>
           }
         </select>
         <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
           <option value="">Todos los niveles</option>
           @for (l of levels; track l) {
             <option [value]="l">{{ levelLabels[l] ?? l }}</option>
@@ -329,7 +329,7 @@
         </select>
         @if (isAdmin()) {
           <select [ngModel]="filterStore()" (ngModelChange)="filterStore.set($event)"
-                  class="text-sm border border-stone-200 rounded-lg px-3 py-2 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todas las sucursales</option>
             @for (id of uniqueStoreIds(); track id) {
               <option [value]="id">{{ storeLabel(id) }}</option>
@@ -339,35 +339,35 @@
       </div>
 
       <!-- Tabla -->
-      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
         @if (filteredTrainings().length === 0) {
-          <div class="py-16 text-center text-stone-400">
+          <div class="py-16 text-center text-white/40">
             <p class="text-sm">Sin resultados — ajusta los filtros</p>
           </div>
         } @else {
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-stone-50 border-b border-stone-200">
+              <thead class="bg-white/[0.02] border-b border-white/10">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Capacitación</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Capacitación</th>
                   @if (isAdmin()) {
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Sucursal</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Sucursal</th>
                   }
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Nivel</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Asignado a</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Vencimiento</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Creada</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Estado</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Avance</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Nivel</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Asignado a</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Vencimiento</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Creada</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Estado</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Avance</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-stone-100">
+              <tbody class="divide-y divide-white/[0.06]">
                 @for (t of filteredTrainings(); track t.id) {
                   <tr [class]="trainingRowClass(t)"
                       (click)="goToDetail(t)">
                     <td [class]="trainingFirstCellClass(t)">
-                      <div class="font-medium text-stone-900">{{ t.title }}</div>
-                      <div class="text-xs text-stone-400 line-clamp-1 max-w-[360px]">
+                      <div class="font-medium text-white">{{ t.title }}</div>
+                      <div class="text-xs text-white/40 line-clamp-1 max-w-[360px]">
                         @if (t.groupSize > 1) {
                           {{ t.groupSize }} colaboradores asignados
                         } @else {
@@ -376,7 +376,7 @@
                       </div>
                     </td>
                     @if (isAdmin()) {
-                      <td class="px-4 py-3 text-xs text-stone-500 font-medium">{{ storeLabel(t.storeId) }}</td>
+                      <td class="px-4 py-3 text-xs text-white/50 font-medium">{{ storeLabel(t.storeId) }}</td>
                     }
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -384,9 +384,9 @@
                         {{ levelLabels[t.level] ?? t.level }}
                       </span>
                     </td>
-                    <td class="px-4 py-3 text-stone-700 text-xs">{{ assigneeLabel(t) }}</td>
-                    <td class="px-4 py-3 text-stone-500 text-xs">{{ t.dueAt | appDate:'due' }}</td>
-                    <td class="px-4 py-3 text-stone-500 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
+                    <td class="px-4 py-3 text-white/70 text-xs">{{ assigneeLabel(t) }}</td>
+                    <td class="px-4 py-3 text-white/50 text-xs">{{ t.dueAt | appDate:'due' }}</td>
+                    <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
                             [class]="statusBadgeClass(t.status)">
@@ -395,12 +395,12 @@
                     </td>
                     <td class="px-4 py-3">
                       <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-stone-100 rounded-full h-1.5 min-w-[60px]">
+                        <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[60px]">
                           <div class="h-1.5 rounded-full transition-all"
                                [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
                                [style.width.%]="t.percentage"></div>
                         </div>
-                        <span class="text-xs text-stone-500 tabular-nums">{{ t.percentage }}%</span>
+                        <span class="text-xs text-white/50 tabular-nums">{{ t.percentage }}%</span>
                       </div>
                     </td>
                   </tr>
@@ -412,7 +412,7 @@
       </div>
 
       @if (isAdmin()) {
-        <p class="text-xs text-stone-400 text-right">
+        <p class="text-xs text-white/40 text-right">
           Mostrando {{ filteredTrainings().length }} de {{ globalStats().total }} capacitaciones
         </p>
       }

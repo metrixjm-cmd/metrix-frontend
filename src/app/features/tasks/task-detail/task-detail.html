@@ -1,15 +1,15 @@
 <div class="p-5 max-w-4xl">
 
   <!-- ── Breadcrumb ────────────────────────────────────────────────────── -->
-  <div class="flex items-center gap-1.5 text-xs text-stone-400 mb-4">
-    <button (click)="goBack()" class="flex items-center gap-1 hover:text-brand-600 transition-colors">
+  <div class="flex items-center gap-1.5 text-xs text-white/40 mb-4">
+    <button (click)="goBack()" class="flex items-center gap-1 hover:text-cyan-400 transition-colors">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
       Tareas
     </button>
     <span>/</span>
-    <span class="text-stone-600 font-medium">Detalle</span>
+    <span class="text-white/60 font-medium">Detalle</span>
   </div>
 
   <main>
@@ -26,10 +26,10 @@
 
     <!-- ── Error al cargar ────────────────────────────────────────────────── -->
     @if (!taskSvc.loading() && taskSvc.error()) {
-      <div class="bg-red-50 border border-red-200 rounded-xl p-5 mt-4">
-        <p class="text-red-700 font-medium text-sm">Error al cargar la tarea</p>
+      <div class="bg-red-500/15 border border-red-500/25 rounded-xl p-5 mt-4">
+        <p class="text-red-400 font-medium text-sm">Error al cargar la tarea</p>
         <p class="text-red-500 text-xs mt-1">{{ taskSvc.error() }}</p>
-        <button (click)="goBack()" class="text-red-600 hover:text-red-700 text-xs mt-3 underline font-medium">
+        <button (click)="goBack()" class="text-red-400 hover:text-red-400 text-xs mt-3 underline font-medium">
           Volver a la lista
         </button>
       </div>
@@ -40,14 +40,14 @@
       <div class="space-y-4">
 
         <!-- Encabezado -->
-        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
           <div class="flex items-start justify-between gap-4 flex-wrap">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap mb-3">
                 <app-status-badge [status]="task()!.status" />
 
                 @if (task()!.isCritical) {
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 border border-red-200 rounded-full text-xs font-semibold">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-500/15 text-red-400 border border-red-500/25 rounded-full text-xs font-semibold">
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2L2 19.7h20L12 2zm0 3.3l7.5 13H4.5L12 5.3zM11 10v4h2v-4h-2zm0 5v2h2v-2h-2z"/>
                     </svg>
@@ -55,12 +55,12 @@
                   </span>
                 }
 
-                <span class="text-stone-500 text-xs px-2 py-0.5 bg-stone-100 rounded-full">
+                <span class="text-white/50 text-xs px-2 py-0.5 bg-white/[0.05] rounded-full">
                   {{ categoryLabels[task()!.category] || task()!.category }}
                 </span>
 
                 @if (task()!.isRecurring) {
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-100 text-violet-700 border border-violet-200 rounded-full text-xs font-medium">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-500/15 text-violet-400 border border-violet-200 rounded-full text-xs font-medium">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -70,35 +70,8 @@
                 }
               </div>
 
-              <h1 class="text-xl font-bold text-stone-900 mb-2">{{ task()!.title }}</h1>
-              <p class="text-stone-600 text-sm leading-relaxed">{{ task()!.description }}</p>
-
-              @if (task()!.referenceUrl) {
-                <div class="mt-4 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 flex items-start justify-between gap-3 flex-wrap">
-                  <div class="min-w-0">
-                    <p class="text-xs font-semibold text-stone-400 uppercase tracking-widest">Material de referencia</p>
-                    <a
-                      class="block text-sm text-stone-700 hover:text-brand-600 underline truncate max-w-[32rem]"
-                      [href]="task()!.referenceUrl!"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {{ task()!.referenceUrl }}
-                    </a>
-                  </div>
-                  <a
-                    class="inline-flex items-center gap-2 px-3 py-2 bg-white border border-stone-200 hover:border-stone-300 text-stone-700 text-sm font-semibold rounded-lg transition-colors"
-                    [href]="task()!.referenceUrl!"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h6m0 0v6m0-6L10 16m-1 5H5a2 2 0 01-2-2V7a2 2 0 012-2h4"/>
-                    </svg>
-                    Abrir
-                  </a>
-                </div>
-              }
+              <h1 class="text-xl font-bold text-white mb-2">{{ task()!.title }}</h1>
+              <p class="text-white/60 text-sm leading-relaxed">{{ task()!.description }}</p>
             </div>
           </div>
         </div>
@@ -107,38 +80,38 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <!-- Asignación -->
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Asignación</h3>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Asignación</h3>
             <dl class="space-y-3">
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Colaborador</dt>
-                <dd class="text-stone-900 text-sm font-medium">{{ task()!.assignedToName }}</dd>
+                <dt class="text-white/50 text-sm">Colaborador</dt>
+                <dd class="text-white text-sm font-medium">{{ task()!.assignedToName }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Puesto</dt>
-                <dd class="text-stone-700 text-sm">{{ task()!.position }}</dd>
+                <dt class="text-white/50 text-sm">Puesto</dt>
+                <dd class="text-white/70 text-sm">{{ task()!.position }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Sucursal</dt>
-                <dd class="text-stone-700 text-sm">{{ task()!.storeId }}</dd>
+                <dt class="text-white/50 text-sm">Sucursal</dt>
+                <dd class="text-white/70 text-sm">{{ task()!.storeId }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Turno</dt>
-                <dd class="text-stone-700 text-sm">{{ shiftLabels[task()!.shift] }}</dd>
+                <dt class="text-white/50 text-sm">Turno</dt>
+                <dd class="text-white/70 text-sm">{{ shiftLabels[task()!.shift] }}</dd>
               </div>
               @if (!task()!.isRecurring) {
                 <div class="flex justify-between">
-                  <dt class="text-stone-500 text-sm">Vence</dt>
-                  <dd class="text-stone-900 text-sm font-medium">{{ task()!.dueAt | appDate:'due' }}</dd>
+                  <dt class="text-white/50 text-sm">Vence</dt>
+                  <dd class="text-white text-sm font-medium">{{ task()!.dueAt | appDate:'due' }}</dd>
                 </div>
               } @else {
                 <div class="flex justify-between">
-                  <dt class="text-stone-500 text-sm">Horario</dt>
+                  <dt class="text-white/50 text-sm">Horario</dt>
                   <dd class="text-violet-600 text-sm font-medium">{{ task()!.recurrenceStartTime | timeFormat }} - {{ task()!.recurrenceEndTime | timeFormat }}</dd>
                 </div>
                 <div class="flex justify-between">
-                  <dt class="text-stone-500 text-sm">Dias</dt>
-                  <dd class="text-stone-700 text-sm">
+                  <dt class="text-white/50 text-sm">Dias</dt>
+                  <dd class="text-white/70 text-sm">
                     @for (day of task()!.recurrenceDays; track day; let last = $last) {
                       {{ day }}{{ last ? '' : ', ' }}
                     }
@@ -149,37 +122,37 @@
           </div>
 
           <!-- Ejecución -->
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Ejecución</h3>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Ejecución</h3>
             <dl class="space-y-3">
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Iniciada</dt>
-                <dd class="text-stone-700 text-sm">{{ task()!.startedAt | appDate:'relative' }}</dd>
+                <dt class="text-white/50 text-sm">Iniciada</dt>
+                <dd class="text-white/70 text-sm">{{ task()!.startedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Finalizada</dt>
-                <dd class="text-stone-700 text-sm">{{ task()!.finishedAt | appDate:'relative' }}</dd>
+                <dt class="text-white/50 text-sm">Finalizada</dt>
+                <dd class="text-white/70 text-sm">{{ task()!.finishedAt | appDate:'relative' }}</dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">En tiempo</dt>
+                <dt class="text-white/50 text-sm">En tiempo</dt>
                 <dd class="text-sm">
                   @if (task()!.onTime === null) {
-                    <span class="text-stone-400">—</span>
+                    <span class="text-white/40">—</span>
                   } @else if (task()!.onTime) {
-                    <span class="text-emerald-600 font-medium">Sí</span>
+                    <span class="text-emerald-400 font-medium">Sí</span>
                   } @else {
-                    <span class="text-red-600 font-medium">No</span>
+                    <span class="text-red-400 font-medium">No</span>
                   }
                 </dd>
               </div>
               <div class="flex justify-between">
-                <dt class="text-stone-500 text-sm">Retrabajos</dt>
-                <dd class="text-stone-700 text-sm">{{ task()!.reworkCount }}</dd>
+                <dt class="text-white/50 text-sm">Retrabajos</dt>
+                <dd class="text-white/70 text-sm">{{ task()!.reworkCount }}</dd>
               </div>
               @if (task()!.qualityRating !== null) {
                 <div class="flex justify-between">
-                  <dt class="text-stone-500 text-sm">Calidad</dt>
-                  <dd class="text-brand-600 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
+                  <dt class="text-white/50 text-sm">Calidad</dt>
+                  <dd class="text-cyan-400 text-sm font-semibold">★ {{ task()!.qualityRating }}/5</dd>
                 </div>
               }
             </dl>
@@ -188,27 +161,27 @@
 
         <!-- ── Procesos ──────────────────────────────────────────────────── -->
         @if (visibleProcesses().length > 0) {
-          <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-            <div class="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
               <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                 </svg>
-                <h3 class="text-sm font-semibold text-stone-900">Procesos</h3>
+                <h3 class="text-sm font-semibold text-white">Procesos</h3>
               </div>
               @if (processProgress(); as prog) {
                 <div class="flex items-center gap-2">
-                  <div class="w-24 h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                  <div class="w-24 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
                     <div class="h-full rounded-full transition-all duration-500"
                       [class]="prog.percent === 100 ? 'bg-emerald-500' : 'bg-orange-500'"
                       [style.width.%]="prog.percent"></div>
                   </div>
-                  <span class="text-xs font-medium text-stone-500">{{ prog.done }}/{{ prog.total }}</span>
+                  <span class="text-xs font-medium text-white/50">{{ prog.done }}/{{ prog.total }}</span>
                 </div>
               }
             </div>
-            <div class="divide-y divide-stone-50">
+            <div class="divide-y divide-white/[0.04]">
               @for (step of visibleProcesses(); track step.stepId) {
 
                 <!-- ADMIN: Formulario de edicion inline -->
@@ -216,13 +189,13 @@
                   <div class="px-5 py-3 bg-orange-50 space-y-2">
                     <input type="text" [value]="editProcessTitle()" (input)="editProcessTitle.set($any($event.target).value)"
                       placeholder="Titulo *"
-                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
                     <input type="text" [value]="editProcessDesc()" (input)="editProcessDesc.set($any($event.target).value)"
                       placeholder="Descripcion (opcional)"
-                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
+                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500" />
                     <div class="flex justify-end gap-2">
                       <button type="button" (click)="cancelEditProcess()"
-                        class="px-3 py-1 text-xs text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50">Cancelar</button>
+                        class="px-3 py-1 text-xs text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04]">Cancelar</button>
                       <button type="button" (click)="saveEditProcess()" [disabled]="!editProcessTitle().trim() || savingProcess()"
                         class="px-3 py-1 text-xs font-medium bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-40">
                         @if (savingProcess()) { Guardando... } @else { Guardar }
@@ -252,9 +225,9 @@
                   <!-- Contenido -->
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <p class="text-sm font-medium text-stone-800">{{ step.title }}</p>
+                      <p class="text-sm font-medium text-white/80">{{ step.title }}</p>
                       @if (step.completed) {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-semibold shrink-0">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-500/15 text-emerald-400 rounded-full text-[10px] font-semibold shrink-0">
                           <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                           </svg>
@@ -262,7 +235,7 @@
                           @if (step.completedAt) { · {{ getStepDuration(step.completedAt) }} }
                         </span>
                       } @else {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-semibold shrink-0">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/15 text-red-400 rounded-full text-[10px] font-semibold shrink-0">
                           <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                           </svg>
@@ -271,10 +244,10 @@
                       }
                     </div>
                     @if (step.description) {
-                      <p class="text-xs text-stone-400 mt-0.5">{{ step.description }}</p>
+                      <p class="text-xs text-white/40 mt-0.5">{{ step.description }}</p>
                     }
                     @if (!step.completed && getProcessReason(step.title)) {
-                      <p class="text-xs text-red-600 mt-1.5 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5">
+                      <p class="text-xs text-red-400 mt-1.5 bg-red-500/15 border border-red-500/25 rounded-lg px-2.5 py-1.5">
                         <span class="font-semibold">Motivo: </span>{{ getProcessReason(step.title) }}
                       </p>
                     }
@@ -284,7 +257,7 @@
                   @if (isAdmin()) {
                     <div class="flex items-center gap-0.5 shrink-0">
                       <button type="button" (click)="startEditProcess(step)"
-                        class="p-1.5 text-stone-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                        class="p-1.5 text-white/40 hover:text-cyan-400 hover:bg-cyan-500/[0.05] rounded-lg transition-colors"
                         title="Editar proceso">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -293,7 +266,7 @@
                       </button>
                       <button type="button" (click)="deleteProcessStep(step.stepId)"
                         [disabled]="deletingStepId() === step.stepId"
-                        class="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        class="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/15 rounded-lg transition-colors"
                         title="Eliminar proceso">
                         @if (deletingStepId() === step.stepId) {
                           <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -317,21 +290,21 @@
 
         <!-- Comentarios (si existen) -->
         @if (task()!.comments) {
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-3">Comentarios</h3>
-            <p class="text-stone-600 text-sm leading-relaxed">{{ task()!.comments }}</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">Comentarios</h3>
+            <p class="text-white/60 text-sm leading-relaxed">{{ task()!.comments }}</p>
           </div>
         }
 
-        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
           <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
             <div>
-              <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest">Evidencias</h3>
-              <p class="text-sm text-stone-500 mt-1">
+              <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest">Evidencias</h3>
+              <p class="text-sm text-white/50 mt-1">
                 Sube una foto o video para respaldar la ejecucion de la tarea.
               </p>
             </div>
-            <div class="text-xs text-stone-500">
+            <div class="text-xs text-white/50">
               {{ task()!.evidenceImages.length + task()!.evidenceVideos.length }} archivo(s)
             </div>
           </div>
@@ -342,7 +315,7 @@
               <app-evidence-upload [taskId]="task()!.id" type="VIDEO" (uploaded)="onEvidenceUploaded()" />
             </div>
           } @else {
-            <div class="rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+            <div class="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-white/50">
               Las evidencias se pueden subir solo cuando la tarea esta en progreso y por el ejecutador asignado.
             </div>
           }
@@ -351,11 +324,11 @@
             <div class="mt-4 space-y-4">
               @if (task()!.evidenceImages.length > 0) {
                 <div>
-                  <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Fotos</p>
+                  <p class="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Fotos</p>
                   <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                     @for (imageUrl of task()!.evidenceImages; track imageUrl) {
                       <a [href]="imageUrl" target="_blank" rel="noopener noreferrer"
-                        class="block overflow-hidden rounded-xl border border-stone-200 bg-stone-50">
+                        class="block overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
                         <img [src]="imageUrl" alt="Evidencia de tarea" class="h-32 w-full object-cover" />
                       </a>
                     }
@@ -365,10 +338,10 @@
 
               @if (task()!.evidenceVideos.length > 0) {
                 <div>
-                  <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">Videos</p>
+                  <p class="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">Videos</p>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     @for (videoUrl of task()!.evidenceVideos; track videoUrl) {
-                      <video class="w-full rounded-xl border border-stone-200 bg-black" controls preload="metadata">
+                      <video class="w-full rounded-xl border border-white/10 bg-black" controls preload="metadata">
                         <source [src]="videoUrl" />
                       </video>
                     }
@@ -381,27 +354,27 @@
 
         <!-- ── Evaluación de Calidad (solo lectura para el ejecutor) ───── -->
         @if (!canRateQuality() && task()!.status === 'COMPLETED' && task()!.qualityRating !== null) {
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
             <div class="flex items-center gap-1">
               @for (s of starsArray; track s) {
                 <svg
                   class="w-7 h-7 transition-colors"
-                  [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-stone-200'"
+                  [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-white/[0.08]'"
                   fill="currentColor" viewBox="0 0 24 24"
                 >
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
               }
-              <span class="ml-2 text-brand-700 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
+              <span class="ml-2 text-cyan-300 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
             </div>
           </div>
         }
 
         <!-- ── Evaluación de Calidad (editable por el creador de la tarea) ── -->
         @if (canRateQuality()) {
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Evaluación de Calidad</h3>
 
             <!-- Rating ya asignado → solo lectura -->
             @if (task()!.qualityRating !== null && !showRatingForm()) {
@@ -410,17 +383,17 @@
                   @for (s of starsArray; track s) {
                     <svg
                       class="w-7 h-7 transition-colors"
-                      [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-stone-200'"
+                      [class]="s <= (task()!.qualityRating ?? 0) ? 'text-brand-400' : 'text-white/[0.08]'"
                       fill="currentColor" viewBox="0 0 24 24"
                     >
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                   }
-                  <span class="ml-2 text-brand-700 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
+                  <span class="ml-2 text-cyan-300 font-semibold text-sm">{{ task()!.qualityRating }}/5</span>
                 </div>
                 <button
                   (click)="showRatingForm.set(true)"
-                  class="text-xs text-brand-600 hover:text-brand-700 font-medium underline"
+                  class="text-xs text-cyan-400 hover:text-cyan-300 font-medium underline"
                 >
                   Cambiar calificación
                 </button>
@@ -430,10 +403,10 @@
             <!-- Sin rating → botón para abrir formulario -->
             @if (task()!.qualityRating === null && !showRatingForm()) {
               <div class="flex items-center gap-4">
-                <p class="text-stone-500 text-sm">Esta tarea aún no ha sido evaluada.</p>
+                <p class="text-white/50 text-sm">Esta tarea aún no ha sido evaluada.</p>
                 <button
                   (click)="showRatingForm.set(true)"
-                  class="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                  class="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors"
                 >
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -448,13 +421,13 @@
               <form [formGroup]="ratingForm" (ngSubmit)="submitRating()" class="space-y-4">
 
                 @if (actionError()) {
-                  <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p class="text-red-600 text-sm">{{ actionError() }}</p>
+                  <div class="bg-red-500/15 border border-red-500/25 rounded-lg p-3">
+                    <p class="text-red-400 text-sm">{{ actionError() }}</p>
                   </div>
                 }
 
                 <div>
-                  <label class="block text-sm font-medium text-stone-700 mb-2">
+                  <label class="block text-sm font-medium text-white/70 mb-2">
                     Calificación <span class="text-red-500">*</span>
                   </label>
                   <div class="flex items-center gap-1">
@@ -468,7 +441,7 @@
                       >
                         <svg
                           class="w-8 h-8 transition-colors"
-                          [class]="s <= (hoverStar() || selectedStar()) ? 'text-brand-400' : 'text-stone-200'"
+                          [class]="s <= (hoverStar() || selectedStar()) ? 'text-brand-400' : 'text-white/[0.08]'"
                           fill="currentColor" viewBox="0 0 24 24"
                         >
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -476,7 +449,7 @@
                       </button>
                     }
                     @if (selectedStar() > 0) {
-                      <span class="ml-2 text-brand-700 font-semibold text-sm">{{ selectedStar() }}/5</span>
+                      <span class="ml-2 text-cyan-300 font-semibold text-sm">{{ selectedStar() }}/5</span>
                     }
                   </div>
                   @if (ratingForm.get('rating')?.invalid && ratingForm.get('rating')?.touched) {
@@ -485,8 +458,8 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-stone-700 mb-1.5">
-                    Comentarios <span class="text-stone-400 font-normal">(opcional)</span>
+                  <label class="block text-sm font-medium text-white/70 mb-1.5">
+                    Comentarios <span class="text-white/40 font-normal">(opcional)</span>
                   </label>
                   <textarea
                     formControlName="comments"
@@ -500,7 +473,7 @@
                   <button
                     type="submit"
                     [disabled]="ratingForm.invalid || submitting()"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
                   >
                     @if (submitting()) {
                       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -513,7 +486,7 @@
                   <button
                     type="button"
                     (click)="showRatingForm.set(false); selectedStar.set(0); hoverStar.set(0); actionError.set(null)"
-                    class="px-5 py-2.5 border border-stone-200 text-stone-600 hover:bg-stone-50 text-sm font-medium rounded-lg transition-colors"
+                    class="px-5 py-2.5 border border-white/10 text-white/60 hover:bg-white/[0.04] text-sm font-medium rounded-lg transition-colors"
                   >
                     Cancelar
                   </button>
@@ -525,20 +498,20 @@
 
         <!-- ── Zona de acciones ─────────────────────────────────────────── -->
         @if (canStart() || canComplete() || canFail()) {
-          <div class="bg-white border border-brand-200 rounded-xl p-5 shadow-card">
-            <h3 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Acciones</h3>
+          <div class="bg-white/[0.04] border border-cyan-500/25 rounded-xl p-5">
+            <h3 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Acciones</h3>
 
             <!-- Error de acción -->
             @if (actionError()) {
-              <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <p class="text-red-600 text-sm">{{ actionError() }}</p>
+              <div class="bg-red-500/15 border border-red-500/25 rounded-lg p-3 mb-4">
+                <p class="text-red-400 text-sm">{{ actionError() }}</p>
               </div>
             }
 
             <!-- INICIAR (PENDING → IN_PROGRESS) -->
             @if (canStart()) {
               <div>
-                <p class="text-stone-600 text-sm mb-3">¿Listo para comenzar esta tarea?</p>
+                <p class="text-white/60 text-sm mb-3">¿Listo para comenzar esta tarea?</p>
                 <app-button
                   variant="primary"
                   [loading]="submitting()"
@@ -560,7 +533,7 @@
                   <button
                     (click)="completeTask()"
                     [disabled]="submitting()"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
                   >
                     @if (submitting()) {
                       <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -576,7 +549,7 @@
                   </button>
                   <button
                     (click)="showFailForm.set(true)"
-                    class="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -590,7 +563,7 @@
               @if (showFailForm()) {
                 <form [formGroup]="failForm" (ngSubmit)="failTask()" class="space-y-4 mt-2">
                   <div>
-                    <label class="block text-sm text-stone-700 font-medium mb-1.5">
+                    <label class="block text-sm text-white/70 font-medium mb-1.5">
                       Motivo del fallo <span class="text-red-500">*</span>
                     </label>
                     <textarea

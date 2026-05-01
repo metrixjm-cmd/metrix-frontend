@@ -2,45 +2,45 @@
 
   <!-- Header -->
   <div>
-    <h1 class="text-2xl font-bold text-stone-900">Banco de Datos</h1>
-    <p class="text-stone-500 text-sm mt-1">Gestión centralizada de todos los actores del sistema</p>
+    <h1 class="text-2xl font-bold text-white">Banco de Datos</h1>
+    <p class="text-white/50 text-sm mt-1">Gestión centralizada de todos los actores del sistema</p>
   </div>
 
   <div class="space-y-8">
 
     <!-- ══ Personal ══════════════════════════════════════════════════════ -->
     <div>
-      <h2 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Personal</h2>
+      <h2 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Personal</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         <!-- ── Colaboradores ─────────────────────────────────────────── -->
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-orange-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-orange-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Colaboradores</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Empleados, gerentes y administradores del sistema</p>
+              <h3 class="font-semibold text-white">Colaboradores</h3>
+              <p class="text-sm text-white/50 leading-relaxed">Empleados, gerentes y administradores del sistema</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
-            <span class="text-2xl font-bold text-stone-900">{{ activeUsers() }}</span>
-            <span class="ml-2 text-sm text-stone-400">activos</span>
+            <span class="text-2xl font-bold text-white">{{ activeUsers() }}</span>
+            <span class="ml-2 text-sm text-white/40">activos</span>
             @if (totalUsers() !== activeUsers()) {
-              <span class="text-sm text-stone-400 ml-1">/ {{ totalUsers() }} total</span>
+              <span class="text-sm text-white/40 ml-1">/ {{ totalUsers() }} total</span>
             }
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/usuarios"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver todos
             </a>
             @if (isManager()) {
@@ -54,33 +54,33 @@
 
         <!-- ── Sucursales ─────────────────────────────────────────────── -->
         @if (isAdmin()) {
-          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-brand-400/40 hover:shadow-lg flex flex-col">
+          <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-brand-400/40 hover:shadow-lg flex flex-col">
             <div class="absolute inset-0 bg-gradient-to-br from-brand-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
             <!-- Header -->
             <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-brand-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0 space-y-1">
-                <h3 class="font-semibold text-stone-900">Sucursales</h3>
-                <p class="text-sm text-stone-500 leading-relaxed">Unidades de negocio y configuración de cada sede</p>
+                <h3 class="font-semibold text-white">Sucursales</h3>
+                <p class="text-sm text-white/50 leading-relaxed">Unidades de negocio y configuración de cada sede</p>
               </div>
             </div>
             <!-- Content -->
             <div class="relative px-4 pb-2 flex-1">
-              <span class="text-2xl font-bold text-stone-900">{{ activeStores() }}</span>
-              <span class="ml-2 text-sm text-stone-400">activas</span>
+              <span class="text-2xl font-bold text-white">{{ activeStores() }}</span>
+              <span class="ml-2 text-sm text-white/40">activas</span>
               @if (totalStores() !== activeStores()) {
-                <span class="text-sm text-stone-400 ml-1">/ {{ totalStores() }} total</span>
+                <span class="text-sm text-white/40 ml-1">/ {{ totalStores() }} total</span>
               }
             </div>
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/sucursales"
-                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
                 Ver todas
               </a>
               <a routerLink="/banco-info/sucursales/create"
@@ -93,29 +93,29 @@
 
         <!-- ── Puestos ───────────────────────────────────────────────── -->
         @if (isManager()) {
-          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-orange-400/40 hover:shadow-lg flex flex-col">
+          <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-orange-400/40 hover:shadow-lg flex flex-col">
             <div class="absolute inset-0 bg-gradient-to-br from-orange-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
             <!-- Header -->
             <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0 space-y-1">
-                <h3 class="font-semibold text-stone-900">Puestos</h3>
-                <p class="text-sm text-stone-500 leading-relaxed">Catálogo de puestos de trabajo del sistema</p>
+                <h3 class="font-semibold text-white">Puestos</h3>
+                <p class="text-sm text-white/50 leading-relaxed">Catálogo de puestos de trabajo del sistema</p>
               </div>
             </div>
             <!-- Content -->
             <div class="relative px-4 pb-2 flex-1">
-              <p class="text-sm text-stone-400">Define los puestos que se asignan a colaboradores y generan el prefijo del ID de usuario.</p>
+              <p class="text-sm text-white/40">Define los puestos que se asignan a colaboradores y generan el prefijo del ID de usuario.</p>
             </div>
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/puestos"
-                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
                 Ver puestos
               </a>
               <a routerLink="/banco-info/puestos"
@@ -131,36 +131,36 @@
 
     <!-- ══ Tareas ════════════════════════════════════════════════════════ -->
     <div>
-      <h2 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Tareas</h2>
+      <h2 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Tareas</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         <!-- ── Modulo de tareas ───────────────────────────────────── -->
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-sky-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-sky-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-sky-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-sky-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Plantillas de tareas</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Bases reutilizables para crear tareas rapido</p>
+              <h3 class="font-semibold text-white">Plantillas de tareas</h3>
+              <p class="text-sm text-white/50 leading-relaxed">Bases reutilizables para crear tareas rapido</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
             <div class="mb-3">
-              <span class="text-2xl font-bold text-stone-900">{{ totalTaskTemplates() }}</span>
-              <span class="ml-2 text-sm text-stone-400">plantillas</span>
+              <span class="text-2xl font-bold text-white">{{ totalTaskTemplates() }}</span>
+              <span class="ml-2 text-sm text-white/40">plantillas</span>
             </div>
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/tareas"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver plantillas
             </a>
             @if (isManager()) {
@@ -173,32 +173,32 @@
           </div>
         </div>
 
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-emerald-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-emerald-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Categorias</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Categorias disponibles en el sistema</p>
+              <h3 class="font-semibold text-white">Categorias</h3>
+              <p class="text-sm text-white/50 leading-relaxed">Categorias disponibles en el sistema</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
             <div class="mb-3">
-              <span class="text-2xl font-bold text-stone-900">{{ totalCategorias() }}</span>
-              <span class="ml-2 text-sm text-stone-400">registradas</span>
+              <span class="text-2xl font-bold text-white">{{ totalCategorias() }}</span>
+              <span class="ml-2 text-sm text-white/40">registradas</span>
             </div>
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/categorias"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver todas
             </a>
             @if (isManager()) {
@@ -215,33 +215,33 @@
 
     <!-- ══ Capacitaciones ════════════════════════════════════════════════ -->
     <div>
-      <h2 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Capacitaciones</h2>
+      <h2 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Capacitaciones</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
         <!-- ── Plantillas de Capacitación ───────────────────────────── -->
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-indigo-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-indigo-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Plantillas de Capacitación</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Bases reutilizables para crear capacitaciones</p>
+              <h3 class="font-semibold text-white">Plantillas de Capacitación</h3>
+              <p class="text-sm text-white/50 leading-relaxed">Bases reutilizables para crear capacitaciones</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
-            <p class="text-sm text-stone-400">Agrupa materiales del banco en un orden definido para reutilizarlos fácilmente.</p>
+            <p class="text-sm text-white/40">Agrupa materiales del banco en un orden definido para reutilizarlos fácilmente.</p>
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/plantillas"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver plantillas
             </a>
             @if (isManager()) {
@@ -254,34 +254,34 @@
         </div>
 
         <!-- ── Materiales ────────────────────────────────────────────── -->
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-teal-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-teal-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-teal-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Materiales</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">PDFs, videos, imágenes y ligas reutilizables</p>
+              <h3 class="font-semibold text-white">Materiales</h3>
+              <p class="text-sm text-white/50 leading-relaxed">PDFs, videos, imágenes y ligas reutilizables</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
             <div class="flex flex-wrap gap-1.5">
-              <span class="text-xs bg-red-50 text-red-700 font-medium rounded-full px-2.5 py-0.5">PDF</span>
-              <span class="text-xs bg-purple-50 text-purple-700 font-medium rounded-full px-2.5 py-0.5">Video</span>
-              <span class="text-xs bg-blue-50 text-blue-700 font-medium rounded-full px-2.5 py-0.5">Imagen</span>
-              <span class="text-xs bg-teal-50 text-teal-700 font-medium rounded-full px-2.5 py-0.5">Liga</span>
+              <span class="text-xs bg-red-500/15 text-red-400 font-medium rounded-full px-2.5 py-0.5">PDF</span>
+              <span class="text-xs bg-purple-500/15 text-purple-400 font-medium rounded-full px-2.5 py-0.5">Video</span>
+              <span class="text-xs bg-blue-500/15 text-blue-400 font-medium rounded-full px-2.5 py-0.5">Imagen</span>
+              <span class="text-xs bg-blue-500/15 text-blue-400 font-medium rounded-full px-2.5 py-0.5">Liga</span>
             </div>
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/banco-info/materiales"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver materiales
             </a>
             @if (isManager()) {
@@ -294,29 +294,29 @@
         </div>
 
         <!-- ── Capacitaciones ─────────────────────────────────────────── -->
-        <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-teal-400/40 hover:shadow-lg flex flex-col">
+        <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-teal-400/40 hover:shadow-lg flex flex-col">
           <div class="absolute inset-0 bg-gradient-to-br from-teal-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
           <!-- Header -->
           <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-            <div class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
               </svg>
             </div>
             <div class="flex-1 min-w-0 space-y-1">
-              <h3 class="font-semibold text-stone-900">Capacitaciones</h3>
-              <p class="text-sm text-stone-500 leading-relaxed">Programas de formación del personal por sucursal</p>
+              <h3 class="font-semibold text-white">Capacitaciones</h3>
+              <p class="text-sm text-white/50 leading-relaxed">Programas de formación del personal por sucursal</p>
             </div>
           </div>
           <!-- Content -->
           <div class="relative px-4 pb-2 flex-1">
-            <p class="text-sm text-stone-400">Gestiona el ciclo completo: programar → en curso → completada.</p>
+            <p class="text-sm text-white/40">Gestiona el ciclo completo: programar → en curso → completada.</p>
           </div>
           <!-- Footer -->
           <div class="relative px-4 pb-4 flex gap-2">
             <a routerLink="/training"
-               class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+               class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
               Ver todas
             </a>
             @if (isManager()) {
@@ -334,34 +334,34 @@
     <!-- ══ Evaluaciones ══════════════════════════════════════════════════ -->
     @if (isManager()) {
       <div>
-        <h2 class="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Evaluaciones</h2>
+        <h2 class="text-xs font-semibold text-white/40 uppercase tracking-widest mb-4">Evaluaciones</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
           <!-- ── Banco de Preguntas ─────────────────────────────────────── -->
-          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-indigo-400/40 hover:shadow-lg flex flex-col">
+          <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-indigo-400/40 hover:shadow-lg flex flex-col">
             <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
             <!-- Header -->
             <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-lg bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0 space-y-1">
-                <h3 class="font-semibold text-stone-900">Banco de Preguntas</h3>
-                <p class="text-sm text-stone-500 leading-relaxed">Preguntas reutilizables para armar exámenes</p>
+                <h3 class="font-semibold text-white">Banco de Preguntas</h3>
+                <p class="text-sm text-white/50 leading-relaxed">Preguntas reutilizables para armar exámenes</p>
               </div>
             </div>
             <!-- Content -->
             <div class="relative px-4 pb-2 flex-1">
-              <span class="text-2xl font-bold text-stone-900">{{ totalBankQs() }}</span>
-              <span class="ml-2 text-sm text-stone-400">disponibles</span>
+              <span class="text-2xl font-bold text-white">{{ totalBankQs() }}</span>
+              <span class="ml-2 text-sm text-white/40">disponibles</span>
             </div>
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/banco-preguntas"
-                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
                 Ver banco
               </a>
               <a routerLink="/banco-info/banco-preguntas"
@@ -372,30 +372,30 @@
           </div>
 
           <!-- ── Plantillas de Examen ───────────────────────────────────── -->
-          <div class="group relative overflow-hidden bg-white border border-stone-200 rounded-xl transition-all duration-300 hover:border-violet-400/40 hover:shadow-lg flex flex-col">
+          <div class="group relative overflow-hidden bg-white/[0.04] border border-white/10 rounded-xl transition-all duration-300 hover:border-violet-400/40 hover:shadow-lg flex flex-col">
             <div class="absolute inset-0 bg-gradient-to-br from-violet-600/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"></div>
             <!-- Header -->
             <div class="relative px-4 pt-4 pb-2 flex items-start gap-3">
-              <div class="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0 space-y-1">
-                <h3 class="font-semibold text-stone-900">Plantillas de Examen</h3>
-                <p class="text-sm text-stone-500 leading-relaxed">Bases reutilizables para crear exámenes rápido</p>
+                <h3 class="font-semibold text-white">Plantillas de Examen</h3>
+                <p class="text-sm text-white/50 leading-relaxed">Bases reutilizables para crear exámenes rápido</p>
               </div>
             </div>
             <!-- Content -->
             <div class="relative px-4 pb-2 flex-1">
-              <span class="text-2xl font-bold text-stone-900">{{ totalTemplates() }}</span>
-              <span class="ml-2 text-sm text-stone-400">plantillas</span>
+              <span class="text-2xl font-bold text-white">{{ totalTemplates() }}</span>
+              <span class="ml-2 text-sm text-white/40">plantillas</span>
             </div>
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/plantillas-examen"
-                 class="flex-1 text-center text-sm font-medium text-brand-700 border border-brand-200 rounded-lg py-2 hover:bg-brand-50 transition-colors">
+                 class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
                 Ver plantillas
               </a>
               <a routerLink="/banco-info/plantillas-examen"

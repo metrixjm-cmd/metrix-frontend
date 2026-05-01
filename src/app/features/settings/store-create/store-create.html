@@ -1,44 +1,44 @@
-﻿<div class="p-6 max-w-2xl mx-auto space-y-6">
+<div class="p-6 max-w-2xl mx-auto space-y-6">
 
   <!-- ── Encabezado ─────────────────────────────────────────────────────── -->
   <div class="flex items-center gap-3">
     <a routerLink="/banco-info/sucursales"
-       class="p-2 rounded-lg hover:bg-stone-100 transition-colors text-stone-500 hover:text-stone-700">
+       class="p-2 rounded-lg hover:bg-white/[0.06] transition-colors text-white/50 hover:text-white/70">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-stone-900">Nueva sucursal</h1>
-      <p class="text-sm text-stone-500 mt-0.5">Registra una nueva unidad de negocio</p>
+      <h1 class="text-2xl font-bold text-white">Nueva sucursal</h1>
+      <p class="text-sm text-white/50 mt-0.5">Registra una nueva unidad de negocio</p>
     </div>
   </div>
 
   <!-- ── Solo ADMIN puede crear ─────────────────────────────────────────── -->
   @if (!isAdmin()) {
-    <div class="p-4 bg-brand-50 border border-brand-200 rounded-xl text-brand-700 text-sm">
+    <div class="p-4 bg-cyan-500/[0.05] border border-cyan-500/25 rounded-xl text-cyan-400 text-sm">
       Solo los administradores pueden crear sucursales.
     </div>
   } @else {
 
     <!-- ── Formulario ──────────────────────────────────────────────────── -->
-    <form [formGroup]="form" (ngSubmit)="submit()" class="bg-white border border-stone-200 rounded-xl shadow-card p-6 space-y-5">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="bg-white/[0.04] border border-white/10 rounded-xl p-6 space-y-5">
 
       <!-- Error de API -->
       @if (error()) {
-        <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div class="p-3 bg-red-500/15 border border-red-500/25 rounded-lg text-red-400 text-sm">
           {{ error() }}
         </div>
       }
 
       <!-- Nombre -->
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">
+        <label class="block text-sm font-medium text-white/70 mb-1">
           Nombre <span class="text-red-500">*</span>
         </label>
         <input formControlName="nombre" type="text"
                placeholder="Sucursal Centro"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50">
         @if (form.get('nombre')?.invalid && form.get('nombre')?.touched) {
           <p class="text-xs text-red-500 mt-1">El nombre es obligatorio (mín. 2 caracteres)</p>
         }
@@ -46,41 +46,41 @@
 
       <!-- Código único (solo lectura, auto-generado) -->
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">
+        <label class="block text-sm font-medium text-white/70 mb-1">
           Código único
         </label>
         <div class="flex items-center gap-2">
-          <div class="flex-1 flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
-            <svg class="w-4 h-4 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="flex-1 flex items-center gap-2 bg-white/[0.02] border border-white/10 rounded-lg px-3 py-2">
+            <svg class="w-4 h-4 text-white/40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
             </svg>
-            <span class="font-mono text-sm font-semibold text-stone-900 tracking-wider">{{ nextCode() }}</span>
+            <span class="font-mono text-sm font-semibold text-white tracking-wider">{{ nextCode() }}</span>
           </div>
-          <span class="text-xs text-stone-400 bg-stone-100 px-2 py-1 rounded-md whitespace-nowrap">Auto-generado</span>
+          <span class="text-xs text-white/40 bg-white/[0.05] px-2 py-1 rounded-md whitespace-nowrap">Auto-generado</span>
         </div>
-        <p class="text-xs text-stone-400 mt-1">Asignado automáticamente. No puede modificarse una vez creado.</p>
+        <p class="text-xs text-white/40 mt-1">Asignado automáticamente. No puede modificarse una vez creado.</p>
       </div>
 
       <!-- Dirección -->
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Dirección</label>
+        <label class="block text-sm font-medium text-white/70 mb-1">Dirección</label>
         <input formControlName="direccion" type="text"
                placeholder="Av. Insurgentes Sur 1234, Col. Centro"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50">
       </div>
 
       <!-- Teléfono -->
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Teléfono</label>
+        <label class="block text-sm font-medium text-white/70 mb-1">Teléfono</label>
         <input formControlName="telefono" type="tel"
                placeholder="55 1234 5678"
-               class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
+               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50">
       </div>
 
       <!-- Turnos -->
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-2">Turnos operativos</label>
+        <label class="block text-sm font-medium text-white/70 mb-2">Turnos operativos</label>
         <div class="flex flex-wrap gap-3">
           @for (turno of turnos; track turno) {
             <label class="flex items-center gap-2 cursor-pointer">
@@ -88,7 +88,7 @@
                      [checked]="isTurnoSelected(turno)"
                      (change)="toggleTurno(turno)"
                      class="w-4 h-4 accent-brand-600">
-              <span class="text-sm text-stone-700">{{ turno }}</span>
+              <span class="text-sm text-white/70">{{ turno }}</span>
             </label>
           }
         </div>
@@ -97,7 +97,7 @@
       <!-- Acciones -->
       <div class="flex items-center justify-end gap-3 pt-2">
         <a routerLink="/banco-info/sucursales"
-           class="px-4 py-2 text-sm font-medium text-stone-700 hover:text-stone-900 transition-colors">
+           class="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors">
           Cancelar
         </a>
         <button type="submit"
