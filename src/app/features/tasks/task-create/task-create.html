@@ -332,6 +332,25 @@
                 }
               </div>
 
+              <!-- Material de referencia (opcional) -->
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1.5">
+                  Material de referencia (URL) <span class="text-xs font-normal text-stone-400">(opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  formControlName="referenceUrl"
+                  placeholder="https://..."
+                  class="input-field h-11"
+                  [class.input-error]="hasError('referenceUrl', 'pattern')" />
+                @if (hasError('referenceUrl', 'pattern')) {
+                  <p class="text-red-500 text-xs mt-1">Ingresa una URL válida (http/https).</p>
+                }
+                <p class="text-xs text-stone-400 mt-1">
+                  Se mostrará como link para que el ejecutador pueda consultarlo.
+                </p>
+              </div>
+
               <!-- Categoría + Crítica -->
               <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
@@ -674,7 +693,7 @@
               <!-- Fechas para tarea única -->
               @if (!isRecurring()) {
                 <div class="space-y-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                     <!-- Fecha de inicio -->
                     <div>
@@ -685,27 +704,30 @@
                         </svg>
                         Fecha y hora de inicio <span class="text-red-500">*</span>
                       </label>
-                      <div class="grid grid-cols-3 gap-2">
-                        <select formControlName="startDay" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Día</option>
-                          @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
-                        </select>
-                        <select formControlName="startMonth" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Mes</option>
-                          @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
-                        </select>
-                        <div class="grid grid-cols-3 gap-2">
-                          <select class="input-field h-11" [ngModel]="startHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartHour12($event); dueDateError.set(null)">
-                            <option value="">Hora</option>
-                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="startMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMinute($event); dueDateError.set(null)">
-                            <option value="">Min</option>
-                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="startMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setStartMeridiem($event); dueDateError.set(null)">
-                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
-                          </select>
+                      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex flex-col">
+                          <div class="h-[22px] hidden sm:block"></div>
+                          <div class="flex gap-2">
+                            <select formControlName="startDay" class="input-field h-[42px] w-20" (change)="dueDateError.set(null)">
+                              <option value="">Día</option>
+                              @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
+                            </select>
+                            <select formControlName="startMonth" class="input-field h-[42px] w-28" (change)="dueDateError.set(null)">
+                              <option value="">Mes</option>
+                              @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="sm:flex sm:justify-end">
+                          <input type="hidden" formControlName="startTime" />
+                          <app-day-time-picker
+                            [showDays]="false"
+                            [showEndTime]="false"
+                            [startHour]="8"
+                            [startMinute]="0"
+                            (valueChange)="onSingleStartTimeChange($event); dueDateError.set(null)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -719,27 +741,30 @@
                         </svg>
                         Fecha y hora límite <span class="text-red-500">*</span>
                       </label>
-                      <div class="grid grid-cols-3 gap-2">
-                        <select formControlName="dueDay" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Día</option>
-                          @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
-                        </select>
-                        <select formControlName="dueMonth" class="input-field h-11" (change)="dueDateError.set(null)">
-                          <option value="">Mes</option>
-                          @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
-                        </select>
-                        <div class="grid grid-cols-3 gap-2">
-                          <select class="input-field h-11" [ngModel]="dueHour12()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueHour12($event); dueDateError.set(null)">
-                            <option value="">Hora</option>
-                            @for (h of hours12; track h) { <option [value]="h">{{ h }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="dueMinute()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMinute($event); dueDateError.set(null)">
-                            <option value="">Min</option>
-                            @for (m of minutes; track m) { <option [value]="m">{{ m }}</option> }
-                          </select>
-                          <select class="input-field h-11" [ngModel]="dueMeridiem()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="setDueMeridiem($event); dueDateError.set(null)">
-                            @for (period of meridiems; track period) { <option [value]="period">{{ period }}</option> }
-                          </select>
+                      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div class="flex flex-col">
+                          <div class="h-[22px] hidden sm:block"></div>
+                          <div class="flex gap-2">
+                            <select formControlName="dueDay" class="input-field h-[42px] w-20" (change)="dueDateError.set(null)">
+                              <option value="">Día</option>
+                              @for (d of days; track d) { <option [value]="d">{{ d }}</option> }
+                            </select>
+                            <select formControlName="dueMonth" class="input-field h-[42px] w-28" (change)="dueDateError.set(null)">
+                              <option value="">Mes</option>
+                              @for (m of months; track m.value) { <option [value]="m.value">{{ m.label }}</option> }
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="sm:flex sm:justify-end">
+                          <input type="hidden" formControlName="dueTime" />
+                          <app-day-time-picker
+                            [showDays]="false"
+                            [showEndTime]="false"
+                            [startHour]="17"
+                            [startMinute]="0"
+                            (valueChange)="onSingleDueTimeChange($event); dueDateError.set(null)"
+                          />
                         </div>
                       </div>
                     </div>
@@ -771,31 +796,7 @@
       <div class="max-w-4xl mx-auto px-4 py-3">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
 
-          <!-- Indicador de pasos en footer -->
-          <div class="hidden sm:flex items-center gap-3">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step1Done() ? 'bg-emerald-500' : 'bg-white/[0.15]'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step1Done() ? 'text-emerald-600 font-medium' : 'text-white/40'">Tarea</span>
-            </div>
-            <span class="text-white/[0.08]">·</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step2Done() ? 'bg-emerald-500' : 'bg-white/[0.15]'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step2Done() ? 'text-emerald-600 font-medium' : 'text-white/40'">Responsables</span>
-            </div>
-            <span class="text-white/[0.08]">·</span>
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full transition-colors"
-                    [class]="step3Done() ? 'bg-emerald-500' : 'bg-white/[0.15]'"></span>
-              <span class="text-xs transition-colors"
-                    [class]="step3Done() ? 'text-emerald-600 font-medium' : 'text-white/40'">Ejecución</span>
-            </div>
-          </div>
-
-          <div class="flex gap-3 w-full sm:w-auto">
+          <div class="flex gap-3 w-full sm:w-auto justify-end ml-auto">
             <button type="button" (click)="goToList()"
               class="flex-1 sm:flex-none h-11 px-6 border border-white/10 text-white/60 hover:bg-white/[0.04] text-sm font-medium rounded-lg transition-colors">
               Cancelar
