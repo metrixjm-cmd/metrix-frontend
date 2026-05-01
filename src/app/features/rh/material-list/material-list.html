@@ -4,17 +4,17 @@
   <div class="flex items-center justify-between flex-wrap gap-3">
     <div class="flex items-center gap-3">
       <a routerLink="/banco-info"
-         class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-700 transition-colors">
+         class="p-2 rounded-lg hover:bg-white/[0.06] text-white/50 hover:text-white/80 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Materiales de Capacitación</h1>
-        <p class="text-sm text-stone-500 mt-0.5">
+        <h1 class="text-2xl font-bold text-white">Materiales de Capacitación</h1>
+        <p class="text-sm text-white/50 mt-0.5">
           Banco de PDFs, videos, imágenes y ligas reutilizables
           @if (materialSvc.total() > 0) {
-            · <span class="font-medium text-stone-700">{{ materialSvc.total() }}</span> materiales
+            · <span class="font-medium text-white/70">{{ materialSvc.total() }}</span> materiales
           }
         </p>
       </div>
@@ -33,7 +33,7 @@
 
   <!-- ── Error global ─────────────────────────────────────────────────────── -->
   @if (materialSvc.error()) {
-    <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+    <div class="p-3 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
       {{ materialSvc.error() }}
     </div>
   }
@@ -42,16 +42,16 @@
   <div class="flex flex-wrap gap-2 items-center">
 
     <!-- Tipo -->
-    <div class="flex gap-1.5 bg-stone-100 rounded-lg p-1">
+    <div class="flex gap-1.5 bg-white/[0.05] rounded-lg p-1">
       <button type="button" (click)="setType('')"
-              [class]="filterType() === '' ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
-                                             'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+              [class]="filterType() === '' ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white/[0.08] text-white/80' :
+                                             'px-3 py-1.5 text-xs text-white/50 hover:text-white/80 rounded-md transition-colors'">
         Todos
       </button>
       @for (t of allTypes; track t) {
         <button type="button" (click)="setType(t)"
-                [class]="filterType() === t ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-stone-800 shadow-sm' :
-                                              'px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 rounded-md transition-colors'">
+                [class]="filterType() === t ? 'px-3 py-1.5 text-xs font-semibold rounded-md bg-white/[0.08] text-white/80' :
+                                              'px-3 py-1.5 text-xs text-white/50 hover:text-white/80 rounded-md transition-colors'">
           {{ typeIcon(t) }} {{ typeLabels[t] }}
         </button>
       }
@@ -61,7 +61,7 @@
     @if (catalogSvc.categorias().length > 0) {
       <select [value]="filterCategory()"
               (change)="setCategory($any($event.target).value)"
-              class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+              class="border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-teal-500">
         <option value="">Todas las categorías</option>
         @for (cat of catalogSvc.categorias(); track cat.id) {
           <option [value]="cat.value">{{ cat.label || cat.value }}</option>
@@ -75,10 +75,10 @@
   @if (materialSvc.loading()) {
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       @for (i of [1,2,3,4,5,6]; track i) {
-        <div class="bg-white border border-stone-200 rounded-xl p-4 space-y-3 animate-pulse">
-          <div class="h-10 bg-stone-100 rounded-lg"></div>
-          <div class="h-4 bg-stone-100 rounded w-3/4"></div>
-          <div class="h-3 bg-stone-100 rounded w-1/2"></div>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 space-y-3 animate-pulse">
+          <div class="h-10 bg-white/[0.05] rounded-lg"></div>
+          <div class="h-4 bg-white/[0.05] rounded w-3/4"></div>
+          <div class="h-3 bg-white/[0.05] rounded w-1/2"></div>
         </div>
       }
     </div>
@@ -87,10 +87,10 @@
   <!-- ── Grid de materiales ───────────────────────────────────────────────── -->
   @if (!materialSvc.loading()) {
     @if (materialSvc.materials().length === 0) {
-      <div class="bg-white border border-stone-200 rounded-xl py-16 text-center">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl py-16 text-center">
         <div class="text-5xl mb-4">📚</div>
-        <p class="text-stone-500 font-medium">Sin materiales aún</p>
-        <p class="text-stone-400 text-sm mt-1">
+        <p class="text-white/50 font-medium">Sin materiales aún</p>
+        <p class="text-white/40 text-sm mt-1">
           @if (isManager()) { Agrega el primer material con el botón de arriba. }
           @else { No hay materiales disponibles con estos filtros. }
         </p>
@@ -98,7 +98,7 @@
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         @for (m of materialSvc.materials(); track m.id) {
-          <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-card flex flex-col hover:shadow-md transition-shadow">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow">
 
             <!-- Icono + tipo -->
             <div class="px-4 pt-4 pb-3 flex items-start gap-3">
@@ -108,7 +108,7 @@
                   {{ typeLabels[m.type] }}
                 </span>
                 @if (m.category) {
-                  <span class="ml-1.5 inline-block px-2 py-0.5 rounded-full text-xs bg-stone-100 text-stone-600">
+                  <span class="ml-1.5 inline-block px-2 py-0.5 rounded-full text-xs bg-white/[0.05] text-white/60">
                     {{ m.category }}
                   </span>
                 }
@@ -117,9 +117,9 @@
 
             <!-- Contenido -->
             <div class="px-4 pb-3 flex-1 space-y-2">
-              <p class="text-sm font-semibold text-stone-900 line-clamp-2">{{ m.title }}</p>
+              <p class="text-sm font-semibold text-white line-clamp-2">{{ m.title }}</p>
               @if (m.description) {
-                <p class="text-xs text-stone-500 line-clamp-2">{{ m.description }}</p>
+                <p class="text-xs text-white/50 line-clamp-2">{{ m.description }}</p>
               }
               @if (m.tags.length > 0) {
                 <div class="flex flex-wrap gap-1">
@@ -131,8 +131,8 @@
             </div>
 
             <!-- Footer -->
-            <div class="px-4 pb-4 flex items-center justify-between border-t border-stone-100 pt-3">
-              <div class="text-xs text-stone-400">
+            <div class="px-4 pb-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
+              <div class="text-xs text-white/40">
                 @if (m.usageCount > 0) {
                   <span class="text-teal-600 font-medium">Usado {{ m.usageCount }}x</span>
                 } @else {
@@ -146,7 +146,7 @@
                 <!-- Abrir/Ver -->
                 <button type="button" (click)="openUrl(m.url)"
                         title="Abrir material"
-                        class="p-1.5 rounded-lg text-stone-400 hover:text-teal-600 hover:bg-teal-50 transition-colors">
+                        class="p-1.5 rounded-lg text-white/40 hover:text-teal-600 hover:bg-teal-50 transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -157,7 +157,7 @@
                   <button type="button" (click)="deleteMaterial(m)"
                           [disabled]="materialSvc.saving()"
                           title="Eliminar material"
-                          class="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40">
+                          class="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/15 transition-colors disabled:opacity-40">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -179,13 +179,13 @@
 <!-- ══ MODAL: Agregar material ═══════════════════════════════════════════════ -->
 @if (showModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-    <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+    <div class="w-full max-w-lg bg-white/[0.04] rounded-2xl shadow-xl overflow-hidden">
 
       <!-- Header modal -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-        <h3 class="text-base font-semibold text-stone-900">Agregar material</h3>
+      <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+        <h3 class="text-base font-semibold text-white">Agregar material</h3>
         <button type="button" (click)="closeModal()"
-                class="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-colors">
+                class="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -193,17 +193,17 @@
       </div>
 
       <!-- Tabs -->
-      <div class="flex border-b border-stone-100">
+      <div class="flex border-b border-white/[0.06]">
         <button type="button" (click)="setTab('file')"
                 [class]="activeTab() === 'file'
                   ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/50'
-                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+                  : 'flex-1 py-3 text-sm text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-colors'">
           Subir archivo
         </button>
         <button type="button" (click)="setTab('link')"
                 [class]="activeTab() === 'link'
                   ? 'flex-1 py-3 text-sm font-semibold text-teal-700 border-b-2 border-teal-600 bg-teal-50/50'
-                  : 'flex-1 py-3 text-sm text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors'">
+                  : 'flex-1 py-3 text-sm text-white/50 hover:text-white/80 hover:bg-white/[0.04] transition-colors'">
           Agregar liga
         </button>
       </div>
@@ -213,7 +213,7 @@
 
         <!-- Error de servicio -->
         @if (materialSvc.error()) {
-          <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div class="p-3 bg-red-500/15 border border-red-500/25 rounded-lg text-red-400 text-sm">
             {{ materialSvc.error() }}
           </div>
         }
@@ -223,64 +223,64 @@
 
           <!-- Dropzone -->
           <label class="flex flex-col items-center justify-center w-full border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors"
-                 [class]="selectedFile() ? 'border-teal-300 bg-teal-50' : 'border-stone-200 hover:border-teal-300 hover:bg-stone-50'">
+                 [class]="selectedFile() ? 'border-teal-300 bg-teal-50' : 'border-white/10 hover:border-teal-300 hover:bg-white/[0.04]'">
             <input type="file" class="sr-only" [accept]="ACCEPTED" (change)="onFileSelected($event)">
             @if (selectedFile(); as f) {
               <div class="flex items-center gap-3 w-full">
                 <span class="text-3xl">{{ fileTypeIcon(f) }}</span>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-stone-800 truncate">{{ f.name }}</p>
-                  <p class="text-xs text-stone-400">{{ formatSize(f.size) }}</p>
+                  <p class="text-sm font-medium text-white/80 truncate">{{ f.name }}</p>
+                  <p class="text-xs text-white/40">{{ formatSize(f.size) }}</p>
                 </div>
                 <span class="text-xs text-teal-600 font-medium">Cambiar</span>
               </div>
             } @else {
-              <svg class="w-10 h-10 text-stone-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-10 h-10 text-white/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
               </svg>
-              <p class="text-sm text-stone-500">Arrastra o <span class="text-teal-600 font-medium">selecciona</span></p>
-              <p class="text-xs text-stone-400 mt-1">PDF, JPG, PNG, WebP, MP4, WebM · máx. 20 MB</p>
+              <p class="text-sm text-white/50">Arrastra o <span class="text-teal-600 font-medium">selecciona</span></p>
+              <p class="text-xs text-white/40 mt-1">PDF, JPG, PNG, WebP, MP4, WebM · máx. 20 MB</p>
             }
           </label>
           @if (fileError()) {
-            <p class="text-xs text-red-600">{{ fileError() }}</p>
+            <p class="text-xs text-red-400">{{ fileError() }}</p>
           }
         }
 
         <!-- ── Tab: Liga ── -->
         @if (activeTab() === 'link') {
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">URL *</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">URL *</label>
             <input formControlName="url" type="url" placeholder="https://..."
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-teal-500">
             @if (form.get('url')?.invalid && form.get('url')?.touched) {
-              <p class="text-xs text-red-600 mt-1">URL requerida.</p>
+              <p class="text-xs text-red-400 mt-1">URL requerida.</p>
             }
           </div>
         }
 
         <!-- Campos comunes -->
         <div>
-          <label class="block text-xs font-medium text-stone-600 mb-1">Título *</label>
+          <label class="block text-xs font-medium text-white/60 mb-1">Título *</label>
           <input formControlName="title" type="text" placeholder="Nombre del material"
-                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                 class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-teal-500">
           @if (form.get('title')?.invalid && form.get('title')?.touched) {
-            <p class="text-xs text-red-600 mt-1">Título requerido.</p>
+            <p class="text-xs text-red-400 mt-1">Título requerido.</p>
           }
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-stone-600 mb-1">Descripción</label>
+          <label class="block text-xs font-medium text-white/60 mb-1">Descripción</label>
           <textarea formControlName="description" rows="2" placeholder="Breve descripción del contenido…"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Categoría</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Categoría</label>
             <select formControlName="category"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500">
               <option value="">Sin categoría</option>
               @for (cat of catalogSvc.categorias(); track cat.id) {
                 <option [value]="cat.value">{{ cat.label || cat.value }}</option>
@@ -288,17 +288,17 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Tags</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Tags</label>
             <input formControlName="tagsRaw" type="text" placeholder="tag1, tag2, tag3"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-500">
-            <p class="text-xs text-stone-400 mt-1">Separados por comas</p>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-teal-500">
+            <p class="text-xs text-white/40 mt-1">Separados por comas</p>
           </div>
         </div>
 
         <!-- Acciones -->
         <div class="flex justify-end gap-3 pt-2">
           <button type="button" (click)="closeModal()"
-                  class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+                  class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
             Cancelar
           </button>
           <button type="submit"

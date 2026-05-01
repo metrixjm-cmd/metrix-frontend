@@ -1,0 +1,42 @@
+/* ═══════════════════════════════════════════════════════════════
+   App Layout — Sidebar & Header específicos
+   Solo afecta al layout raíz, no a otros módulos.
+═══════════════════════════════════════════════════════════════ */
+
+// ── Nav item activo — efecto NEON ─────────────────────────────
+aside nav a.router-link-active {
+  background:   rgba(6, 182, 212, 0.10);
+  border-color: rgba(6, 182, 212, 0.60);
+  color:        #fff;
+  font-weight:  600;
+
+  // Glow multicapa que simula el efecto neon del screenshot
+  box-shadow:
+    0 0  6px rgba(6, 182, 212, 0.35),   // halo inmediato
+    0 0 16px rgba(6, 182, 212, 0.18),   // brillo medio
+    0 0 32px rgba(6, 182, 212, 0.08),   // aureola lejana
+    inset 0 0 12px rgba(6, 182, 212, 0.06); // brillo interior
+
+  // Ícono cyan con glow
+  svg {
+    color: #22d3ee;
+    filter: drop-shadow(0 0 5px rgba(6, 182, 212, 0.70));
+  }
+
+  // Barra izquierda iluminada
+  .sidebar-active-bar {
+    height: 60%;
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+  }
+}
+
+// ── Hover en nav items (no activo): ícono más brillante ────────
+aside nav a:not(.router-link-active):hover svg {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+// ── Scrollbar minimal en nav ───────────────────────────────────
+aside nav {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}

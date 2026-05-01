@@ -3,20 +3,20 @@
   <!-- Header -->
   <div class="flex items-center justify-between flex-wrap gap-3">
     <div class="flex items-center gap-3">
-      <a routerLink="/banco-info" class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+      <a routerLink="/banco-info" class="p-2 rounded-lg hover:bg-white/[0.06] text-white/50 transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
       <div>
-        <h1 class="text-xl font-bold text-stone-900">Banco de Preguntas</h1>
-        <p class="text-sm text-stone-500">{{ bankSvc.questions().length }} preguntas disponibles</p>
+        <h1 class="text-xl font-bold text-white">Banco de Preguntas</h1>
+        <p class="text-sm text-white/50">{{ bankSvc.questions().length }} preguntas disponibles</p>
       </div>
     </div>
     @if (isManager()) {
       <button type="button" (click)="toggleForm()"
               [class]="showForm()
-                ? 'px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors'
+                ? 'px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors'
                 : 'px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors'">
         {{ showForm() ? 'Cancelar' : '+ Nueva pregunta' }}
       </button>
@@ -24,23 +24,23 @@
   </div>
 
   @if (error()) {
-    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
+    <div class="bg-red-500/15 border border-red-500/25 text-red-400 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
   }
 
   <!-- ── Formulario nueva pregunta ─────────────────────────────────────── -->
   @if (showForm()) {
-    <div class="bg-white border border-indigo-200 rounded-xl p-5 shadow-card space-y-4">
-      <h2 class="font-semibold text-stone-800 text-sm">Nueva pregunta</h2>
+    <div class="bg-white/[0.04] border border-indigo-500/30 rounded-xl p-5 space-y-4">
+      <h2 class="font-semibold text-white/80 text-sm">Nueva pregunta</h2>
 
       <!-- Tipo -->
       <div>
-        <label class="block text-xs font-medium text-stone-600 mb-2">Tipo *</label>
+        <label class="block text-xs font-medium text-white/60 mb-2">Tipo *</label>
         <div class="flex flex-wrap gap-2">
           @for (qt of questionTypes; track qt) {
             <button type="button" (click)="onTypeChange(qt)"
                     [class]="currentType === qt
                       ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white border border-indigo-600'
-                      : 'px-3 py-1.5 text-xs font-medium rounded-lg border border-stone-200 text-stone-600 hover:border-indigo-400 transition-colors'">
+                      : 'px-3 py-1.5 text-xs font-medium rounded-lg border border-white/10 text-white/60 hover:border-indigo-400 transition-colors'">
               {{ typeLabels[qt] }}
             </button>
           }
@@ -50,29 +50,29 @@
       <div [formGroup]="form" class="space-y-3">
         <!-- Texto -->
         <div>
-          <label class="block text-xs font-medium text-stone-600 mb-1">Pregunta *</label>
+          <label class="block text-xs font-medium text-white/60 mb-1">Pregunta *</label>
           <textarea formControlName="questionText" rows="2" placeholder="Escribe la pregunta…"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
         </div>
 
         <!-- Opciones: MULTIPLE_CHOICE / TRUE_FALSE -->
         @if (isSingle) {
           <div class="space-y-2">
-            <p class="text-xs text-stone-500">Selecciona la opción correcta</p>
+            <p class="text-xs text-white/50">Selecciona la opción correcta</p>
             @for (optCtrl of options.controls; track $index) {
               <div class="flex items-center gap-2">
                 <button type="button" (click)="setCorrect($index)"
                         class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                        [class]="isCorrect($index) ? 'border-emerald-500 bg-emerald-500' : 'border-stone-300 hover:border-indigo-400'">
+                        [class]="isCorrect($index) ? 'border-emerald-500 bg-emerald-500' : 'border-white/[0.15] hover:border-indigo-400'">
                   @if (isCorrect($index)) {
                     <span class="w-2 h-2 bg-white rounded-full"></span>
                   }
                 </button>
                 @if (isTrueFalse) {
-                  <span class="text-sm text-stone-700">{{ optCtrl.value }}</span>
+                  <span class="text-sm text-white/70">{{ optCtrl.value }}</span>
                 } @else {
                   <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                         class="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                         class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
                 }
               </div>
             }
@@ -82,12 +82,12 @@
         <!-- MULTI_SELECT -->
         @if (isMultiSelect) {
           <div class="space-y-2">
-            <p class="text-xs text-stone-500">Marca todas las respuestas correctas</p>
+            <p class="text-xs text-white/50">Marca todas las respuestas correctas</p>
             @for (optCtrl of options.controls; track $index) {
               <div class="flex items-center gap-2">
                 <button type="button" (click)="toggleMulti($index)"
                         class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
-                        [class]="isMultiCorrect($index) ? 'border-emerald-500 bg-emerald-500' : 'border-stone-300 hover:border-indigo-400'">
+                        [class]="isMultiCorrect($index) ? 'border-emerald-500 bg-emerald-500' : 'border-white/[0.15] hover:border-indigo-400'">
                   @if (isMultiCorrect($index)) {
                     <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
@@ -95,7 +95,7 @@
                   }
                 </button>
                 <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                       class="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                       class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
               </div>
             }
           </div>
@@ -104,23 +104,23 @@
         <!-- OPEN_TEXT -->
         @if (isOpenText) {
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Palabras clave <span class="text-stone-400">(separadas por comas)</span></label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Palabras clave <span class="text-white/40">(separadas por comas)</span></label>
             <input formControlName="acceptedKeywords" type="text" placeholder="temperatura, 74, cocción"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
         }
 
         <!-- Fila: puntos + dificultad -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Puntos</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Puntos</label>
             <input formControlName="points" type="number" min="1" max="10"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Dificultad</label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Dificultad</label>
             <select formControlName="difficulty"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500">
               @for (d of difficulties; track d) {
                 <option [value]="d">{{ diffLabels[d] }}</option>
               }
@@ -131,22 +131,22 @@
         <!-- Categoría + tags -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Categoría <span class="text-stone-400">(opcional)</span></label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Categoría <span class="text-white/40">(opcional)</span></label>
             <input formControlName="category" type="text" placeholder="Ej. Seguridad"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-600 mb-1">Tags <span class="text-stone-400">(comas)</span></label>
+            <label class="block text-xs font-medium text-white/60 mb-1">Tags <span class="text-white/40">(comas)</span></label>
             <input formControlName="tags" type="text" placeholder="bienvenida, protocolo"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
         </div>
 
         <!-- Retroalimentación -->
         <div>
-          <label class="block text-xs font-medium text-stone-500 mb-1">Retroalimentación <span class="text-stone-400">(opcional)</span></label>
+          <label class="block text-xs font-medium text-white/50 mb-1">Retroalimentación <span class="text-white/40">(opcional)</span></label>
           <input formControlName="explanation" type="text" placeholder="Explica la respuesta correcta…"
-                 class="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"/>
+                 class="w-full border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/[0.15]"/>
         </div>
       </div>
 
@@ -171,16 +171,16 @@
   <div class="flex flex-wrap gap-3">
     <input type="text" [value]="filterSearch()" (input)="filterSearch.set($any($event.target).value)"
            placeholder="Buscar pregunta…"
-           class="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-48"/>
+           class="border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-48"/>
     <select [value]="filterType()" (change)="filterType.set($any($event.target).value)"
-            class="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            class="border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500">
       <option value="">Todos los tipos</option>
       @for (qt of questionTypes; track qt) {
         <option [value]="qt">{{ typeLabels[qt] }}</option>
       }
     </select>
     <select [value]="filterDiff()" (change)="filterDiff.set($any($event.target).value)"
-            class="border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+            class="border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-indigo-500">
       <option value="">Toda dificultad</option>
       @for (d of difficulties; track d) {
         <option [value]="d">{{ diffLabels[d] }}</option>
@@ -190,9 +190,9 @@
 
   <!-- ── Lista ──────────────────────────────────────────────────────────── -->
   @if (bankSvc.loading()) {
-    <div class="text-center py-12 text-stone-400 text-sm">Cargando banco de preguntas…</div>
+    <div class="text-center py-12 text-white/40 text-sm">Cargando banco de preguntas…</div>
   } @else if (filtered().length === 0) {
-    <div class="bg-white border border-stone-200 rounded-xl p-10 text-center text-stone-400 text-sm">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-10 text-center text-white/40 text-sm">
       @if (bankSvc.questions().length === 0) {
         No hay preguntas en el banco. Crea la primera usando el botón superior.
       } @else {
@@ -200,14 +200,14 @@
       }
     </div>
   } @else {
-    <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-      <div class="divide-y divide-stone-100">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+      <div class="divide-y divide-white/[0.06]">
         @for (bq of filtered(); track bq.id) {
-          <div class="px-5 py-4 flex items-start gap-4 hover:bg-stone-50 transition-colors">
+          <div class="px-5 py-4 flex items-start gap-4 hover:bg-white/[0.04] transition-colors">
 
             <!-- Número + tipo badge -->
             <div class="flex flex-col items-center gap-1.5 shrink-0 pt-0.5">
-              <span class="text-xs font-bold text-stone-300">{{ $index + 1 }}</span>
+              <span class="text-xs font-bold text-white/30">{{ $index + 1 }}</span>
               <span class="text-xs border rounded px-1.5 py-0.5 whitespace-nowrap"
                     [class]="diffColors[bq.difficulty]">
                 {{ diffLabels[bq.difficulty] }}
@@ -216,14 +216,14 @@
 
             <!-- Contenido -->
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-stone-900 leading-snug">{{ bq.questionText }}</p>
+              <p class="text-sm font-medium text-white leading-snug">{{ bq.questionText }}</p>
               <div class="flex flex-wrap gap-2 mt-1.5">
-                <span class="text-xs text-stone-500 bg-stone-100 rounded-full px-2 py-0.5">
+                <span class="text-xs text-white/50 bg-white/[0.05] rounded-full px-2 py-0.5">
                   {{ typeLabels[bq.type] }}
                 </span>
-                <span class="text-xs text-stone-500">{{ bq.points }} pts</span>
+                <span class="text-xs text-white/50">{{ bq.points }} pts</span>
                 @if (bq.category) {
-                  <span class="text-xs text-stone-400">· {{ bq.category }}</span>
+                  <span class="text-xs text-white/40">· {{ bq.category }}</span>
                 }
                 @if (bq.usageCount > 0) {
                   <span class="text-xs bg-indigo-50 text-indigo-600 rounded-full px-2 py-0.5">
@@ -234,12 +234,12 @@
               @if (bq.tags.length > 0) {
                 <div class="flex flex-wrap gap-1 mt-1.5">
                   @for (tag of bq.tags; track tag) {
-                    <span class="text-xs text-stone-400 border border-stone-200 rounded px-1.5 py-0.5">#{{ tag }}</span>
+                    <span class="text-xs text-white/40 border border-white/10 rounded px-1.5 py-0.5">#{{ tag }}</span>
                   }
                 </div>
               }
               @if (bq.explanation) {
-                <p class="text-xs text-stone-400 mt-1.5 italic">{{ bq.explanation }}</p>
+                <p class="text-xs text-white/40 mt-1.5 italic">{{ bq.explanation }}</p>
               }
             </div>
 
@@ -250,7 +250,7 @@
                 @if (deleting() === bq.id) { Eliminando… } @else { Eliminar }
               </button>
             } @else if (bq.usageCount > 0) {
-              <span class="shrink-0 text-xs text-stone-300 mt-0.5" title="En uso — no se puede eliminar">
+              <span class="shrink-0 text-xs text-white/30 mt-0.5" title="En uso — no se puede eliminar">
                 En uso
               </span>
             }

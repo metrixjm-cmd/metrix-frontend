@@ -24,6 +24,7 @@ export type { AppNotification };
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app-layout.html',
+  styleUrl:    './app-layout.scss',
 })
 export class AppLayout implements OnInit, OnDestroy {
   readonly auth      = inject(AuthService);
@@ -232,8 +233,8 @@ export class AppLayout implements OnInit, OnDestroy {
   }
 
   notifColorClass(severity: AppNotification['severity']): string {
-    if (severity === 'critical') return 'text-red-600 bg-red-100';
-    if (severity === 'warning')  return 'text-yellow-600 bg-yellow-100';
-    return 'text-blue-600 bg-blue-100';
+    if (severity === 'critical') return 'text-red-400 bg-red-500/15 border border-red-500/25';
+    if (severity === 'warning')  return 'text-yellow-400 bg-yellow-500/15 border border-yellow-500/25';
+    return 'text-blue-400 bg-blue-500/15 border border-blue-500/25';
   }
 }

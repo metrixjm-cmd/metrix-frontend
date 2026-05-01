@@ -2,19 +2,19 @@
 
   <!-- Header -->
   <div class="flex items-center gap-3">
-    <a routerLink="/trainer" class="p-2 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+    <a routerLink="/trainer" class="p-2 rounded-lg hover:bg-white/[0.06] text-white/50 transition-colors">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
     </a>
     <div>
-      <h1 class="text-xl font-bold text-stone-900">Nuevo examen</h1>
-      <p class="text-stone-500 text-sm">Elige cómo quieres crear el examen</p>
+      <h1 class="text-xl font-bold text-white">Nuevo examen</h1>
+      <p class="text-white/50 text-sm">Elige cómo quieres crear el examen</p>
     </div>
   </div>
 
   @if (error()) {
-    <div class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
+    <div class="bg-red-500/15 border border-red-500/25 text-red-400 rounded-lg px-4 py-3 text-sm">{{ error() }}</div>
   }
 
   <!-- ── Selector de modo ──────────────────────────────────────────────── -->
@@ -22,28 +22,28 @@
     <button type="button" (click)="setMode('scratch')"
             [class]="mode() === 'scratch'
               ? 'p-4 rounded-xl border-2 border-orange-500 bg-orange-50 text-left transition-all'
-              : 'p-4 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all'">
+              : 'p-4 rounded-xl border-2 border-white/10 bg-white/[0.04] hover:border-white/[0.15] text-left transition-all'">
       <div class="text-2xl mb-1">✏️</div>
-      <p class="font-semibold text-stone-900 text-sm">Desde cero</p>
-      <p class="text-xs text-stone-500 mt-0.5">Escribe cada pregunta manualmente</p>
+      <p class="font-semibold text-white text-sm">Desde cero</p>
+      <p class="text-xs text-white/50 mt-0.5">Escribe cada pregunta manualmente</p>
     </button>
 
     <button type="button" (click)="setMode('template')"
             [class]="mode() === 'template'
               ? 'p-4 rounded-xl border-2 border-teal-500 bg-teal-50 text-left transition-all'
-              : 'p-4 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all'">
+              : 'p-4 rounded-xl border-2 border-white/10 bg-white/[0.04] hover:border-white/[0.15] text-left transition-all'">
       <div class="text-2xl mb-1">📋</div>
-      <p class="font-semibold text-stone-900 text-sm">Desde plantilla</p>
-      <p class="text-xs text-stone-500 mt-0.5">Reutiliza una plantilla existente</p>
+      <p class="font-semibold text-white text-sm">Desde plantilla</p>
+      <p class="text-xs text-white/50 mt-0.5">Reutiliza una plantilla existente</p>
     </button>
 
     <button type="button" (click)="setMode('bank')"
             [class]="mode() === 'bank'
               ? 'p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-left transition-all'
-              : 'p-4 rounded-xl border-2 border-stone-200 bg-white hover:border-stone-300 text-left transition-all'">
+              : 'p-4 rounded-xl border-2 border-white/10 bg-white/[0.04] hover:border-white/[0.15] text-left transition-all'">
       <div class="text-2xl mb-1">🗃️</div>
-      <p class="font-semibold text-stone-900 text-sm">Del banco</p>
-      <p class="text-xs text-stone-500 mt-0.5">Selecciona preguntas del banco</p>
+      <p class="font-semibold text-white text-sm">Del banco</p>
+      <p class="text-xs text-white/50 mt-0.5">Selecciona preguntas del banco</p>
     </button>
   </div>
 
@@ -54,27 +54,27 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6 max-w-3xl">
 
       <!-- Datos generales -->
-      <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card space-y-4">
-        <h2 class="font-semibold text-stone-800">Datos generales</h2>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 space-y-4">
+        <h2 class="font-semibold text-white/80">Datos generales</h2>
 
         <div>
-          <label class="block text-sm font-medium text-stone-700 mb-1">Título *</label>
+          <label class="block text-sm font-medium text-white/70 mb-1">Título *</label>
           <input formControlName="title" type="text" placeholder="Ej. Protocolo de Atención al Cliente"
-                 class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                 class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-stone-700 mb-1">Descripción</label>
+          <label class="block text-sm font-medium text-white/70 mb-1">Descripción</label>
           <textarea formControlName="description" rows="2" placeholder="Contexto o instrucciones generales…"
-                    class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-stone-700 mb-1">
-            Vincular a capacitación <span class="text-stone-400">— opcional</span>
+          <label class="block text-sm font-medium text-white/70 mb-1">
+            Vincular a capacitación <span class="text-white/40">— opcional</span>
           </label>
           <select formControlName="trainingId"
-                  class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white">
+                  class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
             <option value="">Sin vinculación</option>
             @for (t of trainings(); track t.id) {
               <option [value]="t.id">{{ t.title }}</option>
@@ -84,38 +84,38 @@
 
         <div class="grid grid-cols-3 gap-4">
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Puntaje mínimo (%)</label>
+            <label class="block text-sm font-medium text-white/70 mb-1">Puntaje mínimo (%)</label>
             <input formControlName="passingScore" type="number" min="1" max="100"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
           </div>
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Límite de tiempo (min) <span class="text-stone-400">— opcional</span></label>
+            <label class="block text-sm font-medium text-white/70 mb-1">Límite de tiempo (min) <span class="text-white/40">— opcional</span></label>
             <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
           </div>
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Máx. intentos <span class="text-stone-400">— 0 = ilimitado</span></label>
+            <label class="block text-sm font-medium text-white/70 mb-1">Máx. intentos <span class="text-white/40">— 0 = ilimitado</span></label>
             <input formControlName="maxAttempts" type="number" min="0" placeholder="0"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
           </div>
         </div>
       </div>
 
       <!-- Preguntas -->
-      <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-        <div class="px-5 py-4 border-b border-stone-100 flex flex-wrap items-center justify-between gap-2">
-          <h2 class="font-semibold text-stone-800">Preguntas ({{ questions().length }})</h2>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-white/[0.06] flex flex-wrap items-center justify-between gap-2">
+          <h2 class="font-semibold text-white/80">Preguntas ({{ questions().length }})</h2>
           <div class="flex flex-wrap gap-2">
             <button type="button" (click)="addQuestion('MULTIPLE_CHOICE')"
-                    class="text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 rounded-lg px-3 py-1.5 hover:bg-orange-100 transition-colors">
+                    class="text-xs font-medium bg-orange-500/15 text-orange-400 border border-orange-200 rounded-lg px-3 py-1.5 hover:bg-orange-500/25 transition-colors">
               + Opción única
             </button>
             <button type="button" (click)="addQuestion('MULTI_SELECT')"
-                    class="text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-100 transition-colors">
+                    class="text-xs font-medium bg-indigo-500/15 text-indigo-400 border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-500/25 transition-colors">
               + Selección múltiple
             </button>
             <button type="button" (click)="addQuestion('TRUE_FALSE')"
-                    class="text-xs font-medium bg-stone-50 text-stone-700 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-100 transition-colors">
+                    class="text-xs font-medium bg-white/[0.05] text-white/70 border border-white/10 rounded-lg px-3 py-1.5 hover:bg-white/[0.06] transition-colors">
               + Verdadero/Falso
             </button>
             <button type="button" (click)="addQuestion('OPEN_TEXT')"
@@ -126,44 +126,44 @@
         </div>
 
         @if (questions().length === 0) {
-          <div class="p-10 text-center text-stone-400 text-sm">
+          <div class="p-10 text-center text-white/40 text-sm">
             Agrega al menos una pregunta para crear el examen.
           </div>
         } @else {
-          <div class="divide-y divide-stone-100">
+          <div class="divide-y divide-white/[0.06]">
             @for (qGroup of questions(); track $index) {
               <div class="p-5 space-y-3">
                 <div class="flex items-center justify-between">
-                  <span class="text-xs font-medium text-stone-500 uppercase tracking-wide">
+                  <span class="text-xs font-medium text-white/50 uppercase tracking-wide">
                     Pregunta {{ $index + 1 }} — {{ typeLabels[getType(qGroup)] }}
                   </span>
                   <button type="button" (click)="removeQuestion($index)"
-                          class="text-xs text-red-500 hover:text-red-700 font-medium">
+                          class="text-xs text-red-400 hover:text-red-400 font-medium">
                     Eliminar
                   </button>
                 </div>
 
                 <input [formControl]="$any(qGroup.get('questionText'))" type="text"
                        placeholder="Escribe la pregunta…"
-                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                       class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
 
                 @if (isSingleChoice(qGroup)) {
                   <div class="space-y-2">
-                    <p class="text-xs text-stone-500">Haz clic en el círculo para marcar la respuesta correcta</p>
+                    <p class="text-xs text-white/50">Haz clic en el círculo para marcar la respuesta correcta</p>
                     @for (optCtrl of getOptions(qGroup).controls; track $index) {
                       <div class="flex items-center gap-2">
                         <button type="button" (click)="setCorrect(qGroup, $index)"
                                 class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
-                                [class]="isCorrect(qGroup, $index) ? 'border-emerald-500 bg-emerald-500' : 'border-stone-300 hover:border-orange-400'">
+                                [class]="isCorrect(qGroup, $index) ? 'border-emerald-500 bg-emerald-500' : 'border-white/[0.15] hover:border-orange-400'">
                           @if (isCorrect(qGroup, $index)) {
                             <span class="w-2 h-2 bg-white rounded-full"></span>
                           }
                         </button>
                         @if (isTrueFalse(qGroup)) {
-                          <span class="text-sm text-stone-700 font-medium">{{ optCtrl.value }}</span>
+                          <span class="text-sm text-white/70 font-medium">{{ optCtrl.value }}</span>
                         } @else {
                           <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                                 class="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                                 class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
                         }
                       </div>
                     }
@@ -172,12 +172,12 @@
 
                 @if (isMultiSelect(qGroup)) {
                   <div class="space-y-2">
-                    <p class="text-xs text-stone-500">Marca todas las opciones correctas</p>
+                    <p class="text-xs text-white/50">Marca todas las opciones correctas</p>
                     @for (optCtrl of getOptions(qGroup).controls; track $index) {
                       <div class="flex items-center gap-2">
                         <button type="button" (click)="toggleMultiCorrect(qGroup, $index)"
                                 class="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
-                                [class]="isMultiCorrect(qGroup, $index) ? 'border-emerald-500 bg-emerald-500' : 'border-stone-300 hover:border-indigo-400'">
+                                [class]="isMultiCorrect(qGroup, $index) ? 'border-emerald-500 bg-emerald-500' : 'border-white/[0.15] hover:border-indigo-400'">
                           @if (isMultiCorrect(qGroup, $index)) {
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
@@ -185,40 +185,40 @@
                           }
                         </button>
                         <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                               class="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                               class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
                       </div>
                     }
                     @if ((qGroup.get('correctOptionIndexes')?.value ?? []).length === 0) {
-                      <p class="text-xs text-amber-600">Marca al menos una opción correcta</p>
+                      <p class="text-xs text-amber-400">Marca al menos una opción correcta</p>
                     }
                   </div>
                 }
 
                 @if (isOpenText(qGroup)) {
                   <div>
-                    <label class="block text-xs font-medium text-stone-600 mb-1">
-                      Palabras clave <span class="text-stone-400">(separadas por comas)</span>
+                    <label class="block text-xs font-medium text-white/60 mb-1">
+                      Palabras clave <span class="text-white/40">(separadas por comas)</span>
                     </label>
                     <input [formControl]="$any(qGroup.get('acceptedKeywords'))" type="text"
                            placeholder="temperatura, 74, cocción, grados"
-                           class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"/>
-                    <p class="text-xs text-stone-400 mt-1">Si el usuario menciona ≥70% se aprueba automáticamente.</p>
+                           class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500"/>
+                    <p class="text-xs text-white/40 mt-1">Si el usuario menciona ≥70% se aprueba automáticamente.</p>
                   </div>
                 }
 
                 <div>
-                  <label class="block text-xs font-medium text-stone-500 mb-1">
-                    Retroalimentación <span class="text-stone-400">(opcional)</span>
+                  <label class="block text-xs font-medium text-white/50 mb-1">
+                    Retroalimentación <span class="text-white/40">(opcional)</span>
                   </label>
                   <input [formControl]="$any(qGroup.get('explanation'))" type="text"
                          placeholder="Explica por qué es correcta esa respuesta…"
-                         class="w-full border border-stone-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"/>
+                         class="w-full border border-white/10 rounded-lg px-3 py-1.5 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-white/20"/>
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <label class="text-xs text-stone-500">Puntos:</label>
+                  <label class="text-xs text-white/50">Puntos:</label>
                   <input [formControl]="$any(qGroup.get('points'))" type="number" min="1" max="10"
-                         class="w-16 border border-stone-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+                         class="w-16 border border-white/10 rounded-lg px-2 py-1 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
                 </div>
               </div>
             }
@@ -228,7 +228,7 @@
 
       <div class="flex justify-end gap-3">
         <a routerLink="/trainer"
-           class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+           class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
           Cancelar
         </a>
         <button type="submit" [disabled]="!canSubmit() || saving()"
@@ -256,39 +256,39 @@
     @if (!selectedTemplate()) {
       <!-- Lista de plantillas -->
       <div class="space-y-4 max-w-3xl">
-        <p class="text-sm text-stone-500">Selecciona una plantilla para previsualizar sus preguntas.</p>
+        <p class="text-sm text-white/50">Selecciona una plantilla para previsualizar sus preguntas.</p>
 
         @if (templateLoading()) {
-          <div class="text-center py-10 text-stone-400 text-sm">Cargando plantillas…</div>
+          <div class="text-center py-10 text-white/40 text-sm">Cargando plantillas…</div>
         } @else if (templates().length === 0) {
-          <div class="bg-white border border-stone-200 rounded-xl p-10 text-center text-stone-400 text-sm">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-10 text-center text-white/40 text-sm">
             No hay plantillas disponibles. Crea una desde Banco de Datos.
           </div>
         } @else {
           <div class="grid gap-3">
             @for (tmpl of templates(); track tmpl.id) {
               <button type="button" (click)="selectTemplate(tmpl)"
-                      class="w-full bg-white border border-stone-200 rounded-xl p-4 text-left hover:border-teal-400 hover:shadow-md transition-all group">
+                      class="w-full bg-white/[0.04] border border-white/10 rounded-xl p-4 text-left hover:border-teal-400 hover:shadow-md transition-all group">
                 <div class="flex items-start justify-between gap-4">
                   <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-stone-900 group-hover:text-teal-700 truncate">{{ tmpl.title }}</p>
+                    <p class="font-semibold text-white group-hover:text-teal-300 truncate">{{ tmpl.title }}</p>
                     @if (tmpl.description) {
-                      <p class="text-xs text-stone-500 mt-0.5 line-clamp-1">{{ tmpl.description }}</p>
+                      <p class="text-xs text-white/50 mt-0.5 line-clamp-1">{{ tmpl.description }}</p>
                     }
                     <div class="flex flex-wrap gap-2 mt-2">
-                      <span class="text-xs bg-stone-100 text-stone-600 rounded-full px-2 py-0.5">
+                      <span class="text-xs bg-white/[0.05] text-white/60 rounded-full px-2 py-0.5">
                         {{ tmpl.questionCount }} preguntas
                       </span>
                       <span class="text-xs bg-teal-50 text-teal-700 rounded-full px-2 py-0.5">
                         Pasa con {{ tmpl.passingScore }}%
                       </span>
                       @if (tmpl.timeLimitMinutes) {
-                        <span class="text-xs bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">
+                        <span class="text-xs bg-amber-500/15 text-amber-400 rounded-full px-2 py-0.5">
                           {{ tmpl.timeLimitMinutes }} min
                         </span>
                       }
                       @if (tmpl.timesUsed > 0) {
-                        <span class="text-xs bg-indigo-50 text-indigo-600 rounded-full px-2 py-0.5">
+                        <span class="text-xs bg-indigo-500/15 text-indigo-400 rounded-full px-2 py-0.5">
                           Usado {{ tmpl.timesUsed }}x
                         </span>
                       }
@@ -296,12 +296,12 @@
                     @if (tmpl.tags.length > 0) {
                       <div class="flex flex-wrap gap-1 mt-2">
                         @for (tag of tmpl.tags; track tag) {
-                          <span class="text-xs bg-stone-50 text-stone-500 border border-stone-200 rounded px-1.5 py-0.5">#{{ tag }}</span>
+                          <span class="text-xs bg-white/[0.02] text-white/50 border border-white/10 rounded px-1.5 py-0.5">#{{ tag }}</span>
                         }
                       </div>
                     }
                   </div>
-                  <svg class="w-5 h-5 text-stone-300 group-hover:text-teal-500 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-white/30 group-hover:text-teal-500 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
                 </div>
@@ -319,37 +319,37 @@
         <div class="bg-teal-50 border border-teal-200 rounded-xl p-4 flex items-start justify-between gap-4">
           <div>
             <p class="text-xs font-medium text-teal-600 uppercase tracking-wide mb-1">Plantilla seleccionada</p>
-            <p class="font-bold text-stone-900">{{ selectedTemplate()!.title }}</p>
+            <p class="font-bold text-white">{{ selectedTemplate()!.title }}</p>
             @if (selectedTemplate()!.description) {
-              <p class="text-sm text-stone-600 mt-1">{{ selectedTemplate()!.description }}</p>
+              <p class="text-sm text-white/60 mt-1">{{ selectedTemplate()!.description }}</p>
             }
           </div>
           <button type="button" (click)="clearTemplate()"
-                  class="text-xs text-stone-500 hover:text-red-600 font-medium shrink-0 mt-1">
+                  class="text-xs text-white/50 hover:text-red-400 font-medium shrink-0 mt-1">
             Cambiar
           </button>
         </div>
 
         @if (loadingDetail()) {
-          <div class="text-center py-8 text-stone-400 text-sm">Cargando preguntas…</div>
+          <div class="text-center py-8 text-white/40 text-sm">Cargando preguntas…</div>
         }
 
         @if (templateDetail(); as detail) {
           <!-- Preguntas preview -->
-          <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden">
-            <div class="px-5 py-3 border-b border-stone-100 bg-stone-50">
-              <p class="text-sm font-medium text-stone-700">{{ detail.questions.length }} preguntas incluidas</p>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-5 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+              <p class="text-sm font-medium text-white/70">{{ detail.questions.length }} preguntas incluidas</p>
             </div>
-            <div class="divide-y divide-stone-100 max-h-72 overflow-y-auto">
+            <div class="divide-y divide-white/[0.06] max-h-72 overflow-y-auto">
               @for (tq of detail.questions; track tq.questionId) {
                 <div class="px-5 py-3 flex items-start gap-3">
-                  <span class="text-xs font-bold text-stone-400 mt-0.5 w-5 shrink-0">{{ $index + 1 }}</span>
+                  <span class="text-xs font-bold text-white/40 mt-0.5 w-5 shrink-0">{{ $index + 1 }}</span>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm text-stone-800 leading-snug">{{ tq.question.questionText }}</p>
+                    <p class="text-sm text-white/80 leading-snug">{{ tq.question.questionText }}</p>
                     <div class="flex gap-2 mt-1">
-                      <span class="text-xs text-stone-500">{{ typeLabels[tq.question.type] }}</span>
-                      <span class="text-xs text-stone-400">·</span>
-                      <span class="text-xs text-stone-500">{{ tq.pointsOverride > 0 ? tq.pointsOverride : tq.question.points }} pts</span>
+                      <span class="text-xs text-white/50">{{ typeLabels[tq.question.type] }}</span>
+                      <span class="text-xs text-white/40">·</span>
+                      <span class="text-xs text-white/50">{{ tq.pointsOverride > 0 ? tq.pointsOverride : tq.question.points }} pts</span>
                       <span class="text-xs border rounded px-1.5"
                             [class]="diffColors[tq.question.difficulty]">
                         {{ diffLabels[tq.question.difficulty] }}
@@ -362,26 +362,26 @@
           </div>
 
           <!-- Overrides -->
-          <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card space-y-4" [formGroup]="overrideForm">
-            <h2 class="font-semibold text-stone-800">Ajustes opcionales</h2>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 space-y-4" [formGroup]="overrideForm">
+            <h2 class="font-semibold text-white/80">Ajustes opcionales</h2>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1">Puntaje mínimo (%)</label>
+                <label class="block text-sm font-medium text-white/70 mb-1">Puntaje mínimo (%)</label>
                 <input formControlName="passingScore" type="number" min="1" max="100"
-                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"/>
-                <p class="text-xs text-stone-400 mt-1">Por defecto: {{ selectedTemplate()!.passingScore }}%</p>
+                       class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500"/>
+                <p class="text-xs text-white/40 mt-1">Por defecto: {{ selectedTemplate()!.passingScore }}%</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-stone-700 mb-1">Límite de tiempo (min)</label>
+                <label class="block text-sm font-medium text-white/70 mb-1">Límite de tiempo (min)</label>
                 <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
-                       class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"/>
+                       class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500"/>
               </div>
             </div>
           </div>
 
           <div class="flex justify-end gap-3">
             <a routerLink="/trainer"
-               class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+               class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
               Cancelar
             </a>
             <button type="button" (click)="onSubmitTemplate()" [disabled]="saving()"
@@ -413,15 +413,15 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         <!-- Panel izquierdo: banco -->
-        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden flex flex-col" style="max-height: 560px">
-          <div class="px-4 py-3 border-b border-stone-100 bg-stone-50">
-            <p class="text-sm font-semibold text-stone-800 mb-2">Banco de preguntas</p>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden flex flex-col" style="max-height: 560px">
+          <div class="px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
+            <p class="text-sm font-semibold text-white/80 mb-2">Banco de preguntas</p>
             <div class="flex gap-2">
               <input type="text" [value]="bankSearch()" (input)="bankSearch.set($any($event.target).value)"
                      placeholder="Buscar…"
-                     class="flex-1 border border-stone-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                     class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-xs bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
               <select [value]="bankTypeFilter()" (change)="bankTypeFilter.set($any($event.target).value)"
-                      class="border border-stone-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                      class="border border-white/10 rounded-lg px-2 py-1.5 text-xs bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 <option value="">Todos</option>
                 @for (qt of questionTypes; track qt) {
                   <option [value]="qt">{{ typeLabels[qt] }}</option>
@@ -432,9 +432,9 @@
 
           <div class="overflow-y-auto flex-1">
             @if (bankLoading()) {
-              <div class="p-8 text-center text-stone-400 text-sm">Cargando banco…</div>
+              <div class="p-8 text-center text-white/40 text-sm">Cargando banco…</div>
             } @else if (filteredBank().length === 0) {
-              <div class="p-8 text-center text-stone-400 text-sm">
+              <div class="p-8 text-center text-white/40 text-sm">
                 @if (bankAll().length === 0) {
                   No hay preguntas en el banco. Crea algunas desde Banco de Datos.
                 } @else {
@@ -442,25 +442,25 @@
                 }
               </div>
             } @else {
-              <div class="divide-y divide-stone-100">
+              <div class="divide-y divide-white/[0.06]">
                 @for (bq of filteredBank(); track bq.id) {
-                  <div class="px-4 py-3 flex items-start gap-3 hover:bg-stone-50 transition-colors">
+                  <div class="px-4 py-3 flex items-start gap-3 hover:bg-white/[0.04] transition-colors">
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm text-stone-800 leading-snug line-clamp-2">{{ bq.questionText }}</p>
+                      <p class="text-sm text-white/80 leading-snug line-clamp-2">{{ bq.questionText }}</p>
                       <div class="flex flex-wrap gap-1.5 mt-1">
-                        <span class="text-xs text-stone-500">{{ typeLabels[bq.type] }}</span>
-                        <span class="text-xs text-stone-400">·</span>
-                        <span class="text-xs text-stone-500">{{ bq.points }} pts</span>
+                        <span class="text-xs text-white/50">{{ typeLabels[bq.type] }}</span>
+                        <span class="text-xs text-white/40">·</span>
+                        <span class="text-xs text-white/50">{{ bq.points }} pts</span>
                         <span class="text-xs border rounded px-1.5 py-0.5" [class]="diffColors[bq.difficulty]">
                           {{ diffLabels[bq.difficulty] }}
                         </span>
                         @if (bq.category) {
-                          <span class="text-xs text-stone-400">{{ bq.category }}</span>
+                          <span class="text-xs text-white/40">{{ bq.category }}</span>
                         }
                       </div>
                     </div>
                     <button type="button" (click)="addFromBank(bq)"
-                            class="shrink-0 w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 flex items-center justify-center transition-colors font-bold text-base">
+                            class="shrink-0 w-7 h-7 rounded-lg bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 flex items-center justify-center transition-colors font-bold text-base">
                       +
                     </button>
                   </div>
@@ -471,33 +471,33 @@
         </div>
 
         <!-- Panel derecho: seleccionadas -->
-        <div class="bg-white border border-stone-200 rounded-xl shadow-card overflow-hidden flex flex-col" style="max-height: 560px">
-          <div class="px-4 py-3 border-b border-stone-100 bg-indigo-50">
-            <p class="text-sm font-semibold text-indigo-800">
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden flex flex-col" style="max-height: 560px">
+          <div class="px-4 py-3 border-b border-white/[0.06] bg-indigo-500/15">
+            <p class="text-sm font-semibold text-indigo-400">
               Seleccionadas ({{ selectedBankQs().length }})
             </p>
           </div>
 
           <div class="overflow-y-auto flex-1">
             @if (selectedBankQs().length === 0) {
-              <div class="p-8 text-center text-stone-400 text-sm">
+              <div class="p-8 text-center text-white/40 text-sm">
                 Agrega preguntas del banco usando el botón <strong>+</strong>
               </div>
             } @else {
-              <div class="divide-y divide-stone-100">
+              <div class="divide-y divide-white/[0.06]">
                 @for (bq of selectedBankQs(); track bq.id) {
                   <div class="px-4 py-3 flex items-start gap-3">
                     <span class="text-xs font-bold text-indigo-400 mt-0.5 w-5 shrink-0">{{ $index + 1 }}</span>
                     <div class="flex-1 min-w-0">
-                      <p class="text-sm text-stone-800 leading-snug line-clamp-2">{{ bq.questionText }}</p>
+                      <p class="text-sm text-white/80 leading-snug line-clamp-2">{{ bq.questionText }}</p>
                       <div class="flex gap-2 mt-1">
-                        <span class="text-xs text-stone-500">{{ typeLabels[bq.type] }}</span>
-                        <span class="text-xs text-stone-400">·</span>
-                        <span class="text-xs text-stone-500">{{ bq.points }} pts</span>
+                        <span class="text-xs text-white/50">{{ typeLabels[bq.type] }}</span>
+                        <span class="text-xs text-white/40">·</span>
+                        <span class="text-xs text-white/50">{{ bq.points }} pts</span>
                       </div>
                     </div>
                     <button type="button" (click)="removeFromBank(bq.id)"
-                            class="shrink-0 text-red-400 hover:text-red-600 font-bold text-sm transition-colors">
+                            class="shrink-0 text-red-400 hover:text-red-400 font-bold text-sm transition-colors">
                       ✕
                     </button>
                   </div>
@@ -511,42 +511,42 @@
 
       <!-- Metadatos del examen -->
       @if (selectedBankQs().length > 0) {
-        <div class="bg-white border border-stone-200 rounded-xl p-5 shadow-card space-y-4 max-w-3xl" [formGroup]="bankForm">
-          <h2 class="font-semibold text-stone-800">Datos del examen</h2>
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 space-y-4 max-w-3xl" [formGroup]="bankForm">
+          <h2 class="font-semibold text-white/80">Datos del examen</h2>
 
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Título *</label>
+            <label class="block text-sm font-medium text-white/70 mb-1">Título *</label>
             <input formControlName="title" type="text" placeholder="Ej. Evaluación de Bienvenida"
-                   class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">Descripción</label>
+            <label class="block text-sm font-medium text-white/70 mb-1">Descripción</label>
             <textarea formControlName="description" rows="2" placeholder="Instrucciones generales…"
-                      class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
           </div>
 
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">Puntaje mínimo (%)</label>
+              <label class="block text-sm font-medium text-white/70 mb-1">Puntaje mínimo (%)</label>
               <input formControlName="passingScore" type="number" min="1" max="100"
-                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
             </div>
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">Límite de tiempo (min) <span class="text-stone-400">— opcional</span></label>
+              <label class="block text-sm font-medium text-white/70 mb-1">Límite de tiempo (min) <span class="text-white/40">— opcional</span></label>
               <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
-                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
             </div>
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">Máx. intentos <span class="text-stone-400">— 0 = ilimitado</span></label>
+              <label class="block text-sm font-medium text-white/70 mb-1">Máx. intentos <span class="text-white/40">— 0 = ilimitado</span></label>
               <input formControlName="maxAttempts" type="number" min="0" placeholder="0"
-                     class="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
             </div>
           </div>
 
           <div class="flex justify-end gap-3 pt-1">
             <a routerLink="/trainer"
-               class="px-4 py-2 text-sm font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors">
+               class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
               Cancelar
             </a>
             <button type="button" (click)="onSubmitBank()" [disabled]="!canSubmitBank() || saving()"

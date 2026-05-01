@@ -1,174 +1,442 @@
-<div class="w-full max-w-5xl mx-auto p-6">
+<div class="gamif-page p-4 md:p-5 lg:p-6">
 
-  <!-- Header Gamification -->
-  <div class="flex items-start justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-stone-900">Ranking de Equipo</h1>
-      <p class="text-sm text-stone-500 mt-1">Desempeño y gamificación de la sucursal</p>
+  <!-- ══════════════════════════════════════════════════════════
+       BARRA SUPERIOR: Título + Métricas
+  ════════════════════════════════════════════════════════════ -->
+  <div class="flex flex-col xl:flex-row xl:items-start gap-4 mb-5">
+
+    <!-- Título y tabs -->
+    <div class="shrink-0">
+      <h1 class="text-[22px] font-bold text-white tracking-tight leading-tight">
+        Ranking de Equipo
+      </h1>
+      <p class="text-sm text-white/35 mt-0.5">
+        Desempeño y gamificación de la sucursal
+      </p>
+
+      <!-- Period tabs -->
+      <div class="flex gap-2 mt-4" role="group" aria-label="Período del ranking">
+        <button
+          class="gamif-tab"
+          [class]="period() === 'weekly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+          (click)="selectPeriod('weekly')"
+          aria-label="Ver ranking de esta semana"
+        >
+          Esta semana
+        </button>
+        <button
+          class="gamif-tab"
+          [class]="period() === 'monthly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+          (click)="selectPeriod('monthly')"
+          aria-label="Ver ranking de este mes"
+        >
+          Este mes
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- Period tabs -->
-  <div class="flex gap-2 mb-6">
-    <button (click)="selectPeriod('weekly')"
-            [class]="period() === 'weekly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-[#0b5c9c] text-white shadow-sm'
-              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
-      Esta semana
-    </button>
-    <button (click)="selectPeriod('monthly')"
-            [class]="period() === 'monthly'
-              ? 'px-4 py-2 text-sm font-medium rounded-lg bg-[#0b5c9c] text-white shadow-sm'
-              : 'px-4 py-2 text-sm font-medium rounded-lg bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'">
-      Este mes
-    </button>
-  </div>
+    <!-- Metric cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:ml-auto xl:max-w-[660px] w-full">
+      @for (m of metrics; track m.label) {
+        <div class="gamif-metric-card p-4 flex flex-col gap-2.5">
 
-  @if (loading()) {
-    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
-      @for (i of [1,2,3,4,5]; track i) {
-        <div class="flex items-center gap-4 px-5 py-4 border-b border-stone-100 last:border-0 animate-pulse">
-          <div class="w-8 h-8 rounded-full bg-stone-200"></div>
-          <div class="w-10 h-10 rounded-full bg-stone-200"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-3.5 bg-stone-200 rounded w-1/3"></div>
-            <div class="h-2.5 bg-stone-200 rounded w-1/5"></div>
+          <!-- Icon + Label -->
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" [class]="m.iconBg">
+              <svg class="w-[18px] h-[18px]" [class]="m.iconColor"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="m.iconPath" />
+              </svg>
+            </div>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-white/35 leading-tight">
+              {{ m.label }}
+            </span>
           </div>
-          <div class="w-14 h-7 bg-stone-200 rounded-full"></div>
+
+          <!-- Valor principal -->
+          <p class="text-[26px] font-extrabold text-white leading-none tracking-tight">
+            {{ m.value }}
+          </p>
+
+          <!-- Sub-texto -->
+          <p class="text-[11px] leading-snug" [class]="m.subHighlight ? 'text-emerald-400' : 'text-white/30'">
+            {{ m.sub }}
+          </p>
+
+          <!-- Barra de progreso -->
+          <div class="gamif-progress-bar mt-0.5">
+            <div
+              class="gamif-progress-fill"
+              [style.width]="m.barWidth + '%'"
+              [style.background]="m.barGradient"
+            ></div>
+          </div>
+
         </div>
       }
     </div>
-  } @else if (tableRows().length === 0) {
-    <div class="bg-white border border-stone-200 rounded-xl p-12 text-center">
-      <div class="text-4xl mb-3">🏆</div>
-      <p class="text-stone-500">Sin datos para este per&iacute;odo.</p>
+
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="gamif-top3-panel p-8 mb-4">
+      <div class="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-6">TOP 3</div>
+      <div class="flex items-start justify-center gap-4">
+        @for (i of [2, 1, 3]; track i) {
+          <div class="gamif-skeleton rounded-2xl"
+               [style.width]="i === 1 ? '220px' : '180px'"
+               [style.height]="i === 1 ? '300px' : '250px'">
+          </div>
+        }
+      </div>
     </div>
+    <div class="gamif-table-panel overflow-hidden">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="flex items-center gap-4 px-5 py-4 border-b border-white/5 last:border-0">
+          <div class="gamif-skeleton w-8 h-5 rounded"></div>
+          <div class="gamif-skeleton w-9 h-9 rounded-full"></div>
+          <div class="flex-1 space-y-2">
+            <div class="gamif-skeleton h-3 rounded w-2/5"></div>
+            <div class="gamif-skeleton h-2.5 rounded w-1/5"></div>
+          </div>
+          <div class="gamif-skeleton w-14 h-4 rounded hidden md:block"></div>
+          <div class="gamif-skeleton w-14 h-4 rounded hidden lg:block"></div>
+          <div class="gamif-skeleton w-12 h-4 rounded hidden xl:block"></div>
+        </div>
+      }
+    </div>
+
+  } @else if (effectiveRows().length === 0) {
+    <!-- Empty -->
+    <div class="gamif-top3-panel p-14 text-center">
+      <div class="text-5xl mb-3">🏆</div>
+      <p class="text-white/40 text-sm">Sin datos para este período.</p>
+    </div>
+
   } @else {
-    <!-- TOP 3 CARD -->
-    <div class="bg-white rounded-xl border border-stone-200 p-6 mb-6 h-80 flex flex-col relative overflow-hidden">
-      <div class="text-xs font-bold text-stone-400 uppercase tracking-widest absolute top-6 left-6">TOP 3</div>
-      
-      <div class="flex-1 flex items-end justify-center gap-8 md:gap-14 mt-10">
-        <!-- Rank 2 -->
-        @if (top3Podium()[0]; as p2) {
-          <div class="flex flex-col items-center animate-fade-in">
-            <div class="relative w-14 h-14 rounded-full flex items-center justify-center text-[#0b5c9c] font-bold text-lg bg-[#dbeafe] mb-1">
+
+    <!-- ══════════════════════════════════════════════════════════
+         TOP 3 — PODIO
+    ════════════════════════════════════════════════════════════ -->
+    <div class="gamif-top3-panel p-5 md:p-7 mb-4">
+
+      <!-- Label -->
+      <div class="flex items-center gap-2 mb-6">
+        <span class="text-[10px] font-bold text-white/30 uppercase tracking-widest">TOP 3</span>
+        <svg class="w-3.5 h-3.5 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+
+      <!-- Podio: [2do][1ro][3ro] -->
+      <div class="flex items-start justify-center gap-3 md:gap-5">
+
+        <!-- 2do lugar (izquierda) -->
+        @if (effectivePodium()[0]; as p2) {
+          <div class="gamif-podium-card gamif-podium-card--silver p-5 md:p-6 flex-1 max-w-[200px] md:max-w-[230px]"
+               style="padding-top: 28px; padding-bottom: 20px;">
+
+            <!-- Rank badge -->
+            <div class="gamif-rank-badge gamif-rank-badge--silver mb-3">2</div>
+
+            <!-- Avatar -->
+            <div class="gamif-avatar gamif-avatar--silver text-lg md:text-xl mb-2"
+                 style="width: 64px; height: 64px;"
+                 [title]="p2.nombre">
               {{ initials(p2.nombre) }}
-              <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white bg-slate-400">2</div>
             </div>
-            <p class="text-xs font-medium text-stone-700 w-20 text-center truncate" [title]="p2.nombre">{{ p2.nombre.split(' ')[0] }}...</p>
-            <p class="text-sm font-bold text-red-500 my-1">%</p>
-            <div class="w-16 h-20 bg-[#0b5c9c] rounded-t-md"></div>
+
+            <!-- Nombre -->
+            <p class="text-xs md:text-sm font-medium text-white/75 text-center leading-tight mt-1 px-1 truncate max-w-full"
+               [title]="p2.nombre">
+              {{ p2.nombre }}
+            </p>
+
+            <!-- Score -->
+            <p class="text-xl md:text-2xl font-extrabold text-blue-300 mt-2 mb-3 tracking-tight">
+              {{ p2.igeo.toFixed(1) }}<span class="text-base font-bold">%</span>
+            </p>
+
+            <!-- Badge icon -->
+            <svg class="w-6 h-6 shield-blue opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+
+            <!-- Stage glow -->
+            <div class="gamif-stage gamif-stage--silver"></div>
+
           </div>
         } @else {
-          <div class="w-16 h-20"></div>
+          <div class="flex-1 max-w-[200px] h-64"></div>
         }
-        
-        <!-- Rank 1 -->
-        @if (top3Podium()[1]; as p1) {
-          <div class="flex flex-col items-center animate-fade-in relative z-10">
-            <div class="relative w-16 h-16 rounded-full flex items-center justify-center text-[#0b5c9c] font-bold text-xl bg-[#dbeafe] mb-1">
+
+        <!-- 1er lugar (centro — más grande) -->
+        @if (effectivePodium()[1]; as p1) {
+          <div class="gamif-podium-card gamif-podium-card--gold p-5 md:p-7 flex-1 max-w-[240px] md:max-w-[270px] -mt-4"
+               style="padding-top: 32px; padding-bottom: 22px;">
+
+            <!-- Rank badge -->
+            <div class="gamif-rank-badge gamif-rank-badge--gold mb-3" style="width: 32px; height: 32px; font-size: 14px;">
+              1
+            </div>
+
+            <!-- Avatar -->
+            <div class="gamif-avatar gamif-avatar--gold text-2xl md:text-3xl mb-2"
+                 style="width: 80px; height: 80px;"
+                 [title]="p1.nombre">
               {{ initials(p1.nombre) }}
-              <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white bg-amber-400">1</div>
             </div>
-            <p class="text-xs font-medium text-stone-700 w-24 text-center truncate" [title]="p1.nombre">{{ p1.nombre.split(' ')[0] }}...</p>
-            <p class="text-sm font-bold text-red-500 my-1">%</p>
-            <div class="w-16 h-32 bg-[#0b5c9c] rounded-t-md"></div>
+
+            <!-- Nombre -->
+            <p class="text-sm md:text-base font-semibold text-white/90 text-center leading-tight mt-2 px-2 max-w-full"
+               [title]="p1.nombre">
+              {{ p1.nombre }}
+            </p>
+
+            <!-- Score -->
+            <p class="text-2xl md:text-3xl font-extrabold text-cyan-400 mt-2 mb-4 tracking-tight">
+              {{ p1.igeo.toFixed(1) }}<span class="text-lg font-bold">%</span>
+            </p>
+
+            <!-- Badge icon -->
+            <svg class="w-7 h-7 shield-cyan opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+
+            <!-- Stage glow -->
+            <div class="gamif-stage gamif-stage--gold"></div>
+
           </div>
         } @else {
-          <div class="w-16 h-32"></div>
+          <div class="flex-1 max-w-[240px] h-80 -mt-4"></div>
         }
-        
-        <!-- Rank 3 -->
-        @if (top3Podium()[2]; as p3) {
-          <div class="flex flex-col items-center animate-fade-in">
-            <div class="relative w-14 h-14 rounded-full flex items-center justify-center text-[#0b5c9c] font-bold text-lg bg-[#dbeafe] mb-1">
+
+        <!-- 3er lugar (derecha) -->
+        @if (effectivePodium()[2]; as p3) {
+          <div class="gamif-podium-card gamif-podium-card--bronze p-5 md:p-6 flex-1 max-w-[200px] md:max-w-[230px] mt-6"
+               style="padding-top: 28px; padding-bottom: 20px;">
+
+            <!-- Rank badge -->
+            <div class="gamif-rank-badge gamif-rank-badge--bronze mb-3">3</div>
+
+            <!-- Avatar -->
+            <div class="gamif-avatar gamif-avatar--bronze text-lg md:text-xl mb-2"
+                 style="width: 64px; height: 64px;"
+                 [title]="p3.nombre">
               {{ initials(p3.nombre) }}
-              <div class="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white bg-orange-400">3</div>
             </div>
-            <p class="text-xs font-medium text-stone-700 w-20 text-center truncate" [title]="p3.nombre">{{ p3.nombre.split(' ')[0] }}...</p>
-            <p class="text-sm font-bold text-red-500 my-1">%</p>
-            <div class="w-16 h-12 bg-[#0b5c9c] rounded-t-md"></div>
+
+            <!-- Nombre -->
+            <p class="text-xs md:text-sm font-medium text-white/75 text-center leading-tight mt-1 px-1 truncate max-w-full"
+               [title]="p3.nombre">
+              {{ p3.nombre }}
+            </p>
+
+            <!-- Score -->
+            <p class="text-xl md:text-2xl font-extrabold text-purple-300 mt-2 mb-3 tracking-tight">
+              {{ p3.igeo.toFixed(1) }}<span class="text-base font-bold">%</span>
+            </p>
+
+            <!-- Badge icon -->
+            <svg class="w-6 h-6 shield-purple opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            </svg>
+
+            <!-- Stage glow -->
+            <div class="gamif-stage gamif-stage--bronze"></div>
+
           </div>
         } @else {
-          <div class="w-16 h-12"></div>
+          <div class="flex-1 max-w-[200px] h-64 mt-6"></div>
         }
+
       </div>
     </div>
 
-    <!-- TABLE CARD -->
-    <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
-      <!-- Table Header -->
-      <div class="grid gap-4 px-5 py-3 border-b border-stone-200 bg-stone-50/30"
-           style="grid-template-columns: 40px 1fr 80px 100px 120px 100px 80px">
-        <div class="text-xs font-bold text-stone-500 uppercase tracking-wider">#</div>
-        <div class="text-xs font-bold text-stone-500 uppercase tracking-wider">Colaborador</div>
-        <div class="text-center text-xs font-bold text-stone-500 uppercase tracking-wider">Over-all</div>
-        <div class="text-center text-xs font-bold text-stone-500 uppercase tracking-wider">On-Time</div>
-        <div class="text-center text-xs font-bold text-stone-500 uppercase tracking-wider">Completadas</div>
-        <div class="text-center text-xs font-bold text-stone-500 uppercase tracking-wider">Insignias</div>
-        <div class="text-center text-xs font-bold text-stone-500 uppercase tracking-wider">Delta</div>
+    <!-- ══════════════════════════════════════════════════════════
+         TABLA DE RANKING
+    ════════════════════════════════════════════════════════════ -->
+    <div class="gamif-table-panel overflow-x-auto">
+
+      <!-- Header -->
+      <div class="gamif-table-header hidden md:grid px-5 py-3"
+           style="grid-template-columns: 52px 1fr 130px 130px 120px 110px 130px; min-width: 760px;">
+
+        <div class="text-[10px] font-bold text-white/25 uppercase tracking-widest">#</div>
+
+        <div class="text-[10px] font-bold text-white/25 uppercase tracking-widest">
+          COLABORADOR
+        </div>
+
+        <div class="text-center">
+          <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">OVER-ALL</span>
+          <svg class="w-3 h-3 text-white/20 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
+        <div class="text-center">
+          <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">ON-TIME</span>
+          <svg class="w-3 h-3 text-white/20 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
+        <div class="text-center text-[10px] font-bold text-white/25 uppercase tracking-widest">
+          COMPLETADAS
+        </div>
+
+        <div class="text-center text-[10px] font-bold text-white/25 uppercase tracking-widest">
+          INSIGNIAS
+        </div>
+
+        <div class="text-center">
+          <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">DELTA</span>
+          <svg class="w-3 h-3 text-white/20 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
       </div>
 
-      <!-- Table Rows -->
-      <div class="divide-y divide-stone-100">
-        @for (entry of tableRows(); track entry.userId) {
-          <div class="grid gap-4 px-5 py-4 items-center transition-colors duration-200 hover:bg-stone-50/30"
-               style="grid-template-columns: 40px 1fr 80px 100px 120px 100px 80px">
-            
-            <div class="text-sm font-bold text-stone-700">{{ entry.rank }}</div>
+      <!-- Rows -->
+      @for (entry of effectiveRows(); track entry.userId) {
 
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="h-8 w-8 rounded-full flex items-center justify-center text-[#0b5c9c] text-xs font-bold shrink-0 bg-[#dbeafe]">
-                {{ initials(entry.nombre) }}
-              </div>
-              <div class="flex flex-col min-w-0 gap-0.5">
-                <span class="font-medium text-stone-900 text-sm truncate">{{ entry.nombre }}</span>
-                <span class="text-[10px] text-stone-400 uppercase tracking-wide">{{ entry.turno }}</span>
-              </div>
-            </div>
-
-            <div class="text-center text-sm font-bold text-red-500">
-              %
-            </div>
-
-            <div class="text-center text-sm text-stone-600">
-              {{ entry.onTimeRate >= 0 ? entry.onTimeRate.toFixed(1) + '%' : 'S/D' }}
-            </div>
-
-            <div class="text-center text-sm text-stone-600">
-              {{ entry.completedTasks }} / {{ entry.totalTasks }}
-            </div>
-
-            <div class="text-center text-sm text-stone-400">
-              --
-            </div>
-
-            <div class="text-center text-sm text-stone-400">
-              --
-            </div>
-
+        <!-- Desktop row -->
+        <div
+          class="gamif-row hidden md:grid px-5 py-4 items-center"
+          [class]="rankRowClass(entry.rank)"
+          style="grid-template-columns: 52px 1fr 130px 130px 120px 110px 130px; min-width: 760px;"
+        >
+          <!-- # Rank -->
+          <div class="text-sm font-bold" [class]="rankColor(entry.rank)">
+            {{ entry.rank }}
           </div>
-        }
-        
-        <!-- Skeleton placeholders like in the image when fewer rows -->
-        @if (tableRows().length === 1) {
-          @for (i of [1,2,3,4]; track i) {
-            <div class="grid gap-4 px-5 py-4 items-center" style="grid-template-columns: 40px 1fr 80px 100px 120px 100px 80px">
-              <div></div>
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="h-8 w-8 rounded-full shrink-0 bg-[#dbeafe]/70"></div>
-              </div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
+
+          <!-- Colaborador -->
+          <div class="flex items-center gap-3 min-w-0">
+            <div [class]="avatarRowClass(entry.rank)" [title]="entry.nombre" aria-hidden="true">
+              {{ initials(entry.nombre) }}
             </div>
-          }
-        }
-      </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-white truncate">{{ entry.nombre }}</p>
+              <p class="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">{{ entry.turno }}</p>
+            </div>
+          </div>
+
+          <!-- Over-all -->
+          <div class="text-center px-2">
+            <p class="text-sm font-semibold text-cyan-400">{{ entry.igeo.toFixed(1) }}%</p>
+            <div class="gamif-progress-bar mt-1.5">
+              <div class="gamif-progress-fill"
+                   [style.width]="barWidth(entry.igeo)"
+                   [style.background]="'linear-gradient(90deg,#06b6d4,#3b82f6)'">
+              </div>
+            </div>
+          </div>
+
+          <!-- On-time -->
+          <div class="text-center px-2">
+            <p class="text-sm text-blue-300">{{ entry.onTimeRate.toFixed(1) }}%</p>
+            <div class="gamif-progress-bar mt-1.5">
+              <div class="gamif-progress-fill gamif-progress-fill--ontime"
+                   [style.width]="barWidth(entry.onTimeRate)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Completadas -->
+          <div class="text-center text-sm text-white/55">
+            {{ entry.completedTasks }} / {{ entry.totalTasks }}
+          </div>
+
+          <!-- Insignias -->
+          <div class="flex items-center justify-center gap-1 flex-wrap">
+            @for (badge of entry.badges; track badge.type) {
+              <svg class="w-5 h-5" [class]="badgeShieldColor(badge.type)"
+                   viewBox="0 0 24 24" fill="currentColor"
+                   [title]="badge.title" aria-label="badge.title">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+              </svg>
+            }
+            @if (entry.badges.length === 0) {
+              <span class="text-white/20 text-xs">—</span>
+            }
+          </div>
+
+          <!-- Delta -->
+          <div class="text-center">
+            @if (entry.igeoChange > 0) {
+              <p class="text-sm font-bold text-emerald-400">
+                <span aria-hidden="true">↑</span>
+                <span class="sr-only">Subió</span>
+                {{ entry.igeoChange }}
+              </p>
+            } @else if (entry.igeoChange < 0) {
+              <p class="text-sm font-bold text-red-400">
+                <span aria-hidden="true">↓</span>
+                <span class="sr-only">Bajó</span>
+                {{ entry.igeoChange * -1 }}
+              </p>
+            } @else {
+              <p class="text-sm text-white/25">—</p>
+            }
+            <p class="text-[10px] text-white/20 mt-0.5">vs. semana anterior</p>
+          </div>
+
+        </div>
+
+        <!-- Mobile row (card style) -->
+        <div
+          class="gamif-row md:hidden px-4 py-3.5"
+          [class]="rankRowClass(entry.rank)"
+        >
+          <div class="flex items-center gap-3">
+            <!-- rank -->
+            <span class="text-sm font-bold w-5 text-center shrink-0" [class]="rankColor(entry.rank)">
+              {{ entry.rank }}
+            </span>
+            <!-- avatar -->
+            <div [class]="avatarRowClass(entry.rank)" aria-hidden="true">
+              {{ initials(entry.nombre) }}
+            </div>
+            <!-- name + turno -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-white truncate">{{ entry.nombre }}</p>
+              <p class="text-[10px] text-white/30 uppercase">{{ entry.turno }}</p>
+            </div>
+            <!-- score + delta -->
+            <div class="text-right shrink-0">
+              <p class="text-sm font-bold text-cyan-400">{{ entry.igeo.toFixed(1) }}%</p>
+              @if (entry.igeoChange > 0) {
+                <p class="text-[11px] text-emerald-400">↑ {{ entry.igeoChange }}</p>
+              } @else if (entry.igeoChange < 0) {
+                <p class="text-[11px] text-red-400">↓ {{ entry.igeoChange * -1 }}</p>
+              } @else {
+                <p class="text-[11px] text-white/25">—</p>
+              }
+            </div>
+          </div>
+
+          <!-- Progress bar (mobile) -->
+          <div class="gamif-progress-bar mt-2.5 ml-8">
+            <div class="gamif-progress-fill"
+                 [style.width]="barWidth(entry.igeo)"
+                 [style.background]="'linear-gradient(90deg,#06b6d4,#3b82f6)'">
+            </div>
+          </div>
+        </div>
+
+      }
+
     </div>
+    <!-- /tabla -->
+
   }
 
 </div>

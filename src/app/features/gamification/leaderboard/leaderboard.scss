@@ -1,0 +1,322 @@
+/* ═══════════════════════════════════════════════════════════════
+   Gamificación / Leaderboard — Dark Cyber Theme
+   Estilos exclusivos de este módulo. No afecta otros módulos.
+═══════════════════════════════════════════════════════════════ */
+
+// ── Página contenedora ─────────────────────────────────────────
+.gamif-page {
+  min-height: 100%;
+  background: #070d1a;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  color: #fff;
+}
+
+// ── Metric cards ───────────────────────────────────────────────
+.gamif-metric-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+// Icon container backgrounds
+.icon-bg-blue   { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); }
+.icon-bg-cyan   { background: rgba(6, 182, 212, 0.15);  border: 1px solid rgba(6, 182, 212, 0.3);  }
+.icon-bg-amber  { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
+.icon-bg-orange { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); }
+
+// Icon colors
+.icon-blue   { color: #60a5fa; }
+.icon-cyan   { color: #22d3ee; }
+.icon-amber  { color: #fbbf24; }
+.icon-orange { color: #fb923c; }
+
+// ── Progress bar ───────────────────────────────────────────────
+.gamif-progress-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.gamif-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gamif-progress-fill--ontime {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+// ── Period tabs ────────────────────────────────────────────────
+.gamif-tab {
+  padding: 7px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.5);
+  }
+
+  &--active {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.45);
+    color: #67e8f9;
+  }
+
+  &--inactive {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}
+
+// ── TOP 3 panel ────────────────────────────────────────────────
+.gamif-top3-panel {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+
+  // Radial glow base desde abajo
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 110%, rgba(0, 212, 255, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+// ── Podium cards ───────────────────────────────────────────────
+.gamif-podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  position: relative;
+  transition: transform 0.25s ease;
+
+  &:hover { transform: translateY(-4px); }
+
+  &--gold {
+    background: linear-gradient(160deg, rgba(251, 191, 36, 0.1) 0%, rgba(6, 182, 212, 0.07) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    box-shadow:
+      0 0 50px rgba(251, 191, 36, 0.12),
+      0 0 100px rgba(251, 191, 36, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: gamif-pulse-gold 3.5s ease-in-out infinite;
+  }
+
+  &--silver {
+    background: rgba(59, 130, 246, 0.06);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  &--bronze {
+    background: rgba(168, 85, 247, 0.06);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+}
+
+// Glow pulsante para el 1er lugar
+@keyframes gamif-pulse-gold {
+  0%, 100% {
+    box-shadow:
+      0 0 50px rgba(251, 191, 36, 0.12),
+      0 0 100px rgba(251, 191, 36, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 70px rgba(251, 191, 36, 0.22),
+      0 0 130px rgba(6, 182, 212, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+}
+
+// ── Avatares del podio ─────────────────────────────────────────
+.gamif-avatar {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  flex-shrink: 0;
+
+  &--gold {
+    background: linear-gradient(135deg, #60a5fa 0%, #06b6d4 100%);
+    box-shadow: 0 0 24px rgba(6, 182, 212, 0.55), 0 0 48px rgba(6, 182, 212, 0.2);
+  }
+
+  &--silver {
+    background: linear-gradient(135deg, #475569 0%, #3b82f6 100%);
+    box-shadow: 0 0 18px rgba(59, 130, 246, 0.45);
+  }
+
+  &--bronze {
+    background: linear-gradient(135deg, #6d28d9 0%, #a855f7 100%);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.45);
+  }
+}
+
+// ── Rank badges (1, 2, 3) del podio ───────────────────────────
+.gamif-rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+
+  &--gold {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #78350f;
+    box-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+  }
+
+  &--silver {
+    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+    color: #334155;
+  }
+
+  &--bronze {
+    background: linear-gradient(135deg, #fb923c, #c2410c);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+  }
+}
+
+// ── Podium stage glow ──────────────────────────────────────────
+.gamif-stage {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 12px;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    filter: blur(6px);
+    opacity: 0.8;
+  }
+
+  &--gold {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.4), rgba(6, 182, 212, 0.4));
+    &::after { background: linear-gradient(90deg, #fbbf24, #06b6d4); }
+  }
+
+  &--silver {
+    background: rgba(59, 130, 246, 0.35);
+    &::after { background: #3b82f6; }
+  }
+
+  &--bronze {
+    background: rgba(168, 85, 247, 0.35);
+    &::after { background: #a855f7; }
+  }
+}
+
+// ── Tabla de ranking ───────────────────────────────────────────
+.gamif-table-panel {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.gamif-table-header {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.gamif-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease;
+
+  &:hover { background: rgba(255, 255, 255, 0.04); }
+  &:last-child { border-bottom: none; }
+
+  &--gold   { border-left: 2px solid rgba(251, 191, 36, 0.55); }
+  &--silver { border-left: 2px solid rgba(148, 163, 184, 0.4); }
+  &--bronze { border-left: 2px solid rgba(168, 85, 247, 0.45); }
+}
+
+// ── Avatares de la tabla ───────────────────────────────────────
+.gamif-avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  flex-shrink: 0;
+
+  &--gold    { background: linear-gradient(135deg, #60a5fa, #06b6d4); box-shadow: 0 0 10px rgba(6, 182, 212, 0.45); }
+  &--silver  { background: linear-gradient(135deg, #475569, #3b82f6); }
+  &--bronze  { background: linear-gradient(135deg, #6d28d9, #a855f7); }
+  &--default { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.2); color: rgba(255, 255, 255, 0.55); }
+}
+
+// ── Shield badges ──────────────────────────────────────────────
+.shield-blue    { color: #60a5fa; }
+.shield-emerald { color: #34d399; }
+.shield-cyan    { color: #22d3ee; }
+.shield-amber   { color: #fbbf24; }
+.shield-orange  { color: #fb923c; }
+.shield-purple  { color: #c084fc; }
+
+// ── Skeleton / loading ────────────────────────────────────────
+.gamif-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: gamif-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes gamif-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

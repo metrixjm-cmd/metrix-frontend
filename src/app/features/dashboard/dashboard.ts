@@ -76,10 +76,10 @@ export class Dashboard implements OnInit {
   readonly pipelineSteps = computed(() => {
     const c = this.kpiSvc.pipelineCounts();
     return [
-      { label: 'Asignada',    color: 'text-stone-500',   bg: 'bg-stone-200',   count: c?.pending    ?? 0 },
-      { label: 'En Progreso', color: 'text-blue-600',    bg: 'bg-blue-100',    count: c?.inProgress ?? 0 },
-      { label: 'Completada',  color: 'text-emerald-700', bg: 'bg-emerald-100', count: c?.completed  ?? 0 },
-      { label: 'Fallida',     color: 'text-red-600',     bg: 'bg-red-100',     count: c?.failed     ?? 0 },
+      { label: 'Asignada',    color: 'text-white/50',    bg: 'bg-white/[0.08]',    count: c?.pending    ?? 0 },
+      { label: 'En Progreso', color: 'text-blue-400',    bg: 'bg-blue-500/[0.15]', count: c?.inProgress ?? 0 },
+      { label: 'Completada',  color: 'text-emerald-400', bg: 'bg-emerald-500/[0.15]', count: c?.completed ?? 0 },
+      { label: 'Fallida',     color: 'text-red-400',     bg: 'bg-red-500/[0.15]',  count: c?.failed     ?? 0 },
     ];
   });
 
@@ -218,18 +218,18 @@ export class Dashboard implements OnInit {
   // ── Ranking helpers ───────────────────────────────────────────────────────
 
   rankMedalClass(rank: number): string {
-    if (rank === 1) return 'bg-yellow-100 text-yellow-700 border border-yellow-300 font-bold';
-    if (rank === 2) return 'bg-stone-100 text-stone-500 border border-stone-300 font-bold';
-    if (rank === 3) return 'bg-brand-50 text-brand-600 border border-brand-200 font-bold';
-    return 'bg-stone-50 text-stone-400 border border-stone-200';
+    if (rank === 1) return 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30 font-bold';
+    if (rank === 2) return 'bg-slate-500/20 text-slate-300 border border-slate-400/30 font-bold';
+    if (rank === 3) return 'bg-purple-500/20 text-purple-300 border border-purple-400/30 font-bold';
+    return 'bg-white/[0.05] text-white/30 border border-white/10';
   }
 
   rankBadge(rank: number, igeo: number): { text: string; classes: string } | null {
     if (rank !== 1) return null;
-    if (igeo >= 90) return { text: '🔥 Imparable',       classes: 'bg-orange-100 text-orange-700 border border-orange-200' };
-    if (igeo >= 80) return { text: '⭐ Excelente',        classes: 'bg-amber-100 text-amber-700 border border-amber-200'   };
-    if (igeo >= 70) return { text: '💪 Líder del equipo', classes: 'bg-yellow-100 text-yellow-700 border border-yellow-200' };
-    return           { text: '🏆 #1 del equipo',         classes: 'bg-stone-100 text-stone-600 border border-stone-200'    };
+    if (igeo >= 90) return { text: '🔥 Imparable',       classes: 'bg-orange-500/15 text-orange-300 border border-orange-400/25' };
+    if (igeo >= 80) return { text: '⭐ Excelente',        classes: 'bg-amber-500/15 text-amber-300 border border-amber-400/25'   };
+    if (igeo >= 70) return { text: '💪 Líder del equipo', classes: 'bg-yellow-500/15 text-yellow-300 border border-yellow-400/25' };
+    return           { text: '🏆 #1 del equipo',         classes: 'bg-white/10 text-white/60 border border-white/15'             };
   }
 
   igeoBarClass(igeo: number): string {
@@ -254,9 +254,9 @@ export class Dashboard implements OnInit {
   // ── Team / shift helpers ──────────────────────────────────────────────────
 
   igeoTextClass(igeo: number): string {
-    if (igeo >= 80) return 'text-emerald-600 font-bold';
-    if (igeo >= 60) return 'text-yellow-600 font-bold';
-    return 'text-red-600 font-bold';
+    if (igeo >= 80) return 'text-emerald-400 font-bold';
+    if (igeo >= 60) return 'text-yellow-400 font-bold';
+    return 'text-red-400 font-bold';
   }
 
   shiftBarColor(otr: number): string {
