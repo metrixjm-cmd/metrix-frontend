@@ -4,7 +4,7 @@
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div class="space-y-1">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Capacitaciones</h1>
-      <p class="text-sm text-white/50 max-w-2xl">
+      <p class="text-sm text-white/60 max-w-2xl">
         @if (isAdmin()) { Vista global — monitorea el estado de las capacitaciones en todas las sucursales }
         @else if (isGerente()) { Da seguimiento a la formación interna de tu sucursal }
         @else { Revisa tus capacitaciones asignadas y continúa tu progreso }
@@ -52,24 +52,24 @@
       <!-- KPIs globales -->
       <div class="grid grid-cols-2 xl:grid-cols-5 gap-3 sm:gap-4">
         <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
-          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Total</p>
+          <p class="text-[11px] sm:text-xs text-white/50 uppercase tracking-[0.18em] font-medium">Total</p>
           <p class="text-3xl sm:text-4xl font-bold text-white mt-2">{{ globalStats().total }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
-          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Programadas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-2">{{ globalStats().programadas }}</p>
+          <p class="text-[11px] sm:text-xs text-amber-400/70 uppercase tracking-[0.18em] font-medium">Programadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-amber-400 mt-2">{{ globalStats().programadas }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
-          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">En curso</p>
-          <p class="text-3xl sm:text-4xl font-bold text-brand-600 mt-2">{{ globalStats().enCurso }}</p>
+          <p class="text-[11px] sm:text-xs text-blue-400/70 uppercase tracking-[0.18em] font-medium">En curso</p>
+          <p class="text-3xl sm:text-4xl font-bold text-blue-400 mt-2">{{ globalStats().enCurso }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5">
-          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">Completadas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-emerald-600 mt-2">{{ globalStats().completadas }}</p>
+          <p class="text-[11px] sm:text-xs text-emerald-400/70 uppercase tracking-[0.18em] font-medium">Completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-emerald-400 mt-2">{{ globalStats().completadas }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4 sm:p-5 col-span-2 xl:col-span-1">
-          <p class="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.18em]">No completadas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-red-500 mt-2">{{ globalStats().noCompletadas }}</p>
+          <p class="text-[11px] sm:text-xs text-red-400/70 uppercase tracking-[0.18em] font-medium">No completadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-red-400 mt-2">{{ globalStats().noCompletadas }}</p>
         </div>
       </div>
 
@@ -79,7 +79,7 @@
           <div class="px-5 py-4 border-b border-white/[0.06] flex items-center justify-between gap-3">
             <div>
               <h2 class="font-semibold text-white text-sm">Resumen por sucursal</h2>
-              <p class="text-xs text-white/40 mt-0.5">Comparativo rápido del desempeño por tienda</p>
+              <p class="text-xs text-white/50 mt-0.5">Comparativo rápido del desempeño por tienda</p>
             </div>
             @if (filterStore()) {
               <button (click)="filterStore.set('')"
@@ -90,37 +90,37 @@
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-white/[0.02]">
-                <tr class="text-xs text-white/40 uppercase tracking-wide">
-                  <th class="px-5 py-2 text-left font-medium">Sucursal</th>
-                  <th class="px-4 py-2 text-right font-medium">Prog.</th>
-                  <th class="px-4 py-2 text-right font-medium">Curso</th>
-                  <th class="px-4 py-2 text-right font-medium">Complet.</th>
-                  <th class="px-4 py-2 text-right font-medium">No Comp.</th>
-                  <th class="px-5 py-2 text-left font-medium">Tasa aprobación</th>
+              <thead class="bg-white/[0.03]">
+                <tr class="text-[11px] text-white/50 uppercase tracking-wider">
+                  <th class="px-5 py-2.5 text-left font-semibold">Sucursal</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Prog.</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Curso</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">Complet.</th>
+                  <th class="px-4 py-2.5 text-right font-semibold">No Comp.</th>
+                  <th class="px-5 py-2.5 text-left font-semibold">Tasa aprobación</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/[0.06]">
                 @for (s of storeSummaries(); track s.storeId) {
                   <tr class="hover:bg-white/[0.04] cursor-pointer transition-colors"
-                      [class.bg-orange-50]="filterStore() === s.storeId"
+                      [class.bg-brand-600/10]="filterStore() === s.storeId"
                       (click)="filterByStore(s.storeId)">
-                    <td class="px-5 py-3 font-medium text-white/80">
+                    <td class="px-5 py-3 font-medium text-white/90">
                       {{ storeLabel(s.storeId) }}
                       <span class="ml-1 text-xs text-white/40">({{ s.total }})</span>
                     </td>
-                    <td class="px-4 py-3 text-right text-amber-600 font-medium">{{ s.programadas }}</td>
-                    <td class="px-4 py-3 text-right text-blue-600 font-medium">{{ s.enCurso }}</td>
-                    <td class="px-4 py-3 text-right text-emerald-600 font-medium">{{ s.completadas }}</td>
-                    <td class="px-4 py-3 text-right text-red-500 font-medium">{{ s.noCompletadas }}</td>
+                    <td class="px-4 py-3 text-right text-amber-400 font-medium">{{ s.programadas }}</td>
+                    <td class="px-4 py-3 text-right text-blue-400 font-medium">{{ s.enCurso }}</td>
+                    <td class="px-4 py-3 text-right text-emerald-400 font-medium">{{ s.completadas }}</td>
+                    <td class="px-4 py-3 text-right text-red-400 font-medium">{{ s.noCompletadas }}</td>
                     <td class="px-5 py-3">
                       <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[80px]">
+                        <div class="flex-1 bg-white/[0.08] rounded-full h-1.5 min-w-[80px]">
                           <div class="h-1.5 rounded-full transition-all"
                                [class]="completionBarClass(s.completionRate)"
                                [style.width.%]="s.completionRate"></div>
                         </div>
-                        <span class="text-xs text-white/50 tabular-nums w-8 text-right">{{ s.completionRate }}%</span>
+                        <span class="text-xs text-white/60 tabular-nums w-8 text-right">{{ s.completionRate }}%</span>
                       </div>
                     </td>
                   </tr>
@@ -141,20 +141,20 @@
       <!-- KPIs de la sucursal -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-          <p class="text-xs text-white/40 uppercase tracking-wide">Programadas</p>
-          <p class="text-3xl font-bold text-amber-600 mt-1">{{ storeStats().programadas }}</p>
+          <p class="text-xs text-amber-400/70 uppercase tracking-wide font-medium">Programadas</p>
+          <p class="text-3xl font-bold text-amber-400 mt-1">{{ storeStats().programadas }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-          <p class="text-xs text-white/40 uppercase tracking-wide">En Curso</p>
-          <p class="text-3xl font-bold text-blue-600 mt-1">{{ storeStats().enCurso }}</p>
+          <p class="text-xs text-blue-400/70 uppercase tracking-wide font-medium">En Curso</p>
+          <p class="text-3xl font-bold text-blue-400 mt-1">{{ storeStats().enCurso }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-          <p class="text-xs text-white/40 uppercase tracking-wide">Completadas</p>
-          <p class="text-3xl font-bold text-emerald-600 mt-1">{{ storeStats().completadas }}</p>
+          <p class="text-xs text-emerald-400/70 uppercase tracking-wide font-medium">Completadas</p>
+          <p class="text-3xl font-bold text-emerald-400 mt-1">{{ storeStats().completadas }}</p>
         </div>
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-          <p class="text-xs text-white/40 uppercase tracking-wide">No Completadas</p>
-          <p class="text-3xl font-bold text-red-500 mt-1">{{ storeStats().noCompletadas }}</p>
+          <p class="text-xs text-red-400/70 uppercase tracking-wide font-medium">No Completadas</p>
+          <p class="text-3xl font-bold text-red-400 mt-1">{{ storeStats().noCompletadas }}</p>
         </div>
       </div>
 
@@ -164,21 +164,21 @@
           <span class="text-xs text-white/50">{{ gerenteTeamStats().total }} capacitaciones</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
-            <p class="text-[11px] text-white/50 uppercase tracking-wide">Programadas</p>
-            <p class="text-lg font-bold text-amber-600">{{ gerenteTeamStats().programadas }}</p>
+          <div class="rounded-lg bg-white/[0.03] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide font-medium">Programadas</p>
+            <p class="text-lg font-bold text-amber-400">{{ gerenteTeamStats().programadas }}</p>
           </div>
-          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
-            <p class="text-[11px] text-white/50 uppercase tracking-wide">En curso</p>
-            <p class="text-lg font-bold text-blue-600">{{ gerenteTeamStats().enCurso }}</p>
+          <div class="rounded-lg bg-white/[0.03] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide font-medium">En curso</p>
+            <p class="text-lg font-bold text-blue-400">{{ gerenteTeamStats().enCurso }}</p>
           </div>
-          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
-            <p class="text-[11px] text-white/50 uppercase tracking-wide">Completadas</p>
-            <p class="text-lg font-bold text-emerald-600">{{ gerenteTeamStats().completadas }}</p>
+          <div class="rounded-lg bg-white/[0.03] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide font-medium">Completadas</p>
+            <p class="text-lg font-bold text-emerald-400">{{ gerenteTeamStats().completadas }}</p>
           </div>
-          <div class="rounded-lg bg-white/[0.02] px-3 py-2">
-            <p class="text-[11px] text-white/50 uppercase tracking-wide">% cierre</p>
-            <p class="text-lg font-bold text-brand-700">{{ gerenteTeamStats().completionRate }}%</p>
+          <div class="rounded-lg bg-white/[0.03] px-3 py-2">
+            <p class="text-[11px] text-white/50 uppercase tracking-wide font-medium">% cierre</p>
+            <p class="text-lg font-bold text-white">{{ gerenteTeamStats().completionRate }}%</p>
           </div>
         </div>
       </div>
@@ -211,33 +211,33 @@
       <div class="space-y-5">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-xs text-white/40 uppercase tracking-wide">Programadas</p>
-            <p class="text-3xl font-bold text-amber-600 mt-1">{{ globalStats().programadas }}</p>
+            <p class="text-xs text-amber-400/70 uppercase tracking-wide font-medium">Programadas</p>
+            <p class="text-3xl font-bold text-amber-400 mt-1">{{ globalStats().programadas }}</p>
           </div>
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-xs text-white/40 uppercase tracking-wide">En Curso</p>
-            <p class="text-3xl font-bold text-blue-600 mt-1">{{ globalStats().enCurso }}</p>
+            <p class="text-xs text-blue-400/70 uppercase tracking-wide font-medium">En Curso</p>
+            <p class="text-3xl font-bold text-blue-400 mt-1">{{ globalStats().enCurso }}</p>
           </div>
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-xs text-white/40 uppercase tracking-wide">Completadas</p>
-            <p class="text-3xl font-bold text-emerald-600 mt-1">{{ globalStats().completadas }}</p>
+            <p class="text-xs text-emerald-400/70 uppercase tracking-wide font-medium">Completadas</p>
+            <p class="text-3xl font-bold text-emerald-400 mt-1">{{ globalStats().completadas }}</p>
           </div>
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-xs text-white/40 uppercase tracking-wide">No Completadas</p>
-            <p class="text-3xl font-bold text-red-500 mt-1">{{ globalStats().noCompletadas }}</p>
+            <p class="text-xs text-red-400/70 uppercase tracking-wide font-medium">No Completadas</p>
+            <p class="text-3xl font-bold text-red-400 mt-1">{{ globalStats().noCompletadas }}</p>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-3">
           <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
-                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todos los estados</option>
             @for (s of statuses; track s) {
               <option [value]="s">{{ statusLabels[s] ?? s }}</option>
             }
           </select>
           <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todos los niveles</option>
             @for (l of levels; track l) {
               <option [value]="l">{{ levelLabels[l] ?? l }}</option>
@@ -247,21 +247,21 @@
 
         <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
           @if (filteredTrainings().length === 0) {
-            <div class="py-16 text-center text-white/40">
+            <div class="py-16 text-center text-white/50">
               <p class="text-sm">Sin capacitaciones asignadas</p>
-              <p class="text-xs mt-1">Tu gerente te asignará cursos cuando estén disponibles.</p>
+              <p class="text-xs mt-1 text-white/40">Tu gerente te asignará cursos cuando estén disponibles.</p>
             </div>
           } @else {
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
-                <thead class="bg-white/[0.02] border-b border-white/10">
+                <thead class="bg-white/[0.03] border-b border-white/[0.08]">
                   <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Capacitación</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Nivel</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Vencimiento</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Creada</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Estado</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Avance</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Capacitación</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Nivel</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Vencimiento</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Creada</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Estado</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Avance</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-white/[0.06]">
@@ -270,7 +270,7 @@
                         (click)="goToDetail(t)">
                       <td [class]="trainingFirstCellClass(t)">
                         <div class="font-medium text-white">{{ t.title }}</div>
-                        <div class="text-xs text-white/40 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
+                        <div class="text-xs text-white/50 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
                       </td>
                       <td class="px-4 py-3">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -278,7 +278,7 @@
                           {{ levelLabels[t.level] ?? t.level }}
                         </span>
                       </td>
-                      <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.dueAt | appDate:'due' }}</td>
+                      <td class="px-4 py-3 text-white/70 text-xs whitespace-nowrap">{{ t.dueAt | appDate:'due' }}</td>
                       <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
                       <td class="px-4 py-3">
                         <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -288,12 +288,12 @@
                       </td>
                       <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                          <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[80px]">
+                          <div class="flex-1 bg-white/[0.08] rounded-full h-1.5 min-w-[80px]">
                             <div class="h-1.5 rounded-full transition-all"
-                                 [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
+                                 [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-brand-500'"
                                  [style.width.%]="t.percentage"></div>
                           </div>
-                          <span class="text-xs text-white/50 tabular-nums">{{ t.percentage }}%</span>
+                          <span class="text-xs text-white/60 tabular-nums">{{ t.percentage }}%</span>
                         </div>
                       </td>
                     </tr>
@@ -314,14 +314,14 @@
       <!-- Filtros -->
       <div class="flex flex-wrap gap-3">
         <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
-                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
           <option value="">Todos los estados</option>
           @for (s of statuses; track s) {
             <option [value]="s">{{ statusLabels[s] ?? s }}</option>
           }
         </select>
         <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
           <option value="">Todos los niveles</option>
           @for (l of levels; track l) {
             <option [value]="l">{{ levelLabels[l] ?? l }}</option>
@@ -329,7 +329,7 @@
         </select>
         @if (isAdmin()) {
           <select [ngModel]="filterStore()" (ngModelChange)="filterStore.set($event)"
-                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
             <option value="">Todas las sucursales</option>
             @for (id of uniqueStoreIds(); track id) {
               <option [value]="id">{{ storeLabel(id) }}</option>
@@ -341,24 +341,24 @@
       <!-- Tabla -->
       <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
         @if (filteredTrainings().length === 0) {
-          <div class="py-16 text-center text-white/40">
+          <div class="py-16 text-center text-white/50">
             <p class="text-sm">Sin resultados — ajusta los filtros</p>
           </div>
         } @else {
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-white/[0.02] border-b border-white/10">
+              <thead class="bg-white/[0.03] border-b border-white/[0.08]">
                 <tr>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Capacitación</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Capacitación</th>
                   @if (isAdmin()) {
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Sucursal</th>
+                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Sucursal</th>
                   }
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Nivel</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Asignado a</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Vencimiento</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Creada</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Estado</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wide">Avance</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Nivel</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Asignado a</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Vencimiento</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Creada</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Estado</th>
+                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Avance</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/[0.06]">
@@ -367,7 +367,7 @@
                       (click)="goToDetail(t)">
                     <td [class]="trainingFirstCellClass(t)">
                       <div class="font-medium text-white">{{ t.title }}</div>
-                      <div class="text-xs text-white/40 line-clamp-1 max-w-[360px]">
+                      <div class="text-xs text-white/50 line-clamp-1 max-w-[360px]">
                         @if (t.groupSize > 1) {
                           {{ t.groupSize }} colaboradores asignados
                         } @else {
@@ -376,7 +376,7 @@
                       </div>
                     </td>
                     @if (isAdmin()) {
-                      <td class="px-4 py-3 text-xs text-white/50 font-medium">{{ storeLabel(t.storeId) }}</td>
+                      <td class="px-4 py-3 text-xs text-white/70 font-medium">{{ storeLabel(t.storeId) }}</td>
                     }
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -384,8 +384,8 @@
                         {{ levelLabels[t.level] ?? t.level }}
                       </span>
                     </td>
-                    <td class="px-4 py-3 text-white/70 text-xs">{{ assigneeLabel(t) }}</td>
-                    <td class="px-4 py-3 text-white/50 text-xs">{{ t.dueAt | appDate:'due' }}</td>
+                    <td class="px-4 py-3 text-white/80 text-xs">{{ assigneeLabel(t) }}</td>
+                    <td class="px-4 py-3 text-white/70 text-xs">{{ t.dueAt | appDate:'due' }}</td>
                     <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
                     <td class="px-4 py-3">
                       <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
@@ -395,12 +395,12 @@
                     </td>
                     <td class="px-4 py-3">
                       <div class="flex items-center gap-2">
-                        <div class="flex-1 bg-white/[0.05] rounded-full h-1.5 min-w-[60px]">
+                        <div class="flex-1 bg-white/[0.08] rounded-full h-1.5 min-w-[60px]">
                           <div class="h-1.5 rounded-full transition-all"
-                               [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-orange-500'"
+                               [class]="t.status === 'COMPLETADA' ? 'bg-emerald-500' : t.status === 'NO_COMPLETADA' ? 'bg-red-400' : 'bg-brand-500'"
                                [style.width.%]="t.percentage"></div>
                         </div>
-                        <span class="text-xs text-white/50 tabular-nums">{{ t.percentage }}%</span>
+                        <span class="text-xs text-white/60 tabular-nums">{{ t.percentage }}%</span>
                       </div>
                     </td>
                   </tr>
@@ -412,7 +412,7 @@
       </div>
 
       @if (isAdmin()) {
-        <p class="text-xs text-white/40 text-right">
+        <p class="text-xs text-white/50 text-right">
           Mostrando {{ filteredTrainings().length }} de {{ globalStats().total }} capacitaciones
         </p>
       }

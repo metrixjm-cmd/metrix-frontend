@@ -110,6 +110,11 @@ input, select, textarea {
   color-scheme: dark;
 }
 
+select option {
+  background: #0e1628;
+  color: #fff;
+}
+
 /* ── Componentes reutilizables ────────────────── */
 @layer components {
 

@@ -239,21 +239,21 @@ export class TrainingList implements OnInit {
 
   statusBadgeClass(status: TrainingStatus): string {
     const map: Record<TrainingStatus, string> = {
-      PROGRAMADA: 'bg-amber-100 text-amber-700',
-      EN_CURSO: 'bg-blue-100 text-blue-700',
-      COMPLETADA: 'bg-emerald-100 text-emerald-700',
-      NO_COMPLETADA: 'bg-red-100 text-red-700',
+      PROGRAMADA: 'bg-amber-500/15 text-amber-400 ring-1 ring-amber-500/25',
+      EN_CURSO: 'bg-blue-500/15 text-blue-400 ring-1 ring-blue-500/25',
+      COMPLETADA: 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/25',
+      NO_COMPLETADA: 'bg-red-500/15 text-red-400 ring-1 ring-red-500/25',
     };
-    return map[status] ?? 'bg-stone-100 text-stone-700';
+    return map[status] ?? 'bg-white/[0.06] text-white/60 ring-1 ring-white/10';
   }
 
   levelBadgeClass(level: TrainingLevel): string {
     const map: Record<TrainingLevel, string> = {
-      BASICO: 'bg-stone-100 text-stone-600',
-      INTERMEDIO: 'bg-blue-50 text-blue-600',
-      AVANZADO: 'bg-purple-100 text-purple-700',
+      BASICO: 'bg-white/[0.06] text-white/70 ring-1 ring-white/10',
+      INTERMEDIO: 'bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/25',
+      AVANZADO: 'bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/25',
     };
-    return map[level] ?? 'bg-stone-100 text-stone-600';
+    return map[level] ?? 'bg-white/[0.06] text-white/60 ring-1 ring-white/10';
   }
 
   completionBarClass(rate: number): string {
@@ -265,21 +265,21 @@ export class TrainingList implements OnInit {
   trainingRowClass(training: Pick<TrainingResponse, 'status'>): string {
     const base = 'cursor-pointer transition-colors';
     const map: Record<TrainingStatus, string> = {
-      PROGRAMADA: 'bg-amber-50/50 hover:bg-amber-100/70',
-      EN_CURSO: 'bg-blue-50/50 hover:bg-blue-100/70',
-      COMPLETADA: 'bg-emerald-50/50 hover:bg-emerald-100/70',
-      NO_COMPLETADA: 'bg-red-50 hover:bg-red-100',
+      PROGRAMADA: 'hover:bg-amber-500/[0.06]',
+      EN_CURSO: 'hover:bg-blue-500/[0.06]',
+      COMPLETADA: 'hover:bg-emerald-500/[0.06]',
+      NO_COMPLETADA: 'hover:bg-red-500/[0.06]',
     };
-    return `${base} ${map[training.status as TrainingStatus] ?? 'hover:bg-stone-50'}`;
+    return `${base} ${map[training.status as TrainingStatus] ?? 'hover:bg-white/[0.04]'}`;
   }
 
   trainingFirstCellClass(training: Pick<TrainingResponse, 'status'>): string {
-    const base = 'px-4 py-3 border-l-4';
+    const base = 'px-4 py-3 border-l-[3px]';
     const map: Record<TrainingStatus, string> = {
-      PROGRAMADA: 'border-amber-400',
-      EN_CURSO: 'border-blue-400',
-      COMPLETADA: 'border-emerald-400',
-      NO_COMPLETADA: 'border-red-400',
+      PROGRAMADA: 'border-amber-500',
+      EN_CURSO: 'border-blue-500',
+      COMPLETADA: 'border-emerald-500',
+      NO_COMPLETADA: 'border-red-500',
     };
     return `${base} ${map[training.status as TrainingStatus] ?? 'border-transparent'}`;
   }
