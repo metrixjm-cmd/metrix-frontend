@@ -40,7 +40,6 @@ export interface TrainingResponse {
   id: string;
   title: string;
   description: string;
-  level: TrainingLevel;
   durationHours: number;
   minPassGrade: number;
   assignedUserId: string;
@@ -73,7 +72,6 @@ export interface TrainingResponse {
 export interface CreateTrainingRequest {
   title: string;
   description: string;
-  level: TrainingLevel;
   assignedUserId: string;
   storeId: string;
   shift: string;
@@ -97,7 +95,6 @@ export interface CreateFromTemplateRequest {
 export interface UpdateTrainingRequest {
   title: string;
   description: string;
-  level: TrainingLevel;
   storeId: string;
   shift: string;
   dueAt: string;

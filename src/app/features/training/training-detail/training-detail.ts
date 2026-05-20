@@ -13,9 +13,7 @@ import { NotificationService } from '../../notifications/notification.service';
 import {
   MATERIAL_TYPE_COLORS,
   MATERIAL_TYPE_ICONS,
-  TRAINING_LEVEL_LABELS,
   TRAINING_STATUS_LABELS,
-  TrainingLevel,
   TrainingResponse,
   TrainingStatus,
   UpdateTrainingRequest,
@@ -50,8 +48,6 @@ export class TrainingDetail implements OnInit, OnDestroy {
   readonly saving       = this.trainingSvc.saving;
   readonly error        = this.trainingSvc.error;
   readonly statusLabels: Record<string, string | undefined> = TRAINING_STATUS_LABELS;
-  readonly levelLabels:  Record<string, string | undefined> = TRAINING_LEVEL_LABELS;
-  readonly levelOptions: TrainingLevel[] = ['BASICO', 'INTERMEDIO', 'AVANZADO'];
   readonly shiftOptions = ['TODOS', 'MATUTINO', 'VESPERTINO', 'NOCTURNO'];
   readonly stores = this.settingsSvc.stores;
   readonly storeName = computed(() => {
@@ -158,7 +154,6 @@ export class TrainingDetail implements OnInit, OnDestroy {
   percentageInput      = signal<number>(0);
   editTitle            = signal('');
   editDescription      = signal('');
-  editLevel            = signal<TrainingLevel>('BASICO');
   editStoreId          = signal('');
   editShift            = signal('TODOS');
   editDueAtLocal       = signal('');
@@ -298,7 +293,6 @@ export class TrainingDetail implements OnInit, OnDestroy {
     }
     this.editTitle.set(t.title);
     this.editDescription.set(t.description);
-    this.editLevel.set(t.level);
     this.editStoreId.set(t.storeId);
     this.editShift.set(t.shift);
     this.editDueAtLocal.set(this.toLocalDateTimeInput(t.dueAt));
@@ -317,7 +311,6 @@ export class TrainingDetail implements OnInit, OnDestroy {
     const req: UpdateTrainingRequest = {
       title: this.editTitle().trim(),
       description: this.editDescription().trim(),
-      level: this.editLevel(),
       storeId: this.editStoreId(),
       shift: this.editShift(),
       dueAt,
@@ -394,7 +387,11 @@ export class TrainingDetail implements OnInit, OnDestroy {
 
   resolvedStatus(training: Pick<TrainingResponse, 'status' | 'percentage'> | null | undefined): TrainingStatus {
     if (!training) return 'PROGRAMADA';
-    return training.status;
+    const openStatuses: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO'];
+    if (openStatuses.includes(training.status as TrainingStatus) && this.isOverdue()) {
+      return 'NO_COMPLETADA';
+    }
+    return training.status as TrainingStatus;
   }
 
   memberInitials(name: string | null | undefined): string {
@@ -403,15 +400,6 @@ export class TrainingDetail implements OnInit, OnDestroy {
     if (parts.length === 0) return '--';
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
-  }
-
-  levelBadgeClass(level: TrainingLevel): string {
-    const map: Record<TrainingLevel, string> = {
-      BASICO:     'bg-stone-100 text-stone-600',
-      INTERMEDIO: 'bg-blue-50 text-blue-600',
-      AVANZADO:   'bg-purple-100 text-purple-700',
-    };
-    return map[level] ?? 'bg-stone-100 text-stone-600';
   }
 
   progressBarClass(status: TrainingStatus): string {

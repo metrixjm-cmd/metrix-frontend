@@ -48,11 +48,8 @@
       <section class="rounded-xl border border-white/10 bg-white/[0.04] p-4 md:p-5 space-y-3">
         <div class="flex flex-wrap items-center gap-2">
           <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
-                [class]="learnerStatusClass(training()!.status)">
-            {{ learnerStatusLabel(training()!.status) }}
-          </span>
-          <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/15 text-orange-400">
-            {{ levelLabels[training()!.level] ?? training()!.level }}
+                [class]="learnerStatusClass(resolvedStatus(training()))">
+            {{ learnerStatusLabel(resolvedStatus(training())) }}
           </span>
         </div>
 
@@ -133,16 +130,6 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 border-t border-white/10">
-            <div>
-              <p class="text-[11px] text-white/50 uppercase tracking-wide mb-1.5">Nivel</p>
-              <p class="text-sm font-semibold text-white inline-flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
-                  <circle cx="12" cy="12" r="9" stroke-width="2"></circle>
-                </svg>
-                {{ levelLabels[training()!.level] ?? training()!.level }}
-              </p>
-            </div>
             <div>
               <p class="text-[11px] text-white/50 uppercase tracking-wide mb-1.5">Sucursal</p>
               <p class="text-sm font-semibold text-white inline-flex items-center gap-1.5">
@@ -564,17 +551,6 @@
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-white/70 mb-1">Nivel *</label>
-              <select [ngModel]="editLevel()"
-                      (ngModelChange)="editLevel.set($event)"
-                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40 focus:border-cyan-500/50">
-                @for (level of levelOptions; track level) {
-                  <option [ngValue]="level">{{ levelLabels[level] ?? level }}</option>
-                }
-              </select>
-            </div>
-
             <div>
               <label class="block text-sm font-medium text-white/70 mb-1">Fecha límite *</label>
               <input type="datetime-local"
