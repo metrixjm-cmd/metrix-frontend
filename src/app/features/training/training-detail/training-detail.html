@@ -211,7 +211,8 @@
               <p class="text-sm font-semibold text-cyan-300 tabular-nums">{{ training()!.percentage }}%</p>
             </div>
             <div class="mt-2 h-3 rounded-full bg-white/[0.05] overflow-hidden">
-              <div class="h-3 bg-brand-500 transition-all duration-500"
+              <div class="h-3 transition-all duration-500"
+                   [class]="progressBarClass(resolvedStatus(training()))"
                    [style.width.%]="training()!.percentage"></div>
             </div>
           </div>
