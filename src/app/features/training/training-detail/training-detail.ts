@@ -71,16 +71,8 @@ export class TrainingDetail implements OnInit, OnDestroy {
   });
   readonly isManagerView = computed(() => this.isGerente() && !this.forceLearnerView());
   readonly isLearnerView = computed(() => !this.isGerente() || this.forceLearnerView());
-  readonly isCompletedTraining = computed(() => {
-    const training = this.training();
-    if (!training) return false;
-    return training.status === 'COMPLETADA';
-  });
-  readonly canModifyTrainingDefinition = computed(() => {
-    const training = this.training();
-    if (!training) return false;
-    return training.status !== 'COMPLETADA';
-  });
+  readonly isCompletedTraining = computed(() => this.groupStatus() === 'COMPLETADA');
+  readonly canModifyTrainingDefinition = computed(() => this.groupStatus() !== 'COMPLETADA');
   readonly definitionLockReason = computed(() => {
     const training = this.training();
     if (!training || this.canModifyTrainingDefinition()) return '';
@@ -140,6 +132,32 @@ export class TrainingDetail implements OnInit, OnDestroy {
     };
   });
   readonly groupMembers   = signal<TrainingResponse[]>([]);
+
+  readonly groupStatus = computed<TrainingStatus>(() => {
+    const members = this.groupMembers();
+    if (members.length === 0) return this.resolvedStatus(this.training());
+    const statuses = members.map(m => this.resolvedStatus(m));
+    if (statuses.every(s => s === 'COMPLETADA'))    return 'COMPLETADA';
+    if (statuses.every(s => s === 'NO_COMPLETADA')) return 'NO_COMPLETADA';
+    if (statuses.some(s  => s === 'EN_CURSO'))      return 'EN_CURSO';
+    if (statuses.some(s  => s === 'NO_COMPLETADA')) return 'NO_COMPLETADA';
+    return 'PROGRAMADA';
+  });
+
+  readonly groupProgress = computed<number>(() => {
+    const members = this.groupMembers();
+    if (members.length === 0) return this.training()?.percentage ?? 0;
+    return Math.round(members.reduce((sum, m) => sum + m.percentage, 0) / members.length);
+  });
+
+  readonly completedMembers = computed<TrainingResponse[]>(() =>
+    this.groupMembers().filter(m => this.resolvedStatus(m) === 'COMPLETADA')
+  );
+
+  readonly pendingMembers = computed<TrainingResponse[]>(() =>
+    this.groupMembers().filter(m => this.resolvedStatus(m) !== 'COMPLETADA')
+  );
+
   readonly materialMarkingIds = signal<Set<string>>(new Set());
 
   private groupRequestToken = 0;
