@@ -19,9 +19,9 @@
     </div>
     @if (training() && isManagerView()) {
       <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap"
-            [class]="headerStatusClass(resolvedStatus(training()))">
+            [class]="headerStatusClass(groupStatus())">
         <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-        {{ statusLabels[resolvedStatus(training())] ?? resolvedStatus(training()) }}
+        {{ statusLabels[groupStatus()] ?? groupStatus() }}
       </span>
     }
   </div>
@@ -159,62 +159,98 @@
             </div>
           </div>
 
-          <div class="rounded-2xl border border-cyan-500/25 bg-cyan-500/[0.05] p-4 md:p-5">
-            <h3 class="text-sm font-semibold text-cyan-300 flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0"/>
-              </svg>
-              Tiempo restante
-            </h3>
+          <!-- ── Completados / Pendientes (vista manager) ───────────────── -->
+          <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5 space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <h3 class="text-sm font-semibold text-white/80 flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Completados
+              </h3>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">
+                {{ completedMembers().length }} / {{ groupMembers().length }}
+              </span>
+            </div>
 
-            @if (isCompletedTraining()) {
-              <div class="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/15 px-4 py-4">
-                <p class="text-sm font-semibold text-emerald-400">Capacitación cumplida</p>
-                <p class="mt-1 text-xs text-emerald-400/90">
-                  @if (training()!.completedAt) {
-                    Cumplida el {{ training()!.completedAt | appDate:'date' }}.
-                  } @else {
-                    Esta capacitación ya fue finalizada.
-                  }
-                </p>
-              </div>
+            @if (completedMembers().length === 0) {
+              <p class="text-xs text-white/40 py-2">Ningún colaborador ha completado la capacitación aún.</p>
             } @else {
-              <div class="mt-3 grid grid-cols-4 gap-2 md:gap-3 max-w-[560px]">
-                <div class="text-center">
-                  <div class="rounded-xl border border-cyan-500/25 bg-white/[0.04] py-2.5 text-3xl font-bold text-cyan-300 tabular-nums">{{ remainingParts().days }}</div>
-                  <p class="text-[11px] tracking-wide uppercase text-white/50 mt-1">Días</p>
-                </div>
-                <div class="text-center">
-                  <div class="rounded-xl border border-cyan-500/25 bg-white/[0.04] py-2.5 text-3xl font-bold text-cyan-300 tabular-nums">{{ remainingParts().hours }}</div>
-                  <p class="text-[11px] tracking-wide uppercase text-white/50 mt-1">Horas</p>
-                </div>
-                <div class="text-center">
-                  <div class="rounded-xl border border-cyan-500/25 bg-white/[0.04] py-2.5 text-3xl font-bold text-cyan-300 tabular-nums">{{ remainingParts().minutes }}</div>
-                  <p class="text-[11px] tracking-wide uppercase text-white/50 mt-1">Min</p>
-                </div>
-                <div class="text-center">
-                  <div class="rounded-xl border border-cyan-500/25 bg-white/[0.04] py-2.5 text-3xl font-bold text-cyan-300 tabular-nums">{{ remainingParts().seconds }}</div>
-                  <p class="text-[11px] tracking-wide uppercase text-white/50 mt-1">Seg</p>
+              <div class="space-y-2">
+                @for (m of completedMembers(); track m.id) {
+                  <div class="flex items-center justify-between gap-3 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/15 px-3 py-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold flex items-center justify-center shrink-0">
+                        {{ memberInitials(m.assignedUserName) }}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium text-white truncate">{{ m.assignedUserName || m.assignedUserId }}</p>
+                        <p class="text-[11px] text-white/50 truncate">{{ m.position }}</p>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <p class="text-[11px] text-emerald-400 font-medium">
+                        @if (m.completedAt) { {{ m.completedAt | appDate:'date' }} }
+                        @else { Completada }
+                      </p>
+                      <p class="text-[11px] text-white/40">{{ m.percentage }}%</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            @if (pendingMembers().length > 0) {
+              <div class="pt-2 border-t border-white/[0.06]">
+                <p class="text-xs text-white/50 mb-2 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Pendientes ({{ pendingMembers().length }}) · Vence {{ training()!.dueAt | appDate:'due' }}
+                </p>
+                <div class="space-y-1.5">
+                  @for (m of pendingMembers(); track m.id) {
+                    <div class="flex items-center justify-between gap-3 rounded-lg bg-white/[0.03] border border-white/[0.06] px-3 py-2">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-7 h-7 rounded-full bg-white/[0.06] text-white/50 text-[11px] font-bold flex items-center justify-center shrink-0">
+                          {{ memberInitials(m.assignedUserName) }}
+                        </span>
+                        <p class="text-sm text-white/70 truncate">{{ m.assignedUserName || m.assignedUserId }}</p>
+                      </div>
+                      <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                            [class]="resolvedStatus(m) === 'NO_COMPLETADA'
+                              ? 'bg-red-500/15 text-red-400'
+                              : resolvedStatus(m) === 'EN_CURSO'
+                                ? 'bg-blue-500/15 text-blue-400'
+                                : 'bg-amber-500/15 text-amber-400'">
+                        {{ statusLabels[resolvedStatus(m)] ?? resolvedStatus(m) }}
+                      </span>
+                    </div>
+                  }
                 </div>
               </div>
-
-              <p class="mt-3 text-xs text-white/60" [class]="timeLeftClass()">
-                @if (!isOverdue()) { Vence el {{ training()!.dueAt | appDate:'due' }} }
-                @else { Esta capacitación ya venció. }
-              </p>
             }
           </div>
 
+          <!-- ── Progreso general del grupo ─────────────────────────────── -->
           <div class="pt-1">
             <div class="flex items-center justify-between">
               <p class="text-sm font-semibold text-white/80">Progreso general</p>
-              <p class="text-sm font-semibold text-cyan-300 tabular-nums">{{ training()!.percentage }}%</p>
+              <p class="text-sm font-semibold tabular-nums"
+                 [class]="groupStatus() === 'COMPLETADA' ? 'text-emerald-400' : groupStatus() === 'NO_COMPLETADA' ? 'text-red-400' : 'text-cyan-300'">
+                {{ groupProgress() }}%
+              </p>
             </div>
             <div class="mt-2 h-3 rounded-full bg-white/[0.05] overflow-hidden">
               <div class="h-3 transition-all duration-500"
-                   [class]="progressBarClass(resolvedStatus(training()))"
-                   [style.width.%]="training()!.percentage"></div>
+                   [class]="progressBarClass(groupStatus())"
+                   [style.width.%]="groupProgress()"></div>
             </div>
+            @if (groupMembers().length > 1) {
+              <p class="mt-1.5 text-[11px] text-white/40">
+                Promedio del grupo · {{ completedMembers().length }} de {{ groupMembers().length }} completaron
+              </p>
+            }
           </div>
         </div>
       </section>
