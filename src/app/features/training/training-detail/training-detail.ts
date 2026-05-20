@@ -403,6 +403,7 @@ export class TrainingDetail implements OnInit, OnDestroy {
   }
 
   progressBarClass(status: TrainingStatus): string {
+    if (status === 'COMPLETADA')    return 'bg-emerald-500';
     if (status === 'NO_COMPLETADA') return 'bg-red-400';
     return 'bg-brand-500';
   }
