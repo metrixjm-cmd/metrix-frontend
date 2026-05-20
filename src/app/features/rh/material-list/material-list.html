@@ -185,7 +185,8 @@
       <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <h3 class="text-base font-semibold text-white">Agregar material</h3>
         <button type="button" (click)="closeModal()"
-                class="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 transition-colors">
+                [disabled]="materialSvc.saving()"
+                class="p-1.5 rounded-lg hover:bg-white/[0.06] text-white/40 transition-colors disabled:opacity-30 disabled:pointer-events-none">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -298,15 +299,26 @@
         <!-- Acciones -->
         <div class="flex justify-end gap-3 pt-2">
           <button type="button" (click)="closeModal()"
-                  class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
+                  [disabled]="materialSvc.saving()"
+                  class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors disabled:opacity-30 disabled:pointer-events-none">
             Cancelar
           </button>
           <button type="submit"
                   [disabled]="materialSvc.saving()"
                   class="px-4 py-2 text-sm font-medium text-white bg-teal-600 rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors">
-            @if (materialSvc.saving()) { Guardando… }
-            @else if (activeTab() === 'file') { Subir material }
-            @else { Agregar liga }
+            @if (materialSvc.saving()) {
+              <span class="flex items-center gap-2">
+                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+                {{ activeTab() === 'file' ? 'Subiendo…' : 'Guardando…' }}
+              </span>
+            } @else if (activeTab() === 'file') {
+              Subir material
+            } @else {
+              Agregar liga
+            }
           </button>
         </div>
 

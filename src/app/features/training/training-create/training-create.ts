@@ -13,8 +13,6 @@ import { CatalogService } from '../../../core/services/catalog.service';
 import {
   CreateFromTemplateRequest,
   CreateTrainingRequest,
-  TRAINING_LEVELS,
-  TRAINING_LEVEL_LABELS,
   TrainingTemplateSummary,
   MATERIAL_TYPE_ICONS,
 } from '../training.models';
@@ -41,8 +39,6 @@ export class TrainingCreate implements OnInit {
 
   readonly saving      = this.trainingSvc.saving;
   readonly error       = this.trainingSvc.error;
-  readonly levels      = TRAINING_LEVELS;
-  readonly levelLabels = TRAINING_LEVEL_LABELS;
   readonly materialIcons = MATERIAL_TYPE_ICONS;
   readonly typeLabels  = MATERIAL_TYPE_LABELS;
   readonly allTypes: MaterialType[] = ['PDF', 'VIDEO', 'IMAGE', 'LINK'];
@@ -53,7 +49,6 @@ export class TrainingCreate implements OnInit {
 
   readonly isAdmin   = this.role.isAdmin;
   readonly todayDate = new Date().toISOString().slice(0, 10);
-  readonly timeOptions = this.buildTimeOptions();
   readonly currentStoreName = computed(() => {
     const storeId = this.authSvc.currentUser()?.storeId;
     if (!storeId) return 'Sucursal no disponible';
@@ -88,12 +83,10 @@ export class TrainingCreate implements OnInit {
   readonly form = this.fb.group({
     title:           ['', [Validators.required, Validators.minLength(3)]],
     description:     ['', Validators.required],
-    level:           ['BASICO', Validators.required],
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
     dueDate:         ['', Validators.required],
-    dueTime:         ['', Validators.required],
   });
 
   // ── Formulario mínimo (reutilizar operación) ──────────────────────────────
@@ -102,8 +95,17 @@ export class TrainingCreate implements OnInit {
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
     dueDate:         ['', Validators.required],
-    dueTime:         ['', Validators.required],
   });
+
+  // ── Time picker 12h (scratch) ─────────────────────────────────────────────
+  readonly scratchHour   = signal(12);
+  readonly scratchMinute = signal(0);
+  readonly scratchPeriod = signal<'AM' | 'PM'>('AM');
+
+  // ── Time picker 12h (template) ────────────────────────────────────────────
+  readonly tmplHour   = signal(12);
+  readonly tmplMinute = signal(0);
+  readonly tmplPeriod = signal<'AM' | 'PM'>('AM');
 
   readonly formShift = toSignal(this.form.controls.shift.valueChanges, { initialValue: 'TODOS' });
   readonly assignableUsers = computed(() => {
@@ -298,14 +300,39 @@ export class TrainingCreate implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  buildTimeOptions(): string[] {
-    const options: string[] = [];
-    for (let hour = 0; hour < 24; hour += 1) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        options.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-      }
-    }
-    return options;
+  padNum(n: number): string {
+    return String(n).padStart(2, '0');
+  }
+
+  private to24h(hour: number, minute: number, period: 'AM' | 'PM'): string {
+    let h = hour % 12;
+    if (period === 'PM') h += 12;
+    return `${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  }
+
+  incrHour(isTemplate: boolean): void {
+    const sig = isTemplate ? this.tmplHour : this.scratchHour;
+    sig.update(h => (h % 12) + 1);
+  }
+
+  decrHour(isTemplate: boolean): void {
+    const sig = isTemplate ? this.tmplHour : this.scratchHour;
+    sig.update(h => h === 1 ? 12 : h - 1);
+  }
+
+  incrMinute(isTemplate: boolean): void {
+    const sig = isTemplate ? this.tmplMinute : this.scratchMinute;
+    sig.update(m => (m + 5) % 60);
+  }
+
+  decrMinute(isTemplate: boolean): void {
+    const sig = isTemplate ? this.tmplMinute : this.scratchMinute;
+    sig.update(m => m === 0 ? 55 : m - 5);
+  }
+
+  togglePeriod(isTemplate: boolean): void {
+    const sig = isTemplate ? this.tmplPeriod : this.scratchPeriod;
+    sig.update(p => p === 'AM' ? 'PM' : 'AM');
   }
 
   private toIsoDueAt(date: string, time: string): string {
@@ -371,11 +398,10 @@ export class TrainingCreate implements OnInit {
         const req: CreateTrainingRequest = {
           title:          v.title!,
           description:    v.description!,
-          level:          v.level as CreateTrainingRequest['level'],
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
+          dueAt:          this.toIsoDueAt(v.dueDate!, this.to24h(this.scratchHour(), this.scratchMinute(), this.scratchPeriod())),
           assignmentGroupId,
           materialIds:    materialIds,
         };
@@ -399,7 +425,7 @@ export class TrainingCreate implements OnInit {
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          this.toIsoDueAt(v.dueDate!, v.dueTime!),
+          dueAt:          this.toIsoDueAt(v.dueDate!, this.to24h(this.tmplHour(), this.tmplMinute(), this.tmplPeriod())),
           assignmentGroupId,
         };
         await this.trainingSvc.createFromTemplate(tmpl.id, req);

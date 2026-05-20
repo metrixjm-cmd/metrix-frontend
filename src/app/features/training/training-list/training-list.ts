@@ -9,10 +9,7 @@ import { AuthService } from '../../auth/services/auth.service';
 import { SettingsService } from '../../settings/services/settings.service';
 import { TrainingService } from '../services/training.service';
 import {
-  TRAINING_LEVEL_LABELS,
-  TRAINING_LEVELS,
   TRAINING_STATUS_LABELS,
-  TrainingLevel,
   TrainingResponse,
   TrainingStatus,
 } from '../training.models';
@@ -59,8 +56,6 @@ export class TrainingList implements OnInit {
   readonly loading = this.trainingSvc.loading;
   readonly error = this.trainingSvc.error;
   readonly statusLabels: Record<string, string | undefined> = TRAINING_STATUS_LABELS;
-  readonly levelLabels: Record<string, string | undefined> = TRAINING_LEVEL_LABELS;
-  readonly levels = TRAINING_LEVELS;
   readonly statuses: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO', 'COMPLETADA', 'NO_COMPLETADA'];
 
   readonly isAdmin = this.role.isAdmin;
@@ -69,7 +64,6 @@ export class TrainingList implements OnInit {
   readonly isEjecutador = this.role.isEjecutador;
 
   filterStatus = signal<string>('');
-  filterLevel = signal<string>('');
   filterStore = signal<string>(''); // solo ADMIN
   gerenteTab = signal<GerenteTab>('created');
 
@@ -130,10 +124,8 @@ export class TrainingList implements OnInit {
   readonly filteredTrainings = computed(() => {
     let list = this.dashboardTrainings();
     const status = this.filterStatus();
-    const level = this.filterLevel();
     const store = this.filterStore();
     if (status) list = list.filter(training => training.status === status);
-    if (level) list = list.filter(training => training.level === level);
     if (store) list = list.filter(training => training.storeId === store);
     return list;
   });
@@ -247,15 +239,6 @@ export class TrainingList implements OnInit {
     return map[status] ?? 'bg-white/[0.06] text-white/60 ring-1 ring-white/10';
   }
 
-  levelBadgeClass(level: TrainingLevel): string {
-    const map: Record<TrainingLevel, string> = {
-      BASICO: 'bg-white/[0.06] text-white/70 ring-1 ring-white/10',
-      INTERMEDIO: 'bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/25',
-      AVANZADO: 'bg-purple-500/15 text-purple-300 ring-1 ring-purple-500/25',
-    };
-    return map[level] ?? 'bg-white/[0.06] text-white/60 ring-1 ring-white/10';
-  }
-
   completionBarClass(rate: number): string {
     if (rate >= 80) return 'bg-emerald-500';
     if (rate >= 50) return 'bg-amber-500';
@@ -366,12 +349,18 @@ export class TrainingList implements OnInit {
     return 'PROGRAMADA';
   }
 
-  /** Normaliza el status de un training individual (pasaporte directo del servidor). */
+  /** Normaliza el status de un training individual. Marca NO_COMPLETADA si venció sin completarse. */
   private normalizeTrainingStatus(training: TrainingResponse): TrainingStatus {
     const valid: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO', 'COMPLETADA', 'NO_COMPLETADA'];
-    return valid.includes(training.status as TrainingStatus)
+    const status: TrainingStatus = valid.includes(training.status as TrainingStatus)
       ? (training.status as TrainingStatus)
       : 'PROGRAMADA';
+
+    const openStatuses: TrainingStatus[] = ['PROGRAMADA', 'EN_CURSO'];
+    if (openStatuses.includes(status) && training.dueAt && new Date(training.dueAt) < new Date()) {
+      return 'NO_COMPLETADA';
+    }
+    return status;
   }
 
   /** Orden de prioridad para el learner: activas primero, luego pendientes, luego el resto. */
