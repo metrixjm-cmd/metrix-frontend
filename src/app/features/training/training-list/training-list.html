@@ -183,22 +183,40 @@
         </div>
       </div>
 
-      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-1 inline-flex gap-1">
+      <div class="flex gap-1 rounded-xl border border-white/20 bg-black/30 p-1">
         <button
           (click)="setGerenteTab('created')"
-          class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
-          [class]="gerenteTab() === 'created' ? 'bg-brand-600 text-white' : 'text-white/60 hover:bg-white/[0.06]'"
+          class="flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+          [class]="gerenteTab() === 'created'
+            ? 'bg-teal-600 text-white ring-1 ring-teal-400/40 shadow-lg shadow-teal-900/40'
+            : 'text-white/80 bg-white/[0.05] border border-white/10 hover:text-white hover:bg-white/[0.10]'"
         >
-          Capacitaciones creadas
-          <span class="ml-1 text-xs opacity-80">({{ gerenteCreatedTrainings().length }})</span>
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          Creadas por mí
+          <span class="min-w-[22px] px-1.5 py-0.5 rounded-full text-xs font-bold text-center leading-none"
+                [class]="gerenteTab() === 'created' ? 'bg-white/25 text-white' : 'bg-white/15 text-white/90'">
+            {{ gerenteCreatedTrainings().length }}
+          </span>
         </button>
         <button
           (click)="setGerenteTab('todo')"
-          class="px-3 py-2 text-sm rounded-lg font-medium transition-colors"
-          [class]="gerenteTab() === 'todo' ? 'bg-brand-600 text-white' : 'text-white/60 hover:bg-white/[0.06]'"
+          class="flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg text-sm font-semibold transition-all"
+          [class]="gerenteTab() === 'todo'
+            ? 'bg-teal-600 text-white ring-1 ring-teal-400/40 shadow-lg shadow-teal-900/40'
+            : 'text-white/80 bg-white/[0.05] border border-white/10 hover:text-white hover:bg-white/[0.10]'"
         >
-          Capacitaciones por hacer
-          <span class="ml-1 text-xs opacity-80">({{ gerenteToDoTrainings().length }})</span>
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Por hacer
+          <span class="min-w-[22px] px-1.5 py-0.5 rounded-full text-xs font-bold text-center leading-none"
+                [class]="gerenteTab() === 'todo' ? 'bg-white/25 text-white' : 'bg-white/15 text-white/90'">
+            {{ gerenteToDoTrainings().length }}
+          </span>
         </button>
       </div>
 
@@ -236,13 +254,6 @@
               <option [value]="s">{{ statusLabels[s] ?? s }}</option>
             }
           </select>
-          <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                  class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
-            <option value="">Todos los niveles</option>
-            @for (l of levels; track l) {
-              <option [value]="l">{{ levelLabels[l] ?? l }}</option>
-            }
-          </select>
         </div>
 
         <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
@@ -257,7 +268,6 @@
                 <thead class="bg-white/[0.03] border-b border-white/[0.08]">
                   <tr>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Capacitación</th>
-                    <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Nivel</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Vencimiento</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Creada</th>
                     <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Estado</th>
@@ -271,12 +281,6 @@
                       <td [class]="trainingFirstCellClass(t)">
                         <div class="font-medium text-white">{{ t.title }}</div>
                         <div class="text-xs text-white/50 line-clamp-1 max-w-[420px]">{{ t.description }}</div>
-                      </td>
-                      <td class="px-4 py-3">
-                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
-                              [class]="levelBadgeClass(t.level)">
-                          {{ levelLabels[t.level] ?? t.level }}
-                        </span>
                       </td>
                       <td class="px-4 py-3 text-white/70 text-xs whitespace-nowrap">{{ t.dueAt | appDate:'due' }}</td>
                       <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
@@ -320,13 +324,6 @@
             <option [value]="s">{{ statusLabels[s] ?? s }}</option>
           }
         </select>
-        <select [ngModel]="filterLevel()" (ngModelChange)="filterLevel.set($event)"
-                class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
-          <option value="">Todos los niveles</option>
-          @for (l of levels; track l) {
-            <option [value]="l">{{ levelLabels[l] ?? l }}</option>
-          }
-        </select>
         @if (isAdmin()) {
           <select [ngModel]="filterStore()" (ngModelChange)="filterStore.set($event)"
                   class="text-sm border border-white/10 rounded-lg px-3 py-2 bg-white/[0.05] text-white/80 focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
@@ -353,7 +350,6 @@
                   @if (isAdmin()) {
                     <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Sucursal</th>
                   }
-                  <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Nivel</th>
                   <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Asignado a</th>
                   <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Vencimiento</th>
                   <th class="px-4 py-3 text-left text-[11px] font-semibold text-white/60 uppercase tracking-wider">Creada</th>
@@ -378,12 +374,6 @@
                     @if (isAdmin()) {
                       <td class="px-4 py-3 text-xs text-white/70 font-medium">{{ storeLabel(t.storeId) }}</td>
                     }
-                    <td class="px-4 py-3">
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
-                            [class]="levelBadgeClass(t.level)">
-                        {{ levelLabels[t.level] ?? t.level }}
-                      </span>
-                    </td>
                     <td class="px-4 py-3 text-white/80 text-xs">{{ assigneeLabel(t) }}</td>
                     <td class="px-4 py-3 text-white/70 text-xs">{{ t.dueAt | appDate:'due' }}</td>
                     <td class="px-4 py-3 text-white/50 text-xs whitespace-nowrap">{{ t.createdAt | appDate }}</td>
