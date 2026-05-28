@@ -43,6 +43,7 @@ export class ExamBuilder implements OnInit {
   readonly diffLabels  = DIFFICULTY_LABELS;
   readonly diffColors  = DIFFICULTY_COLORS;
   readonly questionTypes: QuestionType[] = ['MULTIPLE_CHOICE', 'MULTI_SELECT', 'TRUE_FALSE', 'OPEN_TEXT'];
+  readonly hours = Array.from({ length: 24 }, (_, i) => i + 1);
 
   // ── Modo de creación ──────────────────────────────────────────────────
   readonly mode = signal<CreateMode>('scratch');
@@ -63,12 +64,12 @@ export class ExamBuilder implements OnInit {
   // ══════════════════════════════════════════════════════════════════════
 
   readonly form = this.fb.group({
-    title:            ['', [Validators.required, Validators.maxLength(120)]],
-    description:      [''],
-    trainingId:       [null as string | null],
-    passingScore:     [70, [Validators.required, Validators.min(1), Validators.max(100)]],
-    timeLimitMinutes: [null as number | null],
-    maxAttempts:      [0, [Validators.required, Validators.min(0)]],
+    title:           ['', [Validators.required, Validators.maxLength(120)]],
+    description:     [''],
+    trainingId:      [null as string | null],
+    passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
+    timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
+    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly questions = signal<FormGroup[]>([]);
@@ -158,7 +159,7 @@ export class ExamBuilder implements OnInit {
         trainingId:       (fv.trainingId && fv.trainingId !== '') ? fv.trainingId : undefined,
         storeId:          user.storeId!,
         passingScore:     fv.passingScore!,
-        timeLimitMinutes: fv.timeLimitMinutes || undefined,
+        timeLimitMinutes: fv.timeLimitHours! * 60,
         maxAttempts:      fv.maxAttempts ?? 0,
         questions:        this.buildQuestionsFromForm(),
       });
@@ -259,11 +260,11 @@ export class ExamBuilder implements OnInit {
   }
 
   readonly bankForm = this.fb.group({
-    title:            ['', [Validators.required, Validators.maxLength(120)]],
-    description:      [''],
-    passingScore:     [70, [Validators.required, Validators.min(1), Validators.max(100)]],
-    timeLimitMinutes: [null as number | null],
-    maxAttempts:      [0, [Validators.required, Validators.min(0)]],
+    title:           ['', [Validators.required, Validators.maxLength(120)]],
+    description:     [''],
+    passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
+    timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
+    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly canSubmitBank = computed(() =>
@@ -297,7 +298,7 @@ export class ExamBuilder implements OnInit {
         description:      fv.description || undefined,
         storeId:          user.storeId!,
         passingScore:     fv.passingScore!,
-        timeLimitMinutes: fv.timeLimitMinutes || undefined,
+        timeLimitMinutes: fv.timeLimitHours! * 60,
         maxAttempts:      fv.maxAttempts ?? 0,
         questions:        questionsDto,
       });

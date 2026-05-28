@@ -81,20 +81,38 @@
           </div>
 
           <div class="flex gap-6">
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer"
+                   title="Las preguntas aparecerán en orden aleatorio en cada intento del colaborador">
               <input formControlName="shuffleQuestions" type="checkbox" class="rounded accent-violet-600"/>
               <span class="text-xs text-white/60">Barajar preguntas</span>
+              <svg class="w-3.5 h-3.5 text-white/30 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/>
+              </svg>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer"
+                   title="Las opciones de respuesta de cada pregunta se mostrarán en orden aleatorio">
               <input formControlName="shuffleOptions" type="checkbox" class="rounded accent-violet-600"/>
               <span class="text-xs text-white/60">Barajar opciones</span>
+              <svg class="w-3.5 h-3.5 text-white/30 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"/>
+              </svg>
             </label>
           </div>
         </div>
 
         <!-- Picker de preguntas 2 paneles -->
         <div>
-          <p class="text-xs font-semibold text-white/70 mb-2">Preguntas <span class="text-white/40 font-normal">({{ selectedBankQs().length }} seleccionadas)</span></p>
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-white/70">Preguntas <span class="text-white/40 font-normal">({{ selectedBankQs().length }} seleccionadas)</span></p>
+            @if (selectedBankQs().length === 1) {
+              <p class="text-xs text-amber-400">Mínimo 2 preguntas requeridas</p>
+            }
+            @if (selectedBankQs().length >= 2) {
+              <p class="text-xs text-emerald-400">✓ Listo para guardar</p>
+            }
+          </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
             <!-- Banco izq -->
@@ -169,7 +187,7 @@
               </svg>
               Guardando…
             } @else {
-              Guardar plantilla ({{ selectedBankQs().length }} preguntas)
+              Guardar plantilla ({{ selectedBankQs().length }} / mín. 2 preguntas)
             }
           </button>
         </div>

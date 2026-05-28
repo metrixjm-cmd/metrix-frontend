@@ -89,9 +89,14 @@
                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
           </div>
           <div>
-            <label class="block text-sm font-medium text-white/70 mb-1">Límite de tiempo (min) <span class="text-white/40">— opcional</span></label>
-            <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
-                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+            <label class="block text-sm font-medium text-white/70 mb-1">Duración del examen *</label>
+            <select formControlName="timeLimitHours"
+                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <option [value]="null">— Selecciona duración —</option>
+              @for (h of hours; track h) {
+                <option [value]="h">{{ h }} {{ h === 1 ? 'hora' : 'horas' }}</option>
+              }
+            </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-white/70 mb-1">Máx. intentos <span class="text-white/40">— 0 = ilimitado</span></label>
@@ -533,9 +538,14 @@
                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
             </div>
             <div>
-              <label class="block text-sm font-medium text-white/70 mb-1">Límite de tiempo (min) <span class="text-white/40">— opcional</span></label>
-              <input formControlName="timeLimitMinutes" type="number" min="1" placeholder="Sin límite"
-                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+              <label class="block text-sm font-medium text-white/70 mb-1">Duración del examen *</label>
+              <select formControlName="timeLimitHours"
+                      class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option [value]="null">— Selecciona duración —</option>
+                @for (h of hours; track h) {
+                  <option [value]="h">{{ h }} {{ h === 1 ? 'hora' : 'horas' }}</option>
+                }
+              </select>
             </div>
             <div>
               <label class="block text-sm font-medium text-white/70 mb-1">Máx. intentos <span class="text-white/40">— 0 = ilimitado</span></label>

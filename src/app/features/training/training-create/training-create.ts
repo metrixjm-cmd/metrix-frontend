@@ -86,7 +86,8 @@ export class TrainingCreate implements OnInit {
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
-    dueDate:         ['', Validators.required],
+    startDate:       ['', Validators.required],
+    endDate:         ['', Validators.required],
   });
 
   // ── Formulario mínimo (reutilizar operación) ──────────────────────────────
@@ -94,7 +95,8 @@ export class TrainingCreate implements OnInit {
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     shift:           ['TODOS', Validators.required],
     assignedUserIds: [[] as string[], Validators.required],
-    dueDate:         ['', Validators.required],
+    startDate:       ['', Validators.required],
+    endDate:         ['', Validators.required],
   });
 
   // ── Time picker 12h (scratch) ─────────────────────────────────────────────
@@ -107,7 +109,33 @@ export class TrainingCreate implements OnInit {
   readonly tmplMinute = signal(0);
   readonly tmplPeriod = signal<'AM' | 'PM'>('AM');
 
-  readonly formShift = toSignal(this.form.controls.shift.valueChanges, { initialValue: 'TODOS' });
+  readonly formShift      = toSignal(this.form.controls.shift.valueChanges,      { initialValue: 'TODOS' });
+  readonly formStartDate  = toSignal(this.form.controls.startDate.valueChanges,  { initialValue: '' });
+  readonly formEndDate    = toSignal(this.form.controls.endDate.valueChanges,    { initialValue: '' });
+  readonly tmplStartDate  = toSignal(this.templateForm.controls.startDate.valueChanges, { initialValue: '' });
+  readonly tmplEndDate    = toSignal(this.templateForm.controls.endDate.valueChanges,   { initialValue: '' });
+
+  readonly durationDays = computed(() => {
+    const s = this.formStartDate(), e = this.formEndDate();
+    if (!s || !e) return 0;
+    return Math.max(1, Math.round((new Date(e).getTime() - new Date(s).getTime()) / 86400000) + 1);
+  });
+
+  readonly dateRangeValid = computed(() => {
+    const s = this.formStartDate(), e = this.formEndDate();
+    return !s || !e || new Date(e) >= new Date(s);
+  });
+
+  readonly tmplDurationDays = computed(() => {
+    const s = this.tmplStartDate(), e = this.tmplEndDate();
+    if (!s || !e) return 0;
+    return Math.max(1, Math.round((new Date(e).getTime() - new Date(s).getTime()) / 86400000) + 1);
+  });
+
+  readonly tmplDateRangeValid = computed(() => {
+    const s = this.tmplStartDate(), e = this.tmplEndDate();
+    return !s || !e || new Date(e) >= new Date(s);
+  });
   readonly assignableUsers = computed(() => {
     const all = this.users().filter(u => u.activo);
     if (this.isAdmin()) {
@@ -388,11 +416,11 @@ export class TrainingCreate implements OnInit {
   // ── Submit desde cero ─────────────────────────────────────────────────────
 
   async onSubmit(): Promise<void> {
-    if (this.form.invalid || this.saving()) return;
+    if (this.form.invalid || !this.dateRangeValid() || this.saving()) return;
     const v = this.form.getRawValue();
     const materialIds = this.selectedMaterials().map(m => m.id);
     const assignmentGroupId = this.buildAssignmentGroupId();
-    
+
     try {
       for (const userId of v.assignedUserIds!) {
         const req: CreateTrainingRequest = {
@@ -401,7 +429,8 @@ export class TrainingCreate implements OnInit {
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          this.toIsoDueAt(v.dueDate!, this.to24h(this.scratchHour(), this.scratchMinute(), this.scratchPeriod())),
+          startDate:      new Date(v.startDate!).toISOString(),
+          dueAt:          this.toIsoDueAt(v.endDate!, this.to24h(this.scratchHour(), this.scratchMinute(), this.scratchPeriod())),
           assignmentGroupId,
           materialIds:    materialIds,
         };
@@ -415,17 +444,17 @@ export class TrainingCreate implements OnInit {
 
   async onSubmitFromTemplate(): Promise<void> {
     const tmpl = this.selectedTemplate();
-    if (!tmpl || this.templateForm.invalid || this.saving()) return;
+    if (!tmpl || this.templateForm.invalid || !this.tmplDateRangeValid() || this.saving()) return;
     const v = this.templateForm.getRawValue();
     const assignmentGroupId = this.buildAssignmentGroupId();
-    
+
     try {
       for (const userId of v.assignedUserIds!) {
         const req: CreateFromTemplateRequest = {
           assignedUserId: userId,
           storeId:        v.storeId!,
           shift:          v.shift!,
-          dueAt:          this.toIsoDueAt(v.dueDate!, this.to24h(this.tmplHour(), this.tmplMinute(), this.tmplPeriod())),
+          dueAt:          this.toIsoDueAt(v.endDate!, this.to24h(this.tmplHour(), this.tmplMinute(), this.tmplPeriod())),
           assignmentGroupId,
         };
         await this.trainingSvc.createFromTemplate(tmpl.id, req);
