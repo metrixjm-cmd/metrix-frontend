@@ -76,6 +76,8 @@ export interface CreateTrainingRequest {
   storeId: string;
   shift: string;
   dueAt: string;
+  // multi-día
+  startDate?: string;
   // opcionales
   assignmentGroupId?: string;
   templateId?:  string;

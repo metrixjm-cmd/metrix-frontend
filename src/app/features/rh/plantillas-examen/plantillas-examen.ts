@@ -74,7 +74,7 @@ export class PlantillasExamenComponent implements OnInit {
   removeFromBank(id: string): void { this.selectedBankQs.update(list => list.filter(bq => bq.id !== id)); }
 
   readonly canSubmit = computed(() =>
-    this.form.valid && this.selectedBankQs().length > 0
+    this.form.valid && this.selectedBankQs().length >= 2
   );
 
   async onSubmit(): Promise<void> {
