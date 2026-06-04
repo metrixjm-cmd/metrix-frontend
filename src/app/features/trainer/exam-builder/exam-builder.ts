@@ -8,7 +8,6 @@ import { AuthService } from '../../auth/services/auth.service';
 import { TrainerService } from '../services/trainer.service';
 import { QuestionBankService } from '../services/question-bank.service';
 import { ExamTemplateService } from '../services/exam-template.service';
-import { TrainingService } from '../../training/services/training.service';
 import {
   BankQuestion,
   CreateExamQuestionDto,
@@ -35,10 +34,8 @@ export class ExamBuilder implements OnInit {
   private readonly trainerSvc  = inject(TrainerService);
   private readonly bankSvc     = inject(QuestionBankService);
   private readonly templateSvc = inject(ExamTemplateService);
-  private readonly trainingSvc = inject(TrainingService);
   private readonly router      = inject(Router);
 
-  readonly trainings = this.trainingSvc.trainings;
 
   readonly saving      = signal(false);
   readonly error       = signal('');
@@ -67,11 +64,10 @@ export class ExamBuilder implements OnInit {
   // ══════════════════════════════════════════════════════════════════════
 
   readonly form = this.fb.group({
-    title:           ['', [Validators.required, Validators.maxLength(120)]],
-    description:     [''],
-    trainingId:      [null as string | null],
-    passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
-    timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
+    title:          ['', [Validators.required, Validators.maxLength(120)]],
+    description:    [''],
+    passingScore:   [70, [Validators.required, Validators.min(1), Validators.max(100)]],
+    timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
   });
 
   readonly questions = signal<FormGroup[]>([]);
@@ -95,10 +91,7 @@ export class ExamBuilder implements OnInit {
     { initialValue: false }
   );
 
-  ngOnInit(): void {
-    const user = this.auth.currentUser();
-    if (user?.storeId) this.trainingSvc.loadByStore(user.storeId);
-  }
+  ngOnInit(): void {}
 
   readonly canSubmit = computed(() =>
     this._formValid() &&
@@ -168,10 +161,9 @@ export class ExamBuilder implements OnInit {
     const fv   = this.form.value;
     try {
       await this.trainerSvc.createExam({
-        title:            fv.title!,
-        description:      fv.description || undefined,
-        trainingId:       (fv.trainingId && fv.trainingId !== '') ? fv.trainingId : undefined,
-        storeId:          user.storeId!,
+        title:       fv.title!,
+        description: fv.description || undefined,
+        storeId:     user.storeId!,
         passingScore:     fv.passingScore!,
         timeLimitMinutes: fv.timeLimitHours! * 60,
         questions:        this.buildQuestionsFromForm(),
