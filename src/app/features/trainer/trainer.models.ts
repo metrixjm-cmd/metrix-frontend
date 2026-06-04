@@ -7,7 +7,7 @@ export type QuestionType =
   | 'OPEN_TEXT';       // textarea — keyword matching
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  MULTIPLE_CHOICE: 'Opción múltiple',
+  MULTIPLE_CHOICE: 'Opción única',
   TRUE_FALSE:      'Verdadero / Falso',
   MULTI_SELECT:    'Selección múltiple',
   OPEN_TEXT:       'Respuesta abierta',

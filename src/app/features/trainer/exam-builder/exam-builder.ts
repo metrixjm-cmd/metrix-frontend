@@ -1,4 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { merge, of } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
@@ -74,14 +77,34 @@ export class ExamBuilder implements OnInit {
 
   readonly questions = signal<FormGroup[]>([]);
 
+  // Trackea validez del formulario principal como signal (form.valid no es signal)
+  private readonly _formValid = toSignal(
+    this.form.statusChanges.pipe(startWith(this.form.status), map(s => s === 'VALID')),
+    { initialValue: this.form.valid }
+  );
+
+  // Cuando cambia el array de preguntas, rebuilds la suscripción a todos sus statusChanges
+  private readonly _questionsAllValid = toSignal(
+    toObservable(this.questions).pipe(
+      switchMap(qs => {
+        if (qs.length === 0) return of(false);
+        return merge(...qs.map(q => q.statusChanges.pipe(startWith(q.status)))).pipe(
+          map(() => qs.every(q => q.valid))
+        );
+      })
+    ),
+    { initialValue: false }
+  );
+
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (user?.storeId) this.trainingSvc.loadByStore(user.storeId);
   }
 
   readonly canSubmit = computed(() =>
-    this.form.valid && this.questions().length > 0 &&
-    this.questions().every(q => q.valid)
+    this._formValid() &&
+    this.questions().length >= 5 &&
+    this._questionsAllValid()
   );
 
   addQuestion(type: QuestionType): void {
