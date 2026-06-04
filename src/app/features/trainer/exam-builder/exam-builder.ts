@@ -116,11 +116,8 @@ export class ExamBuilder implements OnInit {
         this.fb.control('Verdadero', Validators.required),
         this.fb.control('Falso',     Validators.required),
       ]);
-    } else if (type === 'OPEN_TEXT') {
-      options = this.fb.array([]);
     } else {
       options = this.fb.array([
-        this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
