@@ -72,7 +72,6 @@ export class ExamBuilder implements OnInit {
     trainingId:      [null as string | null],
     passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
     timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
-    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly questions = signal<FormGroup[]>([]);
@@ -175,7 +174,6 @@ export class ExamBuilder implements OnInit {
         storeId:          user.storeId!,
         passingScore:     fv.passingScore!,
         timeLimitMinutes: fv.timeLimitHours! * 60,
-        maxAttempts:      fv.maxAttempts ?? 0,
         questions:        this.buildQuestionsFromForm(),
       });
       this.router.navigate(['/trainer']);
@@ -279,7 +277,6 @@ export class ExamBuilder implements OnInit {
     description:     [''],
     passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
     timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
-    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly canSubmitBank = computed(() =>
@@ -311,7 +308,6 @@ export class ExamBuilder implements OnInit {
         storeId:          user.storeId!,
         passingScore:     fv.passingScore!,
         timeLimitMinutes: fv.timeLimitHours! * 60,
-        maxAttempts:      fv.maxAttempts ?? 0,
         questions:        questionsDto,
       });
       this.router.navigate(['/trainer']);

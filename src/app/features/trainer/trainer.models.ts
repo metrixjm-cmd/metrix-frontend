@@ -154,7 +154,6 @@ export interface CreateExamRequest {
   questions: CreateExamQuestionDto[];
   passingScore: number;
   timeLimitMinutes?: number;
-  maxAttempts?: number;
 }
 
 export interface SubmitExamRequest {
