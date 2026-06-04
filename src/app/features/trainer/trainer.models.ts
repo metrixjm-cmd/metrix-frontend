@@ -1,23 +1,18 @@
-// ── Trainer module models (Sprint 19 + E2) ─────────────────────────────
+// ── Trainer module models ─────────────────────────────────────────────────
 
 export type QuestionType =
-  | 'MULTIPLE_CHOICE'  // radio — 1 correcta
-  | 'TRUE_FALSE'       // radio — Verdadero / Falso
-  | 'MULTI_SELECT'     // checkboxes — N correctas
-  | 'OPEN_TEXT';       // textarea — keyword matching
+  | 'TRUE_FALSE'    // radio — Verdadero / Falso
+  | 'MULTI_SELECT'; // checkboxes — N correctas
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  MULTIPLE_CHOICE: 'Opción múltiple',
-  TRUE_FALSE:      'Verdadero / Falso',
-  MULTI_SELECT:    'Selección múltiple',
-  OPEN_TEXT:       'Respuesta abierta',
+  TRUE_FALSE:   'Verdadero / Falso',
+  MULTI_SELECT: 'Selección múltiple',
 };
 
-/** Respuesta unificada por pregunta para SubmitExamRequest. */
+/** Respuesta por pregunta al enviar un examen. */
 export interface ExamAnswer {
-  selectedIndex?:   number;    // MULTIPLE_CHOICE, TRUE_FALSE
+  selectedIndex?:   number;    // TRUE_FALSE
   selectedIndexes?: number[];  // MULTI_SELECT
-  textAnswer?:      string;    // OPEN_TEXT
 }
 
 export interface ExamQuestion {
@@ -44,7 +39,7 @@ export interface ExamResponse {
   createdAt: string;
   updatedAt: string;
   submissionCount: number;
-  passRate: number; // 0–100
+  passRate: number;
 }
 
 /** Vista del examen para responder — SIN respuestas correctas. */
@@ -78,16 +73,12 @@ export interface QuestionResult {
   questionText:     string;
   type:             QuestionType;
   options:          string[];
-  // MULTIPLE_CHOICE / TRUE_FALSE
+  // TRUE_FALSE
   selectedIndex:    number;
   correctIndex:     number;
   // MULTI_SELECT
   selectedIndexes?: number[];
   correctIndexes?:  number[];
-  // OPEN_TEXT
-  textAnswer?:      string;
-  acceptedKeywords?: string[];
-  pendingReview?:   boolean;
   // Comunes
   correct:          boolean;
   pointsEarned:     number;
@@ -105,21 +96,10 @@ export interface ExamSubmissionResponse {
   score:            number;
   passed:           boolean;
   passingScore:     number;
-  hasPendingReview: boolean;
-  reviewed:         boolean;
   fraudFlags:       string[];
   timeTakenSeconds?: number;
   submittedAt:      string;
   questionResults?: QuestionResult[];
-}
-
-export interface ReviewOpenTextItem {
-  questionIndex: number;
-  approved: boolean;
-}
-
-export interface ReviewOpenTextRequest {
-  reviews: ReviewOpenTextItem[];
 }
 
 export interface ScoreRange {
@@ -152,20 +132,18 @@ export interface ExamStats {
   avgTimeSecs:      number;
   minTimeSecs:      number;
   maxTimeSecs:      number;
-  pendingReviewCount: number;
   questionFailRates: QuestionFailRate[];
 }
 
 /** DTO para crear un examen. */
 export interface CreateExamQuestionDto {
-  questionText:         string;
-  type:                 QuestionType;
-  options?:             string[];
-  correctOptionIndex?:  number;
+  questionText:          string;
+  type:                  QuestionType;
+  options?:              string[];
+  correctOptionIndex?:   number;
   correctOptionIndexes?: number[];
-  acceptedKeywords?:    string[];
-  explanation?:         string;
-  points:               number;
+  explanation?:          string;
+  points:                number;
 }
 
 export interface CreateExamRequest {
@@ -176,7 +154,6 @@ export interface CreateExamRequest {
   questions: CreateExamQuestionDto[];
   passingScore: number;
   timeLimitMinutes?: number;
-  maxAttempts?: number;
 }
 
 export interface SubmitExamRequest {
@@ -207,7 +184,6 @@ export interface BankQuestion {
   options: string[];
   correctOptionIndex: number;
   correctOptionIndexes: number[];
-  acceptedKeywords: string[];
   explanation?: string;
   points: number;
   category?: string;
@@ -268,7 +244,6 @@ export interface CreateBankQuestionRequest {
   options?: string[];
   correctOptionIndex?: number;
   correctOptionIndexes?: number[];
-  acceptedKeywords?: string[];
   explanation?: string;
   points: number;
   category?: string;

@@ -10,7 +10,6 @@ import {
   ExamResponse,
   ExamStats,
   ExamSubmissionResponse,
-  ReviewOpenTextRequest,
   SubmitExamRequest,
 } from '../trainer.models';
 
@@ -87,13 +86,6 @@ export class TrainerService {
 
   getExamStats(examId: string): Promise<ExamStats> {
     return firstValueFrom(this.http.get<ExamStats>(`${this.apiUrl}/${examId}/stats`));
-  }
-
-  async reviewOpenText(examId: string, submissionId: string, req: ReviewOpenTextRequest): Promise<ExamSubmissionResponse> {
-    const updated = await firstValueFrom(
-      this.http.patch<ExamSubmissionResponse>(`${this.apiUrl}/${examId}/submissions/${submissionId}/review`, req)
-    );
-    return updated;
   }
 
   async createFromTemplate(templateId: string, request: CreateFromTemplateRequest): Promise<ExamResponse> {

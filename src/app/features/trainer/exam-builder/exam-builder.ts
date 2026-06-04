@@ -1,11 +1,13 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+import { merge, of } from 'rxjs';
+import { map, startWith, switchMap } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 import { TrainerService } from '../services/trainer.service';
 import { QuestionBankService } from '../services/question-bank.service';
 import { ExamTemplateService } from '../services/exam-template.service';
-import { TrainingService } from '../../training/services/training.service';
 import {
   BankQuestion,
   CreateExamQuestionDto,
@@ -32,17 +34,15 @@ export class ExamBuilder implements OnInit {
   private readonly trainerSvc  = inject(TrainerService);
   private readonly bankSvc     = inject(QuestionBankService);
   private readonly templateSvc = inject(ExamTemplateService);
-  private readonly trainingSvc = inject(TrainingService);
   private readonly router      = inject(Router);
 
-  readonly trainings = this.trainingSvc.trainings;
 
   readonly saving      = signal(false);
   readonly error       = signal('');
   readonly typeLabels  = QUESTION_TYPE_LABELS;
   readonly diffLabels  = DIFFICULTY_LABELS;
   readonly diffColors  = DIFFICULTY_COLORS;
-  readonly questionTypes: QuestionType[] = ['MULTIPLE_CHOICE', 'MULTI_SELECT', 'TRUE_FALSE', 'OPEN_TEXT'];
+  readonly questionTypes: QuestionType[] = ['MULTI_SELECT', 'TRUE_FALSE'];
   readonly hours = Array.from({ length: 24 }, (_, i) => i + 1);
 
   // ── Modo de creación ──────────────────────────────────────────────────
@@ -64,24 +64,39 @@ export class ExamBuilder implements OnInit {
   // ══════════════════════════════════════════════════════════════════════
 
   readonly form = this.fb.group({
-    title:           ['', [Validators.required, Validators.maxLength(120)]],
-    description:     [''],
-    trainingId:      [null as string | null],
-    passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
-    timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
-    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
+    title:          ['', [Validators.required, Validators.maxLength(120)]],
+    description:    [''],
+    passingScore:   [70, [Validators.required, Validators.min(1), Validators.max(100)]],
+    timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
   });
 
   readonly questions = signal<FormGroup[]>([]);
 
-  ngOnInit(): void {
-    const user = this.auth.currentUser();
-    if (user?.storeId) this.trainingSvc.loadByStore(user.storeId);
-  }
+  // Trackea validez del formulario principal como signal (form.valid no es signal)
+  private readonly _formValid = toSignal(
+    this.form.statusChanges.pipe(startWith(this.form.status), map(s => s === 'VALID')),
+    { initialValue: this.form.valid }
+  );
+
+  // Cuando cambia el array de preguntas, rebuilds la suscripción a todos sus statusChanges
+  private readonly _questionsAllValid = toSignal(
+    toObservable(this.questions).pipe(
+      switchMap(qs => {
+        if (qs.length === 0) return of(false);
+        return merge(...qs.map(q => q.statusChanges.pipe(startWith(q.status)))).pipe(
+          map(() => qs.every(q => q.valid))
+        );
+      })
+    ),
+    { initialValue: false }
+  );
+
+  ngOnInit(): void {}
 
   readonly canSubmit = computed(() =>
-    this.form.valid && this.questions().length > 0 &&
-    this.questions().every(q => q.valid)
+    this._formValid() &&
+    this.questions().length >= 5 &&
+    this._questionsAllValid()
   );
 
   addQuestion(type: QuestionType): void {
@@ -93,11 +108,8 @@ export class ExamBuilder implements OnInit {
         this.fb.control('Verdadero', Validators.required),
         this.fb.control('Falso',     Validators.required),
       ]);
-    } else if (type === 'OPEN_TEXT') {
-      options = this.fb.array([]);
     } else {
       options = this.fb.array([
-        this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
         this.fb.control('', Validators.required),
@@ -124,13 +136,8 @@ export class ExamBuilder implements OnInit {
 
   getOptions(qGroup: FormGroup): FormArray { return qGroup.get('options') as FormArray; }
   getType(qGroup: FormGroup): QuestionType { return qGroup.get('type')?.value as QuestionType; }
-  isTrueFalse(qGroup: FormGroup):    boolean { return this.getType(qGroup) === 'TRUE_FALSE'; }
-  isMultiSelect(qGroup: FormGroup):  boolean { return this.getType(qGroup) === 'MULTI_SELECT'; }
-  isOpenText(qGroup: FormGroup):     boolean { return this.getType(qGroup) === 'OPEN_TEXT'; }
-  isSingleChoice(qGroup: FormGroup): boolean {
-    const t = this.getType(qGroup);
-    return t === 'MULTIPLE_CHOICE' || t === 'TRUE_FALSE';
-  }
+  isTrueFalse(qGroup: FormGroup):   boolean { return this.getType(qGroup) === 'TRUE_FALSE'; }
+  isMultiSelect(qGroup: FormGroup): boolean { return this.getType(qGroup) === 'MULTI_SELECT'; }
 
   setCorrect(qGroup: FormGroup, idx: number): void { qGroup.get('correctOptionIndex')?.setValue(idx); }
   isCorrect(qGroup: FormGroup, idx: number):  boolean { return qGroup.get('correctOptionIndex')?.value === idx; }
@@ -154,13 +161,11 @@ export class ExamBuilder implements OnInit {
     const fv   = this.form.value;
     try {
       await this.trainerSvc.createExam({
-        title:            fv.title!,
-        description:      fv.description || undefined,
-        trainingId:       (fv.trainingId && fv.trainingId !== '') ? fv.trainingId : undefined,
-        storeId:          user.storeId!,
+        title:       fv.title!,
+        description: fv.description || undefined,
+        storeId:     user.storeId!,
         passingScore:     fv.passingScore!,
         timeLimitMinutes: fv.timeLimitHours! * 60,
-        maxAttempts:      fv.maxAttempts ?? 0,
         questions:        this.buildQuestionsFromForm(),
       });
       this.router.navigate(['/trainer']);
@@ -264,7 +269,6 @@ export class ExamBuilder implements OnInit {
     description:     [''],
     passingScore:    [70, [Validators.required, Validators.min(1), Validators.max(100)]],
     timeLimitHours:  [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
-    maxAttempts:     [0, [Validators.required, Validators.min(0)]],
   });
 
   readonly canSubmitBank = computed(() =>
@@ -284,13 +288,10 @@ export class ExamBuilder implements OnInit {
         points:       bq.points,
         explanation:  bq.explanation,
       };
-      if (bq.type === 'MULTIPLE_CHOICE' || bq.type === 'TRUE_FALSE') {
+      if (bq.type === 'TRUE_FALSE') {
         return { ...base, options: bq.options, correctOptionIndex: bq.correctOptionIndex };
       }
-      if (bq.type === 'MULTI_SELECT') {
-        return { ...base, options: bq.options, correctOptionIndexes: bq.correctOptionIndexes };
-      }
-      return { ...base, acceptedKeywords: bq.acceptedKeywords };
+      return { ...base, options: bq.options, correctOptionIndexes: bq.correctOptionIndexes };
     });
     try {
       await this.trainerSvc.createExam({
@@ -299,7 +300,6 @@ export class ExamBuilder implements OnInit {
         storeId:          user.storeId!,
         passingScore:     fv.passingScore!,
         timeLimitMinutes: fv.timeLimitHours! * 60,
-        maxAttempts:      fv.maxAttempts ?? 0,
         questions:        questionsDto,
       });
       this.router.navigate(['/trainer']);
@@ -322,15 +322,10 @@ export class ExamBuilder implements OnInit {
         points:       q.get('points')!.value,
         explanation:  q.get('explanation')!.value || undefined,
       };
-      if (type === 'MULTIPLE_CHOICE' || type === 'TRUE_FALSE') {
+      if (type === 'TRUE_FALSE') {
         return { ...base, options: opts, correctOptionIndex: q.get('correctOptionIndex')!.value };
       }
-      if (type === 'MULTI_SELECT') {
-        return { ...base, options: opts, correctOptionIndexes: q.get('correctOptionIndexes')!.value };
-      }
-      const kw = (q.get('acceptedKeywords')!.value as string)
-        .split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
-      return { ...base, acceptedKeywords: kw };
+      return { ...base, options: opts, correctOptionIndexes: q.get('correctOptionIndexes')!.value };
     });
   }
 }
