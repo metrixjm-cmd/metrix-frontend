@@ -16,7 +16,6 @@ export class ExamTake implements OnInit, OnDestroy {
   private readonly router      = inject(Router);
   private readonly trainerSvc  = inject(TrainerService);
 
-  // ── Estado ─────────────────────────────────────────────────────────────
   readonly exam        = signal<ExamForTakeResponse | null>(null);
   readonly attemptInfo = signal<AttemptInfo | null>(null);
   readonly answers     = signal<ExamAnswer[]>([]);
@@ -30,7 +29,6 @@ export class ExamTake implements OnInit, OnDestroy {
     return info !== null && !info.canAttempt;
   });
 
-  // ── Timer ──────────────────────────────────────────────────────────────
   readonly timeLeft   = signal(0);
   readonly startedAt  = signal(0);
   private timerInterval?: ReturnType<typeof setInterval>;
@@ -46,12 +44,10 @@ export class ExamTake implements OnInit, OnDestroy {
     this.exam()?.timeLimitMinutes != null && this.timeLeft() <= 60
   );
 
-  // ── Derived ────────────────────────────────────────────────────────────
-
   readonly allAnswered = computed(() => {
     const exam = this.exam();
     if (!exam) return false;
-    const ans  = this.answers();
+    const ans = this.answers();
     return ans.length === exam.questions.length &&
       exam.questions.every((q, i) => this.isAnswered(q.type, ans[i]));
   });
@@ -60,18 +56,15 @@ export class ExamTake implements OnInit, OnDestroy {
     const exam = this.exam();
     if (!exam) return 0;
     return this.answers().filter((a, i) =>
-      this.isAnswered(exam.questions[i]?.type ?? 'MULTIPLE_CHOICE', a)
+      this.isAnswered(exam.questions[i]?.type ?? 'TRUE_FALSE', a)
     ).length;
   });
 
   private isAnswered(type: QuestionType, a: ExamAnswer): boolean {
     if (!a) return false;
-    if (type === 'MULTI_SELECT')  return (a.selectedIndexes ?? []).length > 0;
-    if (type === 'OPEN_TEXT')     return (a.textAnswer ?? '').trim().length > 0;
+    if (type === 'MULTI_SELECT') return (a.selectedIndexes ?? []).length > 0;
     return (a.selectedIndex ?? -1) >= 0;
   }
-
-  // ── Lifecycle ──────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     const examId = this.route.snapshot.paramMap.get('examId')!;
@@ -82,7 +75,7 @@ export class ExamTake implements OnInit, OnDestroy {
       this.exam.set(exam);
       this.attemptInfo.set(info);
       this.loading.set(false);
-      if (!info.canAttempt) return; // bloqueado — no iniciar timer
+      if (!info.canAttempt) return;
       this.answers.set(exam.questions.map(() => ({})));
       this.startedAt.set(Date.now());
       if (exam.timeLimitMinutes) {
@@ -111,7 +104,7 @@ export class ExamTake implements OnInit, OnDestroy {
     if (!this.result()) this.submit();
   }
 
-  // ── MULTIPLE_CHOICE / TRUE_FALSE ────────────────────────────────────────
+  // ── TRUE_FALSE ────────────────────────────────────────────────────────────
 
   selectAnswer(qIdx: number, optIdx: number): void {
     this.answers.update(list => {
@@ -129,30 +122,16 @@ export class ExamTake implements OnInit, OnDestroy {
 
   toggleMulti(qIdx: number, optIdx: number): void {
     this.answers.update(list => {
-      const copy     = [...list];
-      const current  = copy[qIdx]?.selectedIndexes ?? [];
-      const has      = current.includes(optIdx);
-      copy[qIdx]     = { selectedIndexes: has ? current.filter(i => i !== optIdx) : [...current, optIdx] };
+      const copy    = [...list];
+      const current = copy[qIdx]?.selectedIndexes ?? [];
+      const has     = current.includes(optIdx);
+      copy[qIdx]    = { selectedIndexes: has ? current.filter(i => i !== optIdx) : [...current, optIdx] };
       return copy;
     });
   }
 
   isMultiSelected(qIdx: number, optIdx: number): boolean {
     return (this.answers()[qIdx]?.selectedIndexes ?? []).includes(optIdx);
-  }
-
-  // ── OPEN_TEXT ─────────────────────────────────────────────────────────────
-
-  setTextAnswer(qIdx: number, text: string): void {
-    this.answers.update(list => {
-      const copy = [...list];
-      copy[qIdx] = { textAnswer: text };
-      return copy;
-    });
-  }
-
-  getTextAnswer(qIdx: number): string {
-    return this.answers()[qIdx]?.textAnswer ?? '';
   }
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -166,7 +145,7 @@ export class ExamTake implements OnInit, OnDestroy {
     const elapsed = Math.round((Date.now() - this.startedAt()) / 1000);
     try {
       const r = await this.trainerSvc.submitExam(exam.id, {
-        answers:         this.answers(),
+        answers:          this.answers(),
         timeTakenSeconds: elapsed,
       });
       this.result.set(r);

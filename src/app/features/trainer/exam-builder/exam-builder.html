@@ -149,7 +149,7 @@
                        placeholder="Escribe la pregunta…"
                        class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
 
-                @if (isSingleChoice(qGroup)) {
+                @if (isTrueFalse(qGroup)) {
                   <div class="space-y-2">
                     <p class="text-xs text-white/50">Haz clic en el círculo para marcar la respuesta correcta</p>
                     @for (optCtrl of getOptions(qGroup).controls; track $index) {
@@ -161,12 +161,7 @@
                             <span class="w-2 h-2 bg-white rounded-full"></span>
                           }
                         </button>
-                        @if (isTrueFalse(qGroup)) {
-                          <span class="text-sm text-white/70 font-medium">{{ optCtrl.value }}</span>
-                        } @else {
-                          <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                                 class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"/>
-                        }
+                        <span class="text-sm text-white/70 font-medium">{{ optCtrl.value }}</span>
                       </div>
                     }
                   </div>
@@ -193,18 +188,6 @@
                     @if ((qGroup.get('correctOptionIndexes')?.value ?? []).length === 0) {
                       <p class="text-xs text-amber-400">Marca al menos una opción correcta</p>
                     }
-                  </div>
-                }
-
-                @if (isOpenText(qGroup)) {
-                  <div>
-                    <label class="block text-xs font-medium text-white/60 mb-1">
-                      Palabras clave <span class="text-white/40">(separadas por comas)</span>
-                    </label>
-                    <input [formControl]="$any(qGroup.get('acceptedKeywords'))" type="text"
-                           placeholder="temperatura, 74, cocción, grados"
-                           class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500"/>
-                    <p class="text-xs text-white/40 mt-1">Si el usuario menciona ≥70% se aprueba automáticamente.</p>
                   </div>
                 }
 

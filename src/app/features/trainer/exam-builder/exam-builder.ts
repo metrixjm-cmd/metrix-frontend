@@ -45,7 +45,7 @@ export class ExamBuilder implements OnInit {
   readonly typeLabels  = QUESTION_TYPE_LABELS;
   readonly diffLabels  = DIFFICULTY_LABELS;
   readonly diffColors  = DIFFICULTY_COLORS;
-  readonly questionTypes: QuestionType[] = ['MULTIPLE_CHOICE', 'MULTI_SELECT', 'TRUE_FALSE', 'OPEN_TEXT'];
+  readonly questionTypes: QuestionType[] = ['MULTI_SELECT', 'TRUE_FALSE'];
   readonly hours = Array.from({ length: 24 }, (_, i) => i + 1);
 
   // ── Modo de creación ──────────────────────────────────────────────────
@@ -144,13 +144,8 @@ export class ExamBuilder implements OnInit {
 
   getOptions(qGroup: FormGroup): FormArray { return qGroup.get('options') as FormArray; }
   getType(qGroup: FormGroup): QuestionType { return qGroup.get('type')?.value as QuestionType; }
-  isTrueFalse(qGroup: FormGroup):    boolean { return this.getType(qGroup) === 'TRUE_FALSE'; }
-  isMultiSelect(qGroup: FormGroup):  boolean { return this.getType(qGroup) === 'MULTI_SELECT'; }
-  isOpenText(qGroup: FormGroup):     boolean { return this.getType(qGroup) === 'OPEN_TEXT'; }
-  isSingleChoice(qGroup: FormGroup): boolean {
-    const t = this.getType(qGroup);
-    return t === 'MULTIPLE_CHOICE' || t === 'TRUE_FALSE';
-  }
+  isTrueFalse(qGroup: FormGroup):   boolean { return this.getType(qGroup) === 'TRUE_FALSE'; }
+  isMultiSelect(qGroup: FormGroup): boolean { return this.getType(qGroup) === 'MULTI_SELECT'; }
 
   setCorrect(qGroup: FormGroup, idx: number): void { qGroup.get('correctOptionIndex')?.setValue(idx); }
   isCorrect(qGroup: FormGroup, idx: number):  boolean { return qGroup.get('correctOptionIndex')?.value === idx; }
@@ -304,13 +299,10 @@ export class ExamBuilder implements OnInit {
         points:       bq.points,
         explanation:  bq.explanation,
       };
-      if (bq.type === 'MULTIPLE_CHOICE' || bq.type === 'TRUE_FALSE') {
+      if (bq.type === 'TRUE_FALSE') {
         return { ...base, options: bq.options, correctOptionIndex: bq.correctOptionIndex };
       }
-      if (bq.type === 'MULTI_SELECT') {
-        return { ...base, options: bq.options, correctOptionIndexes: bq.correctOptionIndexes };
-      }
-      return { ...base, acceptedKeywords: bq.acceptedKeywords };
+      return { ...base, options: bq.options, correctOptionIndexes: bq.correctOptionIndexes };
     });
     try {
       await this.trainerSvc.createExam({
@@ -342,15 +334,10 @@ export class ExamBuilder implements OnInit {
         points:       q.get('points')!.value,
         explanation:  q.get('explanation')!.value || undefined,
       };
-      if (type === 'MULTIPLE_CHOICE' || type === 'TRUE_FALSE') {
+      if (type === 'TRUE_FALSE') {
         return { ...base, options: opts, correctOptionIndex: q.get('correctOptionIndex')!.value };
       }
-      if (type === 'MULTI_SELECT') {
-        return { ...base, options: opts, correctOptionIndexes: q.get('correctOptionIndexes')!.value };
-      }
-      const kw = (q.get('acceptedKeywords')!.value as string)
-        .split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
-      return { ...base, acceptedKeywords: kw };
+      return { ...base, options: opts, correctOptionIndexes: q.get('correctOptionIndexes')!.value };
     });
   }
 }

@@ -55,8 +55,8 @@
                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
         </div>
 
-        <!-- Opciones: MULTIPLE_CHOICE / TRUE_FALSE -->
-        @if (isSingle) {
+        <!-- TRUE_FALSE — opciones fijas, seleccionar correcta -->
+        @if (isTrueFalse) {
           <div class="space-y-2">
             <p class="text-xs text-white/50">Selecciona la opción correcta</p>
             @for (optCtrl of options.controls; track $index) {
@@ -68,12 +68,7 @@
                     <span class="w-2 h-2 bg-white rounded-full"></span>
                   }
                 </button>
-                @if (isTrueFalse) {
-                  <span class="text-sm text-white/70">{{ optCtrl.value }}</span>
-                } @else {
-                  <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
-                         class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-                }
+                <span class="text-sm text-white/70">{{ optCtrl.value }}</span>
               </div>
             }
           </div>
@@ -98,15 +93,6 @@
                        class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
               </div>
             }
-          </div>
-        }
-
-        <!-- OPEN_TEXT -->
-        @if (isOpenText) {
-          <div>
-            <label class="block text-xs font-medium text-white/60 mb-1">Palabras clave <span class="text-white/40">(separadas por comas)</span></label>
-            <input formControlName="acceptedKeywords" type="text" placeholder="temperatura, 74, cocción"
-                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
           </div>
         }
 

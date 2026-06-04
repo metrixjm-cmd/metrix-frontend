@@ -1,6 +1,5 @@
 <div class="p-6 max-w-2xl mx-auto">
 
-  <!-- Loading -->
   @if (loading()) {
     <div class="flex items-center justify-center py-20">
       <svg class="w-8 h-8 animate-spin text-orange-500" fill="none" viewBox="0 0 24 24">
@@ -14,7 +13,7 @@
     <div class="bg-red-500/15 border border-red-500/25 text-red-400 rounded-lg px-4 py-3 text-sm mb-4">{{ error() }}</div>
   }
 
-  <!-- ══ BLOQUEADO: sin intentos restantes ════════════════════════════ -->
+  <!-- Bloqueado: sin intentos restantes -->
   @if (!loading() && blocked()) {
     <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-10 text-center space-y-4">
       <div class="w-16 h-16 rounded-full bg-red-500/15 flex items-center justify-center mx-auto">
@@ -36,11 +35,10 @@
     </div>
   }
 
-  <!-- ══ RESULTADO ════════════════════════════════════════════════════ -->
+  <!-- Resultado -->
   @if (result(); as r) {
     <div class="space-y-6">
 
-      <!-- Tarjeta de resultado -->
       <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-8 text-center">
         <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
              [class]="r.passed ? 'bg-emerald-500/15' : 'bg-red-500/15'">
@@ -58,14 +56,9 @@
         <p class="text-lg font-semibold text-white/80 mb-1">
           {{ r.passed ? '¡Examen aprobado!' : 'Examen no aprobado' }}
         </p>
-        <p class="text-sm text-white/50 mb-2">
+        <p class="text-sm text-white/50 mb-4">
           Mínimo requerido: {{ r.passingScore }}% · Tiempo: {{ formatTime(r.timeTakenSeconds) }}
         </p>
-        @if (r.hasPendingReview) {
-          <p class="text-xs text-amber-400 bg-amber-500/15 border border-amber-500/25 rounded-lg px-3 py-2 mb-4">
-            ⚠ Una o más respuestas abiertas están pendientes de revisión manual por el gerente.
-          </p>
-        }
         <button (click)="goBack()"
                 class="inline-flex items-center gap-2 bg-orange-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
           Volver a Trainer
@@ -81,17 +74,11 @@
           <div class="divide-y divide-white/[0.06]">
             @for (qr of r.questionResults; track $index) {
               <div class="p-5 flex gap-4">
-                <!-- Badge correcto/incorrecto -->
                 <div class="w-6 h-6 rounded-full shrink-0 flex items-center justify-center mt-0.5"
-                     [class]="qr.correct ? 'bg-emerald-500/15 text-emerald-400' :
-                              qr.pendingReview ? 'bg-amber-500/15 text-amber-400' : 'bg-red-500/15 text-red-400'">
+                     [class]="qr.correct ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'">
                   @if (qr.correct) {
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                    </svg>
-                  } @else if (qr.pendingReview) {
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                   } @else {
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,8 +90,8 @@
                 <div class="flex-1 space-y-2">
                   <p class="text-sm font-medium text-white/80">{{ qr.questionText }}</p>
 
-                  <!-- MULTIPLE_CHOICE / TRUE_FALSE -->
-                  @if (qr.type === 'MULTIPLE_CHOICE' || qr.type === 'TRUE_FALSE') {
+                  <!-- TRUE_FALSE -->
+                  @if (qr.type === 'TRUE_FALSE') {
                     <div class="space-y-1">
                       @for (opt of qr.options; track $index) {
                         <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
@@ -123,7 +110,7 @@
                   @if (qr.type === 'MULTI_SELECT') {
                     <div class="space-y-1">
                       @for (opt of qr.options; track $index) {
-                        @let isUserSel = (qr.selectedIndexes ?? []).includes($index);
+                        @let isUserSel   = (qr.selectedIndexes ?? []).includes($index);
                         @let isCorrectOpt = (qr.correctIndexes ?? []).includes($index);
                         <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
                              [class]="isCorrectOpt ? 'bg-emerald-500/15 text-emerald-400 font-medium' :
@@ -138,20 +125,6 @@
                     </div>
                   }
 
-                  <!-- OPEN_TEXT -->
-                  @if (qr.type === 'OPEN_TEXT') {
-                    <div class="space-y-1.5 text-xs">
-                      <div class="bg-white/[0.02] border border-white/10 rounded-lg px-3 py-2">
-                        <p class="text-white/40 mb-0.5">Tu respuesta:</p>
-                        <p class="text-white/70">{{ qr.textAnswer || '(sin respuesta)' }}</p>
-                      </div>
-                      @if (qr.pendingReview) {
-                        <p class="text-amber-400">⏳ Pendiente de revisión manual</p>
-                      }
-                    </div>
-                  }
-
-                  <!-- Puntos y explicación -->
                   <div class="flex items-center justify-between">
                     <p class="text-xs text-white/40">{{ qr.pointsEarned }} / {{ qr.pointsMax }} pts</p>
                   </div>
@@ -171,12 +144,11 @@
     </div>
   }
 
-  <!-- ══ TOMAR EXAMEN ════════════════════════════════════════════════ -->
+  <!-- Tomar examen -->
   @if (!loading() && !result()) {
     @if (exam(); as exam) {
       <div class="space-y-6">
 
-        <!-- Header + timer -->
         <div class="bg-white/[0.04] border border-white/10 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
           <div>
             <h1 class="text-lg font-bold text-white">{{ exam.title }}</h1>
@@ -196,17 +168,14 @@
           }
         </div>
 
-        <!-- Barra de progreso -->
         <div class="h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
           <div class="h-full bg-orange-500 rounded-full transition-all"
                [style.width.%]="exam.questions.length > 0 ? (answeredCount() / exam.questions.length) * 100 : 0">
           </div>
         </div>
 
-        <!-- Preguntas -->
         @for (q of exam.questions; track q.id; let qIdx = $index) {
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-
             <div class="flex items-start gap-3 mb-4">
               <span class="shrink-0 w-6 h-6 rounded-full bg-orange-500/15 text-orange-400 text-xs font-bold flex items-center justify-center">
                 {{ qIdx + 1 }}
@@ -216,14 +185,11 @@
                 @if (q.type === 'MULTI_SELECT') {
                   <p class="text-xs text-indigo-400 mt-1">Selecciona todas las opciones correctas</p>
                 }
-                @if (q.type === 'OPEN_TEXT') {
-                  <p class="text-xs text-teal-400 mt-1">Escribe tu respuesta con tus propias palabras</p>
-                }
               </div>
             </div>
 
-            <!-- ── MULTIPLE_CHOICE / TRUE_FALSE — radio ── -->
-            @if (q.type === 'MULTIPLE_CHOICE' || q.type === 'TRUE_FALSE') {
+            <!-- TRUE_FALSE — radio -->
+            @if (q.type === 'TRUE_FALSE') {
               <div class="space-y-2 pl-9">
                 @for (opt of q.options; track $index; let optIdx = $index) {
                   <button type="button" (click)="selectAnswer(qIdx, optIdx)"
@@ -245,7 +211,7 @@
               </div>
             }
 
-            <!-- ── MULTI_SELECT — checkboxes ── -->
+            <!-- MULTI_SELECT — checkboxes -->
             @if (q.type === 'MULTI_SELECT') {
               <div class="space-y-2 pl-9">
                 @for (opt of q.options; track $index; let optIdx = $index) {
@@ -267,18 +233,6 @@
                     </span>
                   </button>
                 }
-              </div>
-            }
-
-            <!-- ── OPEN_TEXT — textarea ── -->
-            @if (q.type === 'OPEN_TEXT') {
-              <div class="pl-9">
-                <textarea rows="4"
-                          [value]="getTextAnswer(qIdx)"
-                          (input)="setTextAnswer(qIdx, $any($event.target).value)"
-                          placeholder="Escribe tu respuesta aquí…"
-                          class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.05] text-white focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none">
-                </textarea>
               </div>
             }
 
