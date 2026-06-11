@@ -1,12 +1,21 @@
 // ── Trainer module models ─────────────────────────────────────────────────
 
 export type QuestionType =
+  | 'SINGLE_SELECT' // radio — 3 opciones, 1 correcta
   | 'TRUE_FALSE'    // radio — Verdadero / Falso
   | 'MULTI_SELECT'; // checkboxes — N correctas
 
+export type ExamAudience = 'GERENTE' | 'EJECUTADOR';
+
+export const EXAM_AUDIENCE_LABELS: Record<ExamAudience, string> = {
+  GERENTE: 'Gerente',
+  EJECUTADOR: 'Ejecutador',
+};
+
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
-  TRUE_FALSE:   'Verdadero / Falso',
-  MULTI_SELECT: 'Selección múltiple',
+  SINGLE_SELECT: 'Respuesta única',
+  TRUE_FALSE:    'Verdadero / Falso',
+  MULTI_SELECT:  'Selección múltiple',
 };
 
 /** Respuesta por pregunta al enviar un examen. */
@@ -21,6 +30,7 @@ export interface ExamQuestion {
   type: QuestionType;
   options: string[];
   correctOptionIndex: number;
+  correctOptionIndexes: number[];
   points: number;
 }
 
@@ -31,6 +41,7 @@ export interface ExamResponse {
   description?: string;
   trainingId?: string;
   storeId: string;
+  targetAudience: ExamAudience;
   questions: ExamQuestion[];
   passingScore: number;
   timeLimitMinutes?: number;
@@ -151,6 +162,7 @@ export interface CreateExamRequest {
   description?: string;
   trainingId?: string;
   storeId: string;
+  targetAudience: ExamAudience;
   questions: CreateExamQuestionDto[];
   passingScore: number;
   timeLimitMinutes?: number;

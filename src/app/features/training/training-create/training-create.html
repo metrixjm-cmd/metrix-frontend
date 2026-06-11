@@ -1,124 +1,58 @@
-<div class="p-6 max-w-2xl mx-auto space-y-5">
+  <div class='p-6 max-w-2xl mx-auto space-y-5'>
 
-  <!-- ── Encabezado ──────────────────────────────────────────────────────── -->
-  <div class="flex items-center gap-3">
-    <a routerLink="/training"
-       class="p-2 rounded-lg hover:bg-white/[0.06] text-white/50 hover:text-white/80 transition-colors">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+  <div class='flex items-center gap-3'>
+    <a routerLink='/training' class='p-2 rounded-lg hover:bg-white/[0.06] text-white/50 hover:text-white/80 transition-colors'>
+      <svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+        <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 19l-7-7 7-7'/>
       </svg>
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-white">Nueva capacitación</h1>
-      <p class="text-sm text-white/50">Asigna una sesión de formación a un colaborador</p>
+      <h1 class='text-2xl font-bold text-white'>Nueva capacitación</h1>
+      <p class='text-sm text-white/50'>Asigna una sesión de formación a un colaborador</p>
     </div>
   </div>
 
-  <!-- ── Error ───────────────────────────────────────────────────────────── -->
-  @if (error()) {
-    <div class="p-4 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
-      {{ error() }}
-    </div>
-  }
-
-  <!-- ── Selector de modo ────────────────────────────────────────────────── -->
-  <div class="flex w-full rounded-xl border border-white/10 bg-white/[0.04] p-1 sm:inline-flex sm:w-auto">
-    <button type="button" (click)="setMode('scratch')"
-            [class]="mode() === 'scratch'
-              ? 'flex-1 whitespace-nowrap rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors sm:flex-none'
-              : 'flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium text-white/50 hover:bg-white/[0.02] hover:text-white/80 transition-colors sm:flex-none'">
-      <span class="inline-flex items-center gap-2">
-        <svg class="h-4 w-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                d="M12 5v14m7-7H5" />
-        </svg>
-        Desde cero
-      </span>
-    </button>
-
-    <button type="button" (click)="setMode('template')"
-            [class]="mode() === 'template'
-              ? 'flex-1 whitespace-nowrap rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors sm:flex-none'
-              : 'flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium text-white/50 hover:bg-white/[0.02] hover:text-white/80 transition-colors sm:flex-none'">
-      <span class="inline-flex items-center gap-2">
-        <svg class="h-4 w-4 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                d="M8 7h8M8 11h8m-8 4h5M6 3h9l3 3v15H6V3z" />
-        </svg>
-        Reutilizar operación
-      </span>
-    </button>
-  </div>
-
-
-  <!-- ══ MODO: DESDE CERO ════════════════════════════════════════════════ -->
   @if (mode() === 'scratch') {
-    <form [formGroup]="form" (ngSubmit)="onSubmit()"
-          class="bg-white/[0.04] border border-white/10 rounded-xl p-6 space-y-5">
-
-      <div class="relative z-10 rounded-xl border border-white/10 bg-white/[0.04] p-3 transition-all focus-within:border-orange-300 focus-within:shadow-lg focus-within:ring-4 focus-within:ring-orange-100">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="bg-white/[0.04] border border-white/10 rounded-xl p-6 space-y-5">
+      <div class="rounded-xl border border-white/10 bg-white/[0.04] p-3">
         <label class="block text-sm font-medium text-white/70 mb-1">Título *</label>
-        <input formControlName="title" type="text" placeholder="Ej. Manipulación de alimentos BPM"
-               class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
-        @if (form.get('title')?.invalid && form.get('title')?.touched) {
-          <p class="text-xs text-red-400 mt-1">El título es obligatorio (mín. 3 caracteres)</p>
-        }
+        <input formControlName="title" type="text" placeholder="Ej. Manipulación de alimentos BPM" class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+        @if (form.get('title')?.invalid && form.get('title')?.touched) { <p class="text-xs text-red-400 mt-1">El título es obligatorio (mín. 3 caracteres)</p> }
       </div>
-
       <div>
         <label class="block text-sm font-medium text-white/70 mb-1">Descripción *</label>
-        <textarea formControlName="description" rows="3"
-                  placeholder="Objetivos, contenido y materiales de la capacitación..."
-                  class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
-        @if (form.get('description')?.invalid && form.get('description')?.touched) {
-          <p class="text-xs text-red-400 mt-1">La descripción es obligatoria</p>
-        }
+        <textarea formControlName="description" rows="3" placeholder="Objetivos, contenido y materiales de la capacitación..." class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"></textarea>
+        @if (form.get('description')?.invalid && form.get('description')?.touched) { <p class="text-xs text-red-400 mt-1">La descripción es obligatoria</p> }
       </div>
-
-      <div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-white/70 mb-1">Sucursal *</label>
           @if (isAdmin()) {
-            <select formControlName="storeId"
-                    class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/[0.05]">
+            <select formControlName="storeId" class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/[0.05]">
               <option value="">— Sucursal —</option>
-              @for (s of stores(); track s.id) {
-                <option [value]="s.id">{{ s.nombre }}</option>
-              }
+              @for (s of stores(); track s.id) { <option [value]="s.id">{{ s.nombre }}</option> }
             </select>
           } @else {
-            <input [value]="currentStoreName()" type="text" readonly
-                   class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.02] text-white/70">
+            <input [value]="currentStoreName()" type="text" readonly class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm bg-white/[0.02] text-white/70">
             <input formControlName="storeId" type="hidden">
-            <p class="mt-1 text-xs text-white/40">
-              ID interno: {{ form.get('storeId')?.value }}
-            </p>
           }
         </div>
         <div>
           <label class="block text-sm font-medium text-white/70 mb-1">Turno *</label>
-          <select formControlName="shift"
-                  class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/[0.05]">
-            @for (t of turnos; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
+          <select formControlName="shift" class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white/[0.05]">
+            @for (t of turnos; track t) { <option [value]="t">{{ t }}</option> }
           </select>
         </div>
       </div>
-
       <div>
         <label class="block text-sm font-medium text-white/70 mb-2">Colaboradores asignados *</label>
-
         <div class="border border-white/10 rounded-xl bg-white/[0.04] overflow-hidden">
           <div class="max-h-64 overflow-y-auto">
             <table class="w-full text-left text-sm text-white/60">
               <thead class="bg-white/[0.02] border-b border-white/10 sticky top-0 z-10">
                 <tr>
                   <th class="py-3 px-4 w-12 text-center">
-                    <input type="checkbox"
-                           class="w-4 h-4 text-orange-600 border-white/[0.15] rounded focus:ring-orange-500 cursor-pointer"
-                           [checked]="isAllUsersSelected(false)"
-                           (change)="toggleAllUsers(false, $event)">
+                    <input type="checkbox" class="w-4 h-4 text-orange-600 border-white/[0.15] rounded focus:ring-orange-500 cursor-pointer" [checked]="isAllUsersSelected(false)" (change)="toggleAllUsers(false, $event)">
                   </th>
                   <th class="py-3 px-4 font-semibold text-white">Nombre</th>
                   <th class="py-3 px-4 font-semibold text-white">Puesto</th>
@@ -127,20 +61,11 @@
               </thead>
               <tbody class="divide-y divide-white/[0.06]">
                 @if (filteredUsers().length === 0) {
-                  <tr>
-                    <td colspan="4" class="py-6 text-center text-white/50">
-                      No hay colaboradores disponibles para esta selección
-                    </td>
-                  </tr>
+                  <tr><td colspan="4" class="py-6 text-center text-white/50">No hay colaboradores disponibles para esta selección</td></tr>
                 } @else {
                   @for (u of filteredUsers(); track u.id) {
-                    <tr class="hover:bg-orange-50/50 transition-colors cursor-pointer"
-                        (click)="toggleUser(u.id, false)">
-                      <td class="py-2.5 px-4 text-center">
-                        <input type="checkbox"
-                               class="w-4 h-4 text-orange-600 border-white/[0.15] rounded focus:ring-orange-500 cursor-pointer pointer-events-none"
-                               [checked]="isUserSelected(u.id, false)">
-                      </td>
+                    <tr class="hover:bg-orange-50/50 transition-colors cursor-pointer" (click)="toggleUser(u.id, false)">
+                      <td class="py-2.5 px-4 text-center"><input type="checkbox" class="w-4 h-4 text-orange-600 border-white/[0.15] rounded focus:ring-orange-500 cursor-pointer pointer-events-none" [checked]="isUserSelected(u.id, false)"></td>
                       <td class="py-2.5 px-4 font-medium text-white/80">{{ u.nombre }}</td>
                       <td class="py-2.5 px-4 text-white/50">{{ u.puesto }}</td>
                       <td class="py-2.5 px-4 text-white/50">{{ u.turno }}</td>
@@ -151,140 +76,25 @@
             </table>
           </div>
         </div>
-
-        @if (form.get('assignedUserIds')?.invalid && form.get('assignedUserIds')?.touched) {
-          <p class="text-xs text-red-400 mt-2">Selecciona al menos un colaborador</p>
-        }
+        @if (form.get('assignedUserIds')?.invalid && form.get('assignedUserIds')?.touched) { <p class="text-xs text-red-400 mt-2">Selecciona al menos un colaborador</p> }
       </div>
-
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <label class="block text-sm font-medium text-white/70">Período de capacitación *</label>
-          @if (durationDays() > 0) {
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
-                  [class]="durationDays() === 1 ? 'bg-orange-500/15 text-orange-400' : 'bg-blue-500/15 text-blue-400'">
-              {{ durationDays() }} {{ durationDays() === 1 ? 'día' : 'días' }}
-            </span>
-          }
+      <div class="grid grid-cols-2 gap-3 border-t border-white/[0.06] pt-4">
+        <div>
+          <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-white/70">Inicio *</label></div>
+          <input formControlName="startDate" type="date" [min]="todayDate" class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
-
-        <div class="rounded-xl border border-white/10 bg-white/[0.04] p-3 space-y-3">
-          <!-- Rango de fechas -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <span class="block text-xs font-semibold uppercase tracking-wide text-white/50 mb-1">Inicio</span>
-              <input formControlName="startDate" type="date" [min]="todayDate"
-                     class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-            <div>
-              <span class="block text-xs font-semibold uppercase tracking-wide text-white/50 mb-1">Fin</span>
-              <input formControlName="endDate" type="date" [min]="formStartDate() || todayDate"
-                     class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
-            </div>
-          </div>
-
-          <!-- Hora límite (último día) -->
-          <div class="space-y-1">
-            <span class="block text-xs font-semibold uppercase tracking-wide text-white/50">Hora límite (último día)</span>
-            <div class="flex items-center justify-center gap-3 border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2">
-              <svg class="w-4 h-4 text-white/40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <div class="flex flex-col items-center gap-0.5">
-                <button type="button" (click)="incrHour(false)" class="text-white/40 hover:text-orange-400 transition-colors p-0.5 rounded">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                </button>
-                <span class="text-sm font-semibold text-white tabular-nums w-6 text-center select-none">{{ padNum(scratchHour()) }}</span>
-                <button type="button" (click)="decrHour(false)" class="text-white/40 hover:text-orange-400 transition-colors p-0.5 rounded">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-              </div>
-              <span class="text-white/50 font-bold text-sm pb-0.5">:</span>
-              <div class="flex flex-col items-center gap-0.5">
-                <button type="button" (click)="incrMinute(false)" class="text-white/40 hover:text-orange-400 transition-colors p-0.5 rounded">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
-                </button>
-                <span class="text-sm font-semibold text-white tabular-nums w-6 text-center select-none">{{ padNum(scratchMinute()) }}</span>
-                <button type="button" (click)="decrMinute(false)" class="text-white/40 hover:text-orange-400 transition-colors p-0.5 rounded">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                </button>
-              </div>
-              <button type="button" (click)="togglePeriod(false)"
-                      class="ml-1 flex items-center gap-1 bg-white/[0.08] hover:bg-white/[0.14] text-sm font-semibold text-white rounded px-2 py-1 transition-colors select-none">
-                {{ scratchPeriod() }}
-                <svg class="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-              </button>
-            </div>
-          </div>
+        <div>
+          <div class="flex items-center justify-between mb-1"><label class="block text-sm font-medium text-white/70">Fin *</label></div>
+          <input formControlName="endDate" type="date" [min]="formStartDate() || todayDate" class="w-full border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
         </div>
-
-        @if (!dateRangeValid()) {
-          <p class="text-xs text-amber-400 mt-1">La fecha de fin debe ser igual o posterior al inicio.</p>
-        }
-        @if ((form.get('startDate')?.invalid || form.get('endDate')?.invalid) && form.touched) {
-          <p class="text-xs text-red-400 mt-1">Las fechas de inicio y fin son obligatorias.</p>
-        }
       </div>
-
-      <!-- ── Materiales seleccionados ────────────────────────────────────────── -->
-      <div class="space-y-3 pt-4 border-t border-white/[0.06]">
-        <div class="flex items-center justify-between">
-          <label class="block text-sm font-medium text-white/70">Materiales de capacitación</label>
-          <div class="flex gap-2">
-            <button type="button" (click)="openSelectModal()"
-                    class="text-xs px-3 py-1.5 border border-white/10 text-white/70 rounded-lg hover:bg-white/[0.04] transition-colors">
-              Elegir del banco
-            </button>
-            <button type="button" (click)="openCreateModal()"
-                    class="text-xs px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
-              Insertar nuevo
-            </button>
-          </div>
-        </div>
-
-        @if (selectedMaterials().length === 0) {
-          <div class="text-center py-6 border-2 border-dashed border-white/10 rounded-xl bg-white/[0.02]">
-            <p class="text-sm text-white/50">No hay materiales seleccionados</p>
-          </div>
-        } @else {
-          <div class="space-y-2">
-            @for (m of selectedMaterials(); track m.id) {
-              <div class="flex items-center justify-between p-3 border border-white/10 rounded-xl bg-white/[0.04]">
-                <div class="flex items-center gap-3">
-                  <span class="text-xl">{{ typeIcon(m.type) }}</span>
-                  <div>
-                    <p class="text-sm font-medium text-white/80">{{ m.title }}</p>
-                    <p class="text-xs text-white/50">{{ typeLabels[m.type] }}</p>
-                  </div>
-                </div>
-                <button type="button" (click)="removeMaterial(m)"
-                        class="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/15 rounded-lg transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
       <div class="flex justify-end gap-3 pt-4 border-t border-white/[0.06]">
-        <a routerLink="/training"
-           class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">
-          Cancelar
-        </a>
-        <button type="submit" [disabled]="form.invalid || saving()"
-                class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors">
-          @if (saving()) { Guardando… } @else { Crear capacitación }
-        </button>
+        <a routerLink="/training" class="px-4 py-2 text-sm font-medium text-white/60 border border-white/10 rounded-lg hover:bg-white/[0.04] transition-colors">Cancelar</a>
+        <button type="submit" [disabled]="form.invalid || saving()" class="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors">@if (saving()) { Guardando… } @else { Crear capacitación }</button>
       </div>
-
     </form>
   }
-
-
-  <!-- ══ MODO: REUTILIZAR OPERACIÓN ═════════════════════════════════════ -->
+<!-- ══ MODO: REUTILIZAR OPERACIÓN ═════════════════════════════════════ -->
   @if (mode() === 'template') {
 
     <!-- Selector de plantilla -->

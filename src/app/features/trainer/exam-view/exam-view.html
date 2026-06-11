@@ -1,0 +1,94 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  <header class="flex items-center gap-3">
+    <a [routerLink]="returnUrl()"
+       class="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
+       aria-label="Volver a exámenes">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <p class="text-xs font-medium uppercase tracking-[0.18em] text-orange-400">Solo lectura</p>
+      <h1 class="text-xl font-bold text-white">Detalle del examen</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="space-y-4 animate-pulse">
+      <div class="h-28 rounded-xl bg-white/[0.04] border border-white/10"></div>
+      <div class="h-48 rounded-xl bg-white/[0.04] border border-white/10"></div>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+      {{ error() }}
+    </div>
+  } @else if (exam(); as currentExam) {
+    <section class="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-white">{{ currentExam.title }}</h2>
+          @if (currentExam.description) {
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-white/55">{{ currentExam.description }}</p>
+          }
+        </div>
+        <span class="shrink-0 rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-300">
+          {{ currentExam.questions.length }} preguntas
+        </span>
+      </div>
+
+      <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-lg border border-white/[0.08] bg-black/10 px-3 py-2">
+          <p class="text-[11px] uppercase tracking-wide text-white/35">Puntaje mínimo</p>
+          <p class="mt-1 text-sm font-semibold text-white">{{ currentExam.passingScore }}%</p>
+        </div>
+        <div class="rounded-lg border border-white/[0.08] bg-black/10 px-3 py-2">
+          <p class="text-[11px] uppercase tracking-wide text-white/35">Duración</p>
+          <p class="mt-1 text-sm font-semibold text-white">{{ currentExam.timeLimitMinutes || 'Sin límite' }}{{ currentExam.timeLimitMinutes ? ' min' : '' }}</p>
+        </div>
+        <div class="rounded-lg border border-white/[0.08] bg-black/10 px-3 py-2">
+          <p class="text-[11px] uppercase tracking-wide text-white/35">Intentos máximos</p>
+          <p class="mt-1 text-sm font-semibold text-white">{{ currentExam.maxAttempts || 'Ilimitados' }}</p>
+        </div>
+        <div class="rounded-lg border border-white/[0.08] bg-black/10 px-3 py-2">
+          <p class="text-[11px] uppercase tracking-wide text-white/35">Creado por</p>
+          <p class="mt-1 truncate text-sm font-semibold text-white">{{ currentExam.createdByName }}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="space-y-3">
+      @for (question of currentExam.questions; track question.id; let index = $index) {
+        <article class="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-medium uppercase tracking-wide text-white/35">
+                Pregunta {{ index + 1 }} · {{ typeLabels[question.type] }}
+              </p>
+              <h3 class="mt-2 text-sm font-semibold leading-6 text-white">{{ question.questionText }}</h3>
+            </div>
+            <span class="shrink-0 rounded-md bg-white/[0.05] px-2 py-1 text-xs text-white/45">
+              {{ question.points }} pt{{ question.points === 1 ? '' : 's' }}
+            </span>
+          </div>
+
+          <div class="mt-4 grid gap-2 sm:grid-cols-2">
+            @for (option of question.options; track $index) {
+              <div class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+                   [class]="isCorrectOption(question, $index)
+                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                     : 'border-white/[0.08] bg-black/10 text-white/55'">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[10px]">
+                  {{ $index + 1 }}
+                </span>
+                <span>{{ option }}</span>
+                @if (isCorrectOption(question, $index)) {
+                  <span class="ml-auto text-[10px] font-semibold uppercase tracking-wide">Correcta</span>
+                }
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </section>
+  }
+</div>

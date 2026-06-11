@@ -1,15 +1,18 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../auth/services/auth.service';
 import { RoleContext } from '../../../shared/services/role-context.service';
 import { TrainingService } from '../services/training.service';
 import { TrainingMaterialService } from '../services/training-material.service';
 import { RhService } from '../../rh/services/rh.service';
+import { UserProfile } from '../../rh/rh.models';
 import { SettingsService } from '../../settings/services/settings.service';
 import { CatalogService } from '../../../core/services/catalog.service';
+import { TrainerService } from '../../trainer/services/trainer.service';
+import { ExamResponse } from '../../trainer/trainer.models';
 import {
   CreateFromTemplateRequest,
   CreateTrainingRequest,
@@ -34,6 +37,8 @@ export class TrainingCreate implements OnInit {
   private readonly rhSvc       = inject(RhService);
   private readonly settingsSvc = inject(SettingsService);
   readonly catalogSvc          = inject(CatalogService);
+  private readonly trainerSvc  = inject(TrainerService);
+  private readonly route       = inject(ActivatedRoute);
   private readonly router      = inject(Router);
   private readonly fb          = inject(FormBuilder);
 
@@ -46,6 +51,7 @@ export class TrainingCreate implements OnInit {
   readonly stores      = this.settingsSvc.stores;
   readonly templates   = this.trainingSvc.templates;
   readonly turnos      = ['TODOS', 'MATUTINO', 'VESPERTINO', 'NOCTURNO'];
+  readonly sourceExam  = signal<ExamResponse | null>(null);
 
   readonly isAdmin   = this.role.isAdmin;
   readonly todayDate = new Date().toISOString().slice(0, 10);
@@ -64,6 +70,15 @@ export class TrainingCreate implements OnInit {
   readonly selectedMaterials = signal<TrainingMaterial[]>([]);
   readonly showSelectModal   = signal(false);
   readonly showCreateModal   = signal(false);
+  readonly assignmentLoading = signal(false);
+  readonly assignmentError   = signal('');
+  readonly managerOptions     = signal<UserProfile[]>([]);
+  readonly executorOptions    = signal<UserProfile[]>([]);
+  readonly assignmentMode     = signal<'MANAGERS' | 'EXECUTORS'>('MANAGERS');
+  readonly managerSearch      = signal('');
+  readonly executorSearch     = signal('');
+  readonly selectedManagerIds  = signal<string[]>([]);
+  readonly selectedExecutorIds = signal<string[]>([]);
 
   readonly filterType        = signal<MaterialType | ''>('');
   readonly filterCategory    = signal('');
@@ -114,6 +129,39 @@ export class TrainingCreate implements OnInit {
   readonly formEndDate    = toSignal(this.form.controls.endDate.valueChanges,    { initialValue: '' });
   readonly tmplStartDate  = toSignal(this.templateForm.controls.startDate.valueChanges, { initialValue: '' });
   readonly tmplEndDate    = toSignal(this.templateForm.controls.endDate.valueChanges,   { initialValue: '' });
+  readonly isExamAssignment = computed(() => this.sourceExam() !== null);
+  readonly assignmentStoreId = computed(() => this.sourceExam()?.storeId ?? this.form.getRawValue().storeId ?? this.authSvc.currentUser()?.storeId ?? '');
+  readonly filteredManagerOptions = computed(() => {
+    const q = this.managerSearch().trim().toLowerCase();
+    return this.managerOptions().filter(user => {
+      if (!q) return true;
+      return [user.nombre, user.numeroUsuario, user.puesto]
+        .filter(Boolean)
+        .some(value => value.toLowerCase().includes(q));
+    });
+  });
+  readonly selectedManagers = computed(() =>
+    this.managerOptions().filter(user => this.selectedManagerIds().includes(user.id))
+  );
+  readonly filteredExecutors = computed(() => {
+    const selectedManagers = this.selectedManagerIds();
+    const q = this.executorSearch().trim().toLowerCase();
+    return this.executorOptions()
+      .filter(user => {
+        const ownerId = user.managerOwnerId ?? '';
+        const ownerNumero = user.managerOwnerNumeroUsuario ?? '';
+        const visibleByManager = selectedManagers.length === 0
+          ? false
+          : selectedManagers.includes(ownerId)
+            || selectedManagers.includes(ownerNumero);
+        if (!visibleByManager) return false;
+        if (!q) return true;
+        return [user.nombre, user.numeroUsuario, user.puesto, user.managerOwnerNumeroUsuario ?? '']
+          .filter(Boolean)
+          .some(value => value.toLowerCase().includes(q));
+      });
+  });
+  readonly selectedRecipientsCount = computed(() => this.assignedRecipientIds().length);
 
   readonly durationDays = computed(() => {
     const s = this.formStartDate(), e = this.formEndDate();
@@ -136,6 +184,11 @@ export class TrainingCreate implements OnInit {
     const s = this.tmplStartDate(), e = this.tmplEndDate();
     return !s || !e || new Date(e) >= new Date(s);
   });
+  readonly assignedRecipientIds = computed(() =>
+    this.assignmentMode() === 'MANAGERS'
+      ? this.selectedManagerIds()
+      : this.selectedExecutorIds()
+  );
   readonly assignableUsers = computed(() => {
     const all = this.users().filter(u => u.activo);
     if (this.isAdmin()) {
@@ -196,13 +249,147 @@ export class TrainingCreate implements OnInit {
     return users.length > 0 && current.length === users.length;
   }
 
+  setAssignmentMode(mode: 'MANAGERS' | 'EXECUTORS'): void {
+    if (this.assignmentMode() === mode) return;
+    this.assignmentMode.set(mode);
+    this.assignmentError.set('');
+    this.selectedManagerIds.set([]);
+    this.selectedExecutorIds.set([]);
+    this.form.controls.assignedUserIds.setValue([]);
+    if (mode === 'EXECUTORS' && this.isExamAssignment() && this.isAdmin()) {
+      void this.refreshExecutorOptions();
+    }
+  }
+
+  private syncAssignedRecipients(): void {
+    this.form.controls.assignedUserIds.setValue(this.assignedRecipientIds());
+    this.form.controls.assignedUserIds.markAsTouched();
+  }
+
+  private async refreshExecutorOptions(): Promise<void> {
+    const storeId = this.assignmentStoreId();
+    const managerIds = this.selectedManagerIds();
+    if (!this.isExamAssignment() || !this.isAdmin() || !storeId || managerIds.length === 0) {
+      this.executorOptions.set([]);
+      this.selectedExecutorIds.set([]);
+      this.syncAssignedRecipients();
+      return;
+    }
+
+    this.assignmentLoading.set(true);
+    this.assignmentError.set('');
+    try {
+      const executors = await this.rhSvc.getExecutorsByManagers(storeId, managerIds);
+      this.executorOptions.set(executors);
+      this.selectedExecutorIds.update(ids => ids.filter(id => executors.some(u => u.id === id)));
+      this.syncAssignedRecipients();
+    } catch {
+      this.assignmentError.set('No se pudieron cargar los ejecutadores de los gerentes seleccionados.');
+      this.executorOptions.set([]);
+      this.selectedExecutorIds.set([]);
+      this.syncAssignedRecipients();
+    } finally {
+      this.assignmentLoading.set(false);
+    }
+  }
+
+  async toggleManagerSelection(id: string, checked?: boolean): Promise<void> {
+    const current = new Set(this.selectedManagerIds());
+    const shouldSelect = checked ?? !current.has(id);
+    if (shouldSelect) current.add(id);
+    else current.delete(id);
+    this.selectedManagerIds.set([...current]);
+    this.syncAssignedRecipients();
+    if (this.assignmentMode() === 'EXECUTORS' && this.isExamAssignment() && this.isAdmin()) {
+      await this.refreshExecutorOptions();
+    }
+  }
+
+  async toggleAllManagers(checked: boolean): Promise<void> {
+    this.selectedManagerIds.set(checked ? this.filteredManagerOptions().map(u => u.id) : []);
+    this.syncAssignedRecipients();
+    if (this.assignmentMode() === 'EXECUTORS' && this.isExamAssignment() && this.isAdmin()) {
+      await this.refreshExecutorOptions();
+    }
+  }
+
+  onToggleAllManagers(event: Event): void {
+    void this.toggleAllManagers((event.target as HTMLInputElement).checked);
+  }
+
+  toggleExecutorSelection(id: string): void {
+    const current = new Set(this.selectedExecutorIds());
+    if (current.has(id)) current.delete(id);
+    else current.add(id);
+    this.selectedExecutorIds.set([...current]);
+    this.syncAssignedRecipients();
+  }
+
+  toggleAllExecutors(checked: boolean): void {
+    this.selectedExecutorIds.set(checked ? this.filteredExecutors().map(u => u.id) : []);
+    this.syncAssignedRecipients();
+  }
+
+  onToggleAllExecutors(event: Event): void {
+    this.toggleAllExecutors((event.target as HTMLInputElement).checked);
+  }
+
+  isManagerSelected(id: string): boolean {
+    return this.selectedManagerIds().includes(id);
+  }
+
+  isExecutorSelected(id: string): boolean {
+    return this.selectedExecutorIds().includes(id);
+  }
+
+  isAllManagersSelected(): boolean {
+    const items = this.filteredManagerOptions();
+    return items.length > 0 && items.every(u => this.selectedManagerIds().includes(u.id));
+  }
+
+  isAllExecutorsSelected(): boolean {
+    const items = this.filteredExecutors();
+    return items.length > 0 && items.every(u => this.selectedExecutorIds().includes(u.id));
+  }
+
+  executorsForManager(manager: UserProfile): UserProfile[] {
+    return this.filteredExecutors().filter(user =>
+      user.managerOwnerId === manager.id || user.managerOwnerNumeroUsuario === manager.numeroUsuario
+    );
+  }
+
+  toggleManagerExecutors(manager: UserProfile, checked: boolean): void {
+    const current = new Set(this.selectedExecutorIds());
+    const ids = this.executorsForManager(manager).map(user => user.id);
+    if (checked) {
+      ids.forEach(id => current.add(id));
+    } else {
+      ids.forEach(id => current.delete(id));
+    }
+    this.selectedExecutorIds.set([...current]);
+    this.syncAssignedRecipients();
+  }
+
+  isAllExecutorsForManagerSelected(manager: UserProfile): boolean {
+    const ids = this.executorsForManager(manager).map(user => user.id);
+    return ids.length > 0 && ids.every(id => this.selectedExecutorIds().includes(id));
+  }
+
+  onToggleManagerExecutors(manager: UserProfile, event: Event): void {
+    this.toggleManagerExecutors(manager, (event.target as HTMLInputElement).checked);
+  }
+
   ngOnInit(): void {
+    const examId = this.route.snapshot.queryParamMap.get('examId');
+    if (examId) {
+      this.loadSourceExam(examId);
+    }
     this.trainingSvc.loadTemplateSummaries();
     if (this.settingsSvc.stores().length === 0) {
       this.settingsSvc.loadAll();
     }
     const user = this.authSvc.currentUser();
-    if (this.isAdmin()) {
+    if (!examId && this.isAdmin()) {
       this.form.get('storeId')!.valueChanges.subscribe(storeId => {
         if (storeId) { this.form.get('assignedUserIds')!.reset([]); this.rhSvc.loadUsersByStore(storeId); }
       });
@@ -210,6 +397,8 @@ export class TrainingCreate implements OnInit {
         if (storeId) { this.templateForm.get('assignedUserIds')!.reset([]); this.rhSvc.loadUsersByStore(storeId); }
       });
       if (user?.storeId) this.rhSvc.loadUsersByStore(user.storeId);
+    } else if (examId && user?.storeId) {
+      this.rhSvc.loadUsersByStore(user.storeId);
     } else {
       if (user?.storeId) this.rhSvc.loadUsersByStore(user.storeId);
       
@@ -219,6 +408,47 @@ export class TrainingCreate implements OnInit {
       this.templateForm.get('shift')!.valueChanges.subscribe(() => {
         this.templateForm.get('assignedUserIds')!.reset([]);
       });
+    }
+  }
+
+  private async loadSourceExam(examId: string): Promise<void> {
+    try {
+      const exam = await this.trainerSvc.getById(examId);
+      this.sourceExam.set(exam);
+      this.assignmentMode.set(this.isAdmin() ? 'MANAGERS' : 'EXECUTORS');
+      this.form.get('storeId')?.disable({ emitEvent: false });
+      this.form.patchValue({
+        title: exam.title,
+        description: exam.description || `Examen asignado: ${exam.title}`,
+        storeId: exam.storeId,
+      });
+      if (this.isAdmin()) {
+        await this.loadExamRecipientsForAdmin();
+      } else {
+        this.rhSvc.loadUsersByStore(exam.storeId);
+      }
+    } catch {
+      // El formulario sigue disponible aunque el examen no pueda cargarse.
+    }
+  }
+
+  private async loadExamRecipientsForAdmin(): Promise<void> {
+    const storeId = this.assignmentStoreId();
+    if (!storeId) return;
+    this.assignmentLoading.set(true);
+    this.assignmentError.set('');
+    try {
+      const managers = await this.rhSvc.getManagersByStore(storeId);
+      this.managerOptions.set(managers);
+      this.executorOptions.set([]);
+      this.selectedManagerIds.set([]);
+      this.selectedExecutorIds.set([]);
+      this.syncAssignedRecipients();
+    } catch {
+      this.assignmentError.set('No se pudieron cargar los gerentes disponibles.');
+      this.managerOptions.set([]);
+    } finally {
+      this.assignmentLoading.set(false);
     }
   }
 

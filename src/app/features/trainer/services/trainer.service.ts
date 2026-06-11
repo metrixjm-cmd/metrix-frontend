@@ -65,6 +65,10 @@ export class TrainerService {
     return exam;
   }
 
+  getById(examId: string): Promise<ExamResponse> {
+    return firstValueFrom(this.http.get<ExamResponse>(`${this.apiUrl}/${examId}`));
+  }
+
   getForTake(examId: string): Promise<ExamForTakeResponse> {
     return firstValueFrom(this.http.get<ExamForTakeResponse>(`${this.apiUrl}/${examId}/take`));
   }
@@ -86,6 +90,17 @@ export class TrainerService {
 
   getExamStats(examId: string): Promise<ExamStats> {
     return firstValueFrom(this.http.get<ExamStats>(`${this.apiUrl}/${examId}/stats`));
+  }
+
+  async updateExam(examId: string, request: CreateExamRequest): Promise<ExamResponse> {
+    const updated = await firstValueFrom(this.http.put<ExamResponse>(`${this.apiUrl}/${examId}`, request));
+    this._exams.update(list => list.map(e => e.id === examId ? updated : e));
+    return updated;
+  }
+
+  async deleteExam(examId: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${examId}`));
+    this._exams.update(list => list.filter(e => e.id !== examId));
   }
 
   async createFromTemplate(templateId: string, request: CreateFromTemplateRequest): Promise<ExamResponse> {

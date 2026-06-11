@@ -49,6 +49,7 @@ export interface TrainingResponse {
   shift: string;
   dueAt: string;
   assignmentGroupId?: string | null;
+  examId?: string | null;
   // plantilla y materiales
   templateId: string | null;
   materials:  TrainingMaterialRef[];
@@ -80,6 +81,7 @@ export interface CreateTrainingRequest {
   startDate?: string;
   // opcionales
   assignmentGroupId?: string;
+  examId?: string;
   templateId?:  string;
   materialIds?: string[];
   category?:    string;

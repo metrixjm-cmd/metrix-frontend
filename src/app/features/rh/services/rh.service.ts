@@ -1,6 +1,7 @@
 import { DestroyRef, effect, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { CreateUserRequest, ResetUserPasswordRequest, UpdateUserRequest, UserProfile, VerifyAdminPasswordRequest } from '../rh.models';
@@ -62,6 +63,29 @@ export class RhService {
         next:  users => { this._users.set(users); this._loading.set(false); },
         error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
       });
+  }
+
+  getUsersByStore(storeId: string): Promise<UserProfile[]> {
+    return firstValueFrom(
+      this.http.get<UserProfile[]>(`${this.apiUrl}`, { params: { storeId } })
+    );
+  }
+
+  getManagersByStore(storeId: string): Promise<UserProfile[]> {
+    return firstValueFrom(
+      this.http.get<UserProfile[]>(`${this.apiUrl}/managers`, { params: { storeId } })
+    );
+  }
+
+  getExecutorsByManagers(storeId: string, managerIds: string[]): Promise<UserProfile[]> {
+    return firstValueFrom(
+      this.http.get<UserProfile[]>(`${this.apiUrl}/executors`, {
+        params: {
+          storeId,
+          managerIds,
+        },
+      })
+    );
   }
 
   loadUserById(id: string): void {

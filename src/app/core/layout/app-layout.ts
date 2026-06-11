@@ -128,9 +128,16 @@ export class AppLayout implements OnInit, OnDestroy {
   /** Nav items filtrados por el rol del usuario actual */
   readonly navItems = computed(() => {
     const roles = this.auth.currentUser()?.roles ?? [];
+    const isGerenteOnly = roles.includes('GERENTE') && !roles.includes('ADMIN');
+
     return this.allNavItems.filter(item => {
       if (!item.roles) return true;                       // sin restricción → todos ven
       return item.roles.some(r => roles.includes(r));     // al menos un rol coincide
+    }).map(item => {
+      if (item.route === '/trainer' && isGerenteOnly) {
+        return { ...item, label: 'Mis Exámenes' };
+      }
+      return item;
     });
   });
 

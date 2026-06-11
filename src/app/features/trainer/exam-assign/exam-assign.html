@@ -1,0 +1,321 @@
+<div class="p-6 max-w-5xl mx-auto space-y-6">
+  <header class="flex items-center gap-3">
+    <a routerLink="/trainer"
+       class="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
+       aria-label="Volver a exámenes">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div>
+      <p class="text-xs font-medium uppercase tracking-[0.18em] text-orange-400">Asignar examen</p>
+      <h1 class="text-xl font-bold text-white">Destinatarios del examen</h1>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="space-y-4 animate-pulse">
+      <div class="h-24 rounded-xl bg-white/[0.04] border border-white/10"></div>
+      <div class="h-40 rounded-xl bg-white/[0.04] border border-white/10"></div>
+    </div>
+  } @else if (error()) {
+    <div class="rounded-xl border border-red-500/25 bg-red-500/10 px-5 py-4 text-sm text-red-300">
+      {{ error() }}
+    </div>
+  } @else if (exam(); as currentExam) {
+    <section class="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-white">{{ currentExam.title }}</h2>
+          @if (currentExam.description) {
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-white/55">{{ currentExam.description }}</p>
+          }
+        </div>
+        <span class="shrink-0 rounded-full border border-orange-500/25 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-300">
+          {{ currentExam.questions.length }} preguntas
+        </span>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2 text-xs text-white/50">
+        <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Sucursal {{ currentExam.storeId }}</span>
+        @if (targetAudience()) {
+          <span class="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-cyan-200">
+            Para {{ examAudienceLabel().toLowerCase() }}
+          </span>
+        }
+        <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Mín. {{ currentExam.passingScore }}%</span>
+        @if (currentExam.timeLimitMinutes) {
+          <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">{{ currentExam.timeLimitMinutes }} min</span>
+        }
+      </div>
+    </section>
+
+    <section class="space-y-4">
+      @if (selectionError()) {
+        <div class="rounded-xl border border-amber-500/25 bg-amber-500/10 px-5 py-4 text-sm text-amber-200">
+          {{ selectionError() }}
+        </div>
+      }
+
+      @if (canChooseManagers()) {
+        <div class="flex w-full rounded-xl border border-white/10 bg-white/[0.04] p-1 sm:inline-flex sm:w-auto">
+          <button type="button" (click)="setAudience('MANAGERS')"
+                  [class]="audience() === 'MANAGERS'
+                    ? 'flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white sm:flex-none'
+                    : 'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-white/50 hover:bg-white/[0.02] hover:text-white/80 sm:flex-none'">
+            Gerentes
+          </button>
+          <button type="button" (click)="setAudience('EXECUTORS')"
+                  [class]="audience() === 'EXECUTORS'
+                    ? 'flex-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white sm:flex-none'
+                    : 'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-white/50 hover:bg-white/[0.02] hover:text-white/80 sm:flex-none'">
+            Ejecutadores
+          </button>
+        </div>
+      }
+
+      @if (audience() === 'MANAGERS' && (!targetMode() || targetMode() === 'MANAGERS')) {
+        <div class="rounded-xl border border-white/10 bg-white/[0.04] overflow-hidden">
+          <div class="flex flex-col gap-3 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold text-white">Gerentes registrados</p>
+              <p class="text-xs text-white/40">Selecciona uno o varios gerentes para asignarles el examen.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="text"
+                     [value]="managerSearch()"
+                     (input)="managerSearch.set(($any($event.target).value))"
+                     placeholder="Buscar gerente..."
+                     class="w-full sm:w-56 border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <label class="flex items-center gap-2 text-xs text-white/60 whitespace-nowrap">
+                <input type="checkbox"
+                       class="w-4 h-4 rounded border-white/[0.15] text-orange-600 focus:ring-orange-500"
+                       [checked]="isAllManagersSelected()"
+                       (change)="toggleAllManagers(($any($event.target).checked))">
+                Seleccionar todos
+              </label>
+            </div>
+          </div>
+          <div class="max-h-80 overflow-y-auto">
+            <table class="w-full text-left text-sm text-white/60">
+              <thead class="bg-white/[0.02] border-b border-white/10 sticky top-0 z-10">
+                <tr>
+                  <th class="py-3 px-4 w-12 text-center"></th>
+                  <th class="py-3 px-4 font-semibold text-white">Nombre</th>
+                  <th class="py-3 px-4 font-semibold text-white">Puesto</th>
+                  <th class="py-3 px-4 font-semibold text-white">Turno</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.06]">
+                @if (filteredManagers().length === 0) {
+                  <tr><td colspan="4" class="py-6 text-center text-white/50">No hay gerentes disponibles</td></tr>
+                } @else {
+                  @for (u of filteredManagers(); track u.id) {
+                    @if (isAlreadyAssigned(u.id)) {
+                      <tr class="opacity-50 cursor-default">
+                        <td class="py-2.5 px-4 text-center">
+                          <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-white/20" disabled [checked]="false">
+                        </td>
+                        <td class="py-2.5 px-4 font-medium text-white/50">{{ u.nombre }}</td>
+                        <td class="py-2.5 px-4 text-white/30">{{ u.puesto }}</td>
+                        <td class="py-2.5 px-4">
+                          <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full">Ya asignado</span>
+                        </td>
+                      </tr>
+                    } @else {
+                      <tr class="cursor-pointer hover:bg-orange-500/[0.05]" (click)="toggleManager(u.id)">
+                        <td class="py-2.5 px-4 text-center">
+                          <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-orange-600"
+                                 [checked]="isManagerSelected(u.id)">
+                        </td>
+                        <td class="py-2.5 px-4 font-medium text-white/80">{{ u.nombre }}</td>
+                        <td class="py-2.5 px-4 text-white/50">{{ u.puesto }}</td>
+                        <td class="py-2.5 px-4 text-white/50">{{ u.turno }}</td>
+                      </tr>
+                    }
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (canFilterExecutorsByManager() && audience() === 'EXECUTORS') {
+        <div class="rounded-xl border border-white/10 bg-white/[0.04] overflow-hidden">
+          <div class="flex flex-col gap-3 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm font-semibold text-white">Filtrar por gerentes</p>
+              <p class="text-xs text-white/40">Selecciona uno o varios gerentes para traer solo a sus ejecutadores.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="text"
+                     [value]="managerSearch()"
+                     (input)="managerSearch.set(($any($event.target).value))"
+                     placeholder="Buscar gerente..."
+                     class="w-full sm:w-56 border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+              <label class="flex items-center gap-2 text-xs text-white/60 whitespace-nowrap">
+                <input type="checkbox"
+                       class="w-4 h-4 rounded border-white/[0.15] text-orange-600 focus:ring-orange-500"
+                       [checked]="isAllManagersSelected()"
+                       (change)="toggleAllManagers(($any($event.target).checked))">
+                Todos
+              </label>
+            </div>
+          </div>
+          <div class="max-h-72 overflow-y-auto">
+            <table class="w-full text-left text-sm text-white/60">
+              <thead class="bg-white/[0.02] border-b border-white/10 sticky top-0 z-10">
+                <tr>
+                  <th class="py-3 px-4 w-12 text-center"></th>
+                  <th class="py-3 px-4 font-semibold text-white">Nombre</th>
+                  <th class="py-3 px-4 font-semibold text-white">Puesto</th>
+                  <th class="py-3 px-4 font-semibold text-white">Turno</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.06]">
+                @if (filteredManagers().length === 0) {
+                  <tr><td colspan="4" class="py-6 text-center text-white/50">No hay gerentes disponibles</td></tr>
+                } @else {
+                  @for (u of filteredManagers(); track u.id) {
+                    <tr class="cursor-pointer hover:bg-orange-500/[0.05]" (click)="toggleManager(u.id)">
+                      <td class="py-2.5 px-4 text-center">
+                        <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-orange-600"
+                               [checked]="isManagerSelected(u.id)">
+                      </td>
+                      <td class="py-2.5 px-4 font-medium text-white/80">{{ u.nombre }}</td>
+                      <td class="py-2.5 px-4 text-white/50">{{ u.puesto }}</td>
+                      <td class="py-2.5 px-4 text-white/50">{{ u.turno }}</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (audience() === 'EXECUTORS' && (!targetMode() || targetMode() === 'EXECUTORS')) {
+      <div class="rounded-xl border border-white/10 bg-white/[0.04] overflow-hidden">
+        <div class="flex flex-col gap-3 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-semibold text-white">Ejecutadores</p>
+            <p class="text-xs text-white/40">
+              @if (canFilterExecutorsByManager()) {
+                Primero eliges gerentes para filtrar su plantilla y luego asignas a sus ejecutadores.
+              } @else {
+                Selecciona los ejecutadores de la sucursal.
+              }
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <input type="text"
+                   [value]="executorSearch()"
+                   (input)="executorSearch.set(($any($event.target).value))"
+                   placeholder="Buscar ejecutador..."
+                   class="w-full sm:w-56 border border-white/10 rounded-lg bg-white/[0.05] px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <label class="flex items-center gap-2 text-xs text-white/60 whitespace-nowrap">
+              <input type="checkbox"
+                     class="w-4 h-4 rounded border-white/[0.15] text-cyan-600 focus:ring-cyan-500"
+                     [checked]="isAllExecutorsSelected()"
+                     (change)="toggleAllExecutors(($any($event.target).checked))">
+              Seleccionar todos
+            </label>
+          </div>
+        </div>
+
+        @if (filteredExecutors().length === 0) {
+          <div class="p-6 text-center text-sm text-white/50">
+            No hay ejecutadores disponibles.
+          </div>
+        } @else if (canFilterExecutorsByManager()) {
+          <div class="space-y-3 p-4">
+            @if (selectedManagers().length === 0) {
+              <div class="rounded-lg border border-white/10 bg-black/10 px-4 py-3 text-sm text-white/50">
+                Selecciona uno o varios gerentes para ver sus ejecutadores.
+              </div>
+            } @else {
+              @for (manager of selectedManagers(); track manager.id) {
+                @let list = executorsForManager(manager);
+                <div class="rounded-xl border border-white/10 bg-black/10 overflow-hidden">
+                  <div class="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3">
+                    <div>
+                      <p class="text-sm font-semibold text-white">{{ manager.nombre }}</p>
+                      <p class="text-xs text-white/40">{{ manager.numeroUsuario }} · {{ manager.puesto }}</p>
+                    </div>
+                    <label class="flex items-center gap-2 text-xs text-white/60">
+                      <input type="checkbox"
+                             class="w-4 h-4 rounded border-white/[0.15] text-cyan-600 focus:ring-cyan-500"
+                             [checked]="isAllExecutorsForManagerSelected(manager)"
+                             (change)="toggleManagerExecutors(manager, ($any($event.target).checked))">
+                      Todos
+                    </label>
+                  </div>
+                  <div class="divide-y divide-white/[0.06]">
+                    @for (u of list; track u.id) {
+                      @if (isAlreadyAssigned(u.id)) {
+                        <div class="flex items-center gap-3 px-4 py-2.5 opacity-50 cursor-default">
+                          <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-white/20" disabled [checked]="false">
+                          <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-white/50">{{ u.nombre }}</p>
+                            <p class="truncate text-xs text-white/30">{{ u.numeroUsuario }} · {{ u.turno }}</p>
+                          </div>
+                          <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full shrink-0">Ya asignado</span>
+                        </div>
+                      } @else {
+                        <div class="flex cursor-pointer items-center gap-3 px-4 py-2.5 hover:bg-cyan-500/[0.05]" (click)="toggleExecutor(u.id)">
+                          <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-cyan-600"
+                                 [checked]="isExecutorSelected(u.id)">
+                          <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium text-white/80">{{ u.nombre }}</p>
+                            <p class="truncate text-xs text-white/45">{{ u.numeroUsuario }} · {{ u.turno }}</p>
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        } @else {
+          <div class="divide-y divide-white/[0.06]">
+            @for (u of filteredExecutors(); track u.id) {
+              @if (isAlreadyAssigned(u.id)) {
+                <div class="flex items-center gap-3 px-4 py-3 opacity-50 cursor-default">
+                  <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-white/20" disabled [checked]="false">
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-white/50">{{ u.nombre }}</p>
+                    <p class="truncate text-xs text-white/30">{{ u.numeroUsuario }} · {{ u.puesto }}</p>
+                  </div>
+                  <span class="text-[10px] font-medium bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full shrink-0">Ya asignado</span>
+                </div>
+              } @else {
+                <div class="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-cyan-500/[0.05]" (click)="toggleExecutor(u.id)">
+                  <input type="checkbox" class="pointer-events-none w-4 h-4 rounded border-white/[0.15] text-cyan-600"
+                         [checked]="isExecutorSelected(u.id)">
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-medium text-white/80">{{ u.nombre }}</p>
+                    <p class="truncate text-xs text-white/45">{{ u.numeroUsuario }} · {{ u.puesto }}</p>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+      }
+
+      <div class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-white">{{ selectedRecipientsCount() }} destinatarios seleccionados</p>
+          <p class="text-xs text-white/40">Se crearán asignaciones individuales por cada usuario.</p>
+        </div>
+        <button type="button" (click)="submit()" [disabled]="saving() || selectedRecipientsCount() === 0"
+                class="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50">
+          @if (saving()) { Asignando... } @else { Asignar examen }
+        </button>
+      </div>
+    </section>
+  }
+</div>
