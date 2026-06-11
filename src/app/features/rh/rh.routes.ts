@@ -51,6 +51,13 @@ export const RH_ROUTES: Routes = [
       import('./material-list/material-list').then(m => m.MaterialList),
   },
 
+  // ── Bitácora de exámenes ──────────────────────────────────────────────
+  {
+    path: 'bitacora-examenes',
+    loadComponent: () =>
+      import('./bitacora-examenes/bitacora-examenes').then(m => m.BitacoraExamenes),
+  },
+
   // ── Banco de preguntas ───────────────────────────────────────────────
   {
     path: 'banco-preguntas',

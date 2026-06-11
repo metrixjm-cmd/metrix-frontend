@@ -14,6 +14,24 @@ export const TRAINER_ROUTES: Routes = [
       import('./exam-builder/exam-builder').then(m => m.ExamBuilder),
   },
   {
+    path: ':examId/edit',
+    canActivate: [roleGuard('ADMIN', 'GERENTE')],
+    loadComponent: () =>
+      import('./exam-builder/exam-builder').then(m => m.ExamBuilder),
+  },
+  {
+    path: ':examId/assign',
+    canActivate: [roleGuard('ADMIN', 'GERENTE')],
+    loadComponent: () =>
+      import('./exam-assign/exam-assign').then(m => m.ExamAssign),
+  },
+  {
+    path: ':examId/view',
+    canActivate: [roleGuard('ADMIN', 'GERENTE')],
+    loadComponent: () =>
+      import('./exam-view/exam-view').then(m => m.ExamView),
+  },
+  {
     path: ':examId/take',
     loadComponent: () =>
       import('./exam-take/exam-take').then(m => m.ExamTake),

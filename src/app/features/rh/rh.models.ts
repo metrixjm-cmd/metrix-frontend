@@ -8,6 +8,8 @@ export interface UserProfile {
   numeroUsuario: string;
   roles: string[];
   activo: boolean;
+  managerOwnerId?: string;
+  managerOwnerNumeroUsuario?: string;
   email?: string;
   fechaNacimiento?: string;  // ISO date: yyyy-MM-dd
   createdAt: string;
