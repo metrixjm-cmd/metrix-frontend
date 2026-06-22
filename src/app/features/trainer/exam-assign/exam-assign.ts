@@ -11,8 +11,12 @@ import { CreateTrainingRequest } from '../../training/training.models';
 import { UserProfile } from '../../rh/rh.models';
 import { environment } from '../../../../environments/environment';
 
-type AudienceMode = 'MANAGERS' | 'EXECUTORS';
-
+/**
+ * Asignación de exámenes con delegación en dos niveles:
+ * - ADMIN  → asigna SIEMPRE a gerentes (sin importar el tipo de examen). Si el
+ *            examen es para ejecutadores, cada gerente lo repartirá a su equipo.
+ * - GERENTE → redistribuye a sus ejecutadores, solo si el examen es de tipo Ejecutador.
+ */
 @Component({
   selector: 'app-exam-assign',
   standalone: true,
@@ -33,7 +37,6 @@ export class ExamAssign implements OnInit {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly selectionError = signal('');
-  readonly audience = signal<AudienceMode>('MANAGERS');
   readonly managerSearch = signal('');
   readonly executorSearch = signal('');
   readonly selectedManagerIds = signal<string[]>([]);
@@ -45,17 +48,17 @@ export class ExamAssign implements OnInit {
 
   readonly isAdmin = computed(() => this.auth.hasRole('ADMIN'));
   readonly targetAudience = computed<ExamAudience | null>(() => this.exam()?.targetAudience ?? null);
-  readonly targetMode = computed<AudienceMode | null>(() => {
-    const audience = this.targetAudience();
-    if (!audience) return null;
-    return audience === 'GERENTE' ? 'MANAGERS' : 'EXECUTORS';
-  });
-  readonly canChooseManagers = computed(() => this.isAdmin() && (!this.targetMode() || this.targetMode() === 'MANAGERS'));
-  readonly canFilterExecutorsByManager = computed(() => this.isAdmin() && (!this.targetMode() || this.targetMode() === 'EXECUTORS'));
-  readonly examStoreId = computed(() => this.exam()?.storeId ?? this.auth.currentUser()?.storeId ?? '');
-  readonly storeUsers = computed(() =>
-    this.rhSvc.users().filter(u => u.activo && u.storeId === this.examStoreId())
+  readonly isExecutorExam = computed(() => this.targetAudience() === 'EJECUTADOR');
+
+  /** ADMIN asigna a gerentes; GERENTE redistribuye a ejecutadores. */
+  readonly recipientMode = computed<'MANAGERS' | 'EXECUTORS'>(() =>
+    this.isAdmin() ? 'MANAGERS' : 'EXECUTORS'
   );
+
+  /** Un gerente solo puede redistribuir exámenes de tipo Ejecutador. */
+  readonly canAssign = computed(() => this.isAdmin() || this.isExecutorExam());
+
+  readonly examStoreId = computed(() => this.exam()?.storeId ?? this.auth.currentUser()?.storeId ?? '');
 
   readonly filteredManagers = computed(() => {
     const q = this.managerSearch().trim().toLowerCase();
@@ -66,33 +69,23 @@ export class ExamAssign implements OnInit {
     });
   });
 
-  readonly selectedManagers = computed(() =>
-    this.managerOptions().filter(u => this.selectedManagerIds().includes(u.id))
-  );
-
   readonly filteredExecutors = computed(() => {
     const q = this.executorSearch().trim().toLowerCase();
-    const selected = this.selectedManagerIds();
-    const pool = this.isAdmin()
-      ? this.executorOptions()
-      : this.storeUsers().filter(u => (u.roles ?? []).some(r => r === 'EJECUTADOR' || r === 'ROLE_EJECUTADOR'));
-    return pool.filter(u => {
-      const owner = u.managerOwnerId ?? u.managerOwnerNumeroUsuario ?? '';
-      if (selected.length > 0 && !selected.includes(owner)) return false;
+    return this.executorOptions().filter(u => {
       if (!q) return true;
-      return [u.nombre, u.puesto, u.numeroUsuario, u.turno, u.managerOwnerNumeroUsuario ?? '']
+      return [u.nombre, u.puesto, u.numeroUsuario, u.turno]
         .some(v => v?.toLowerCase().includes(q));
     });
   });
 
   readonly selectedRecipientsCount = computed(() =>
-    this.audience() === 'MANAGERS'
+    this.recipientMode() === 'MANAGERS'
       ? this.selectedManagerIds().length
       : this.selectedExecutorIds().length
   );
 
   readonly assignmentIds = computed(() =>
-    this.audience() === 'MANAGERS' ? this.selectedManagerIds() : this.selectedExecutorIds()
+    this.recipientMode() === 'MANAGERS' ? this.selectedManagerIds() : this.selectedExecutorIds()
   );
 
   examAudienceLabel(): string {
@@ -122,9 +115,9 @@ export class ExamAssign implements OnInit {
     } catch { /* non-critical */ }
 
     try {
-      await this.loadAudienceOptions();
+      await this.loadOptions();
     } catch {
-      this.selectionError.set('No se pudieron cargar todos los destinatarios. Revisa que el backend este actualizado.');
+      this.selectionError.set('No se pudieron cargar los destinatarios. Revisa que el backend esté actualizado.');
     }
   }
 
@@ -147,66 +140,66 @@ export class ExamAssign implements OnInit {
     this.alreadyAssignedUserIds.set(ids);
   }
 
-  async setAudience(mode: AudienceMode): Promise<void> {
-    if (this.targetMode() && mode !== this.targetMode()) return;
-    this.audience.set(mode);
-    this.selectionError.set('');
-    this.selectedExecutorIds.set([]);
+  /** Carga destinatarios según el rol: gerentes para ADMIN, ejecutadores para GERENTE. */
+  private async loadOptions(): Promise<void> {
+    const storeId = this.examStoreId();
+    if (!storeId) return;
 
-    if (mode === 'MANAGERS') {
+    if (this.isAdmin()) {
+      try {
+        this.managerOptions.set(await this.rhSvc.getManagersByStore(storeId));
+      } catch {
+        const users = await this.rhSvc.getUsersByStore(storeId);
+        this.managerOptions.set(users.filter(u => u.activo && this.hasRole(u, 'GERENTE')));
+      }
+      return;
+    }
+
+    // GERENTE: solo redistribuye exámenes de tipo Ejecutador.
+    if (!this.isExecutorExam()) {
+      this.selectionError.set('Este examen es para gerentes; no se redistribuye a ejecutadores.');
       this.executorOptions.set([]);
       return;
     }
 
-    await this.loadExecutorsForSelection();
+    const users = await this.rhSvc.getUsersByStore(storeId);
+    this.rhSvc.loadUsersByStore(storeId);
+    this.executorOptions.set(users.filter(u => u.activo && this.hasRole(u, 'EJECUTADOR')));
   }
+
+  // ── Gerentes (vista ADMIN) ────────────────────────────────────────────
 
   isManagerSelected(id: string): boolean {
     return this.selectedManagerIds().includes(id);
   }
 
-  isExecutorSelected(id: string): boolean {
-    return this.selectedExecutorIds().includes(id);
-  }
-
   isAllManagersSelected(): boolean {
-    const items = this.filteredManagers();
+    const items = this.filteredManagers().filter(u => !this.isAlreadyAssigned(u.id));
     return items.length > 0 && items.every(u => this.selectedManagerIds().includes(u.id));
   }
 
-  isAllExecutorsSelected(): boolean {
-    const items = this.filteredExecutors();
-    return items.length > 0 && items.every(u => this.selectedExecutorIds().includes(u.id));
-  }
-
-  async toggleManager(id: string): Promise<void> {
+  toggleManager(id: string): void {
     if (this.isAlreadyAssigned(id)) return;
     const next = new Set(this.selectedManagerIds());
     next.has(id) ? next.delete(id) : next.add(id);
     this.selectedManagerIds.set([...next]);
-
-    if (this.isAdmin() && this.audience() === 'EXECUTORS' && this.examStoreId()) {
-      if (this.selectedManagerIds().length === 0) {
-        this.executorOptions.set([]);
-        this.selectedExecutorIds.set([]);
-        return;
-      }
-      await this.loadExecutorsForSelection();
-      this.selectedExecutorIds.update(ids =>
-        ids.filter(id => this.executorOptions().some(u => u.id === id))
-      );
-    }
   }
 
-  async toggleAllManagers(checked: boolean): Promise<void> {
-    this.selectedManagerIds.set(checked ? this.filteredManagers().filter(u => !this.isAlreadyAssigned(u.id)).map(u => u.id) : []);
-    if (this.isAdmin() && this.audience() === 'EXECUTORS' && this.examStoreId() && checked) {
-      await this.loadExecutorsForSelection();
-      this.selectedExecutorIds.set([]);
-    } else {
-      this.executorOptions.set([]);
-      this.selectedExecutorIds.set([]);
-    }
+  toggleAllManagers(checked: boolean): void {
+    this.selectedManagerIds.set(
+      checked ? this.filteredManagers().filter(u => !this.isAlreadyAssigned(u.id)).map(u => u.id) : []
+    );
+  }
+
+  // ── Ejecutadores (vista GERENTE) ──────────────────────────────────────
+
+  isExecutorSelected(id: string): boolean {
+    return this.selectedExecutorIds().includes(id);
+  }
+
+  isAllExecutorsSelected(): boolean {
+    const items = this.filteredExecutors().filter(u => !this.isAlreadyAssigned(u.id));
+    return items.length > 0 && items.every(u => this.selectedExecutorIds().includes(u.id));
   }
 
   toggleExecutor(id: string): void {
@@ -217,105 +210,15 @@ export class ExamAssign implements OnInit {
   }
 
   toggleAllExecutors(checked: boolean): void {
-    this.selectedExecutorIds.set(checked ? this.filteredExecutors().filter(u => !this.isAlreadyAssigned(u.id)).map(u => u.id) : []);
+    this.selectedExecutorIds.set(
+      checked ? this.filteredExecutors().filter(u => !this.isAlreadyAssigned(u.id)).map(u => u.id) : []
+    );
   }
 
-  executorsForManager(manager: UserProfile): UserProfile[] {
-    return this.filteredExecutors().filter(u => {
-      const owner = u.managerOwnerId ?? u.managerOwnerNumeroUsuario ?? '';
-      return owner === manager.id || owner === manager.numeroUsuario;
-    });
-  }
-
-  isAllExecutorsForManagerSelected(manager: UserProfile): boolean {
-    const items = this.executorsForManager(manager);
-    return items.length > 0 && items.every(u => this.selectedExecutorIds().includes(u.id));
-  }
-
-  toggleManagerExecutors(manager: UserProfile, checked: boolean): void {
-    const next = new Set(this.selectedExecutorIds());
-    for (const u of this.executorsForManager(manager)) {
-      checked ? next.add(u.id) : next.delete(u.id);
-    }
-    this.selectedExecutorIds.set([...next]);
-  }
+  // ── Helpers ───────────────────────────────────────────────────────────
 
   private hasRole(user: UserProfile, role: 'GERENTE' | 'EJECUTADOR'): boolean {
     return (user.roles ?? []).some(r => r === role || r === `ROLE_${role}`);
-  }
-
-  private isOwnedBySelectedManager(user: UserProfile): boolean {
-    const selected = this.selectedManagerIds();
-    return selected.includes(user.managerOwnerId ?? '')
-      || selected.includes(user.managerOwnerNumeroUsuario ?? '');
-  }
-
-  private async loadAudienceOptions(): Promise<void> {
-    const storeId = this.examStoreId();
-    if (!storeId) return;
-
-    if (this.targetMode()) {
-      this.audience.set(this.targetMode()!);
-    }
-
-    if (this.targetMode() === 'MANAGERS') {
-      if (!this.isAdmin()) {
-        this.selectionError.set('Este examen es solo para gerentes y necesita una cuenta admin para asignarse.');
-        this.managerOptions.set([]);
-        return;
-      }
-
-      try {
-        this.managerOptions.set(await this.rhSvc.getManagersByStore(storeId));
-      } catch {
-        const users = await this.rhSvc.getUsersByStore(storeId);
-        this.managerOptions.set(users.filter(u => u.activo && this.hasRole(u, 'GERENTE')));
-      }
-      return;
-    }
-
-    if (this.isAdmin()) {
-      try {
-        this.managerOptions.set(await this.rhSvc.getManagersByStore(storeId));
-      } catch {
-        const users = await this.rhSvc.getUsersByStore(storeId);
-        this.managerOptions.set(users.filter(u => u.activo && this.hasRole(u, 'GERENTE')));
-      }
-      if (!this.targetMode()) {
-        this.audience.set('MANAGERS');
-      }
-      return;
-    }
-
-    const users = await this.rhSvc.getUsersByStore(storeId);
-    this.rhSvc.loadUsersByStore(storeId);
-    this.executorOptions.set(users.filter(u => u.activo && this.hasRole(u, 'EJECUTADOR')));
-    if (!this.targetMode()) {
-      this.audience.set('EXECUTORS');
-    }
-  }
-
-  private async loadExecutorsForSelection(): Promise<void> {
-    const storeId = this.examStoreId();
-    if (!this.isAdmin() || !storeId || this.selectedManagerIds().length === 0) {
-      this.executorOptions.set([]);
-      return;
-    }
-
-    try {
-      this.executorOptions.set(
-        await this.rhSvc.getExecutorsByManagers(storeId, this.selectedManagerIds())
-      );
-    } catch {
-      const users = await this.rhSvc.getUsersByStore(storeId);
-      this.executorOptions.set(
-        users.filter(u =>
-          u.activo
-          && this.hasRole(u, 'EJECUTADOR')
-          && this.isOwnedBySelectedManager(u)
-        )
-      );
-    }
   }
 
   private buildDueAt(): string {
