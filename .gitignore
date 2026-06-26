@@ -9,4 +9,5 @@ dist/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/obsidian-driver.mjs
 .gstack/
