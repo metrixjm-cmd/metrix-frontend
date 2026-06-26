@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CorrectionSpeedData, IgeoAnalyticsResponse, KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
+import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, TrainingKpi, UserResponsibilityEntry } from '../kpi.models';
 import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
 
 /**
@@ -27,6 +27,9 @@ export class KpiService {
   private readonly _usersResponsibility = signal<UserResponsibilityEntry[]>([]);
   private readonly _correctionSpeed     = signal<CorrectionSpeedData | null>(null);
   private readonly _igeoAnalytics       = signal<IgeoAnalyticsResponse | null>(null);
+  private readonly _incidents           = signal<IncidentKpi | null>(null);
+  private readonly _trainings           = signal<TrainingKpi | null>(null);
+  private readonly _exams               = signal<ExamKpi | null>(null);
 
   readonly summary             = this._summary.asReadonly();
   readonly ranking             = this._ranking.asReadonly();
@@ -35,6 +38,9 @@ export class KpiService {
   readonly usersResponsibility = this._usersResponsibility.asReadonly();
   readonly correctionSpeed     = this._correctionSpeed.asReadonly();
   readonly igeoAnalytics       = this._igeoAnalytics.asReadonly();
+  readonly incidents           = this._incidents.asReadonly();
+  readonly trainings           = this._trainings.asReadonly();
+  readonly exams               = this._exams.asReadonly();
 
   // ── Computed signals para el dashboard ──────────────────────────────────
 
@@ -185,6 +191,36 @@ export class KpiService {
       .subscribe({
         next:  r   => this._igeoAnalytics.set(r),
         error: ()  => { /* analytics-service offline — fallback al Over-all local */ },
+      });
+  }
+
+  /** KPIs agregados de incidencias de una sucursal. */
+  loadIncidentKpis(storeId: string): void {
+    this.http.get<IncidentKpi>(`${this.apiUrl}/incidents/store/${storeId}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._incidents.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
+  }
+
+  /** KPIs agregados de capacitaciones de una sucursal. */
+  loadTrainingKpis(storeId: string): void {
+    this.http.get<TrainingKpi>(`${this.apiUrl}/trainings/store/${storeId}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._trainings.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
+  }
+
+  /** KPIs agregados de exámenes de una sucursal. */
+  loadExamKpis(storeId: string): void {
+    this.http.get<ExamKpi>(`${this.apiUrl}/exams/store/${storeId}`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._exams.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
       });
   }
 

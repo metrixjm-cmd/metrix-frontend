@@ -8,210 +8,474 @@
       <span class="text-white/60 font-medium">Panel de Métricas</span>
     </div>
     <h1 class="text-lg font-bold text-white">Panel de Métricas</h1>
-    <p class="text-white/50 text-xs mt-0.5">Selecciona una métrica para ver el desglose detallado por sucursal, colaborador y turno.</p>
+    <p class="text-white/50 text-xs mt-0.5">Reportes de desempeño por módulo: tareas, incidencias, capacitaciones y exámenes.</p>
   </div>
 
-  <!-- ── Loading ─────────────────────────────────────────────── -->
-  @if (loading()) {
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      @for (i of [1,2,3,4,5,6,7,8]; track i) {
-        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 h-32 animate-pulse"></div>
-      }
-    </div>
-  } @else if (!summary()) {
-    <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
-      <p class="text-white/50 text-sm">Sin datos de KPIs. Asigna tareas para generar métricas.</p>
-    </div>
-  } @else {
-
-    <!-- ── Grid de Métricas (clickeables) ──────────────────────── -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      @for (m of metrics; track m.key) {
-        <button
-          (click)="select(m.key)"
-          class="text-left bg-white/[0.04] border rounded-xl p-4 transition-all duration-200"
-          [class]="selected() === m.key
-            ? m.bg + ' ring-2 ring-offset-1 ' + m.color.replace('text-', 'ring-')
-            : 'border-white/10 hover:border-white/[0.15]'">
-
-          <!-- Icon + Label -->
-          <div class="flex items-center gap-2 mb-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                 [class]="selected() === m.key ? m.color.replace('text-', 'bg-').replace('700', '200') : 'bg-white/[0.05]'">
-              <svg class="w-4 h-4" [class]="selected() === m.key ? m.color : 'text-white/50'"
-                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="m.icon" />
-              </svg>
-            </div>
-            <span class="text-[11px] font-semibold uppercase tracking-wide"
-                  [class]="selected() === m.key ? m.color : 'text-white/50'">{{ m.label }}</span>
-          </div>
-
-          <!-- Value -->
-          <p class="text-2xl font-bold tracking-tight" [class]="m.color">
-            {{ m.format(m.getValue(summary()!)) }}<span class="text-sm font-normal text-white/40">{{ m.unit }}</span>
-          </p>
-
-          <!-- Mini bar -->
-          <div class="mt-2 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-500"
-                 [class]="barColor(m.getValue(summary()!), m)"
-                 [style.width.%]="barWidth(m.getValue(summary()!), m)"></div>
-          </div>
-        </button>
-      }
-    </div>
-
-    <!-- ── Pipeline Resumen ────────────────────────────────────── -->
-    @if (pipeline(); as p) {
-      <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
-        <div class="px-4 py-3 border-b border-white/[0.06]">
-          <p class="text-sm font-semibold text-white">Pipeline de Tareas</p>
-        </div>
-        <div class="grid grid-cols-5 text-center text-[11px]">
-          <div class="py-4 border-r border-white/[0.06]">
-            <p class="text-2xl font-bold text-white">{{ p.total }}</p>
-            <p class="text-white/50 font-medium mt-0.5">Total</p>
-          </div>
-          <div class="py-4 border-r border-white/[0.06]">
-            <p class="text-2xl font-bold text-amber-600">{{ p.pending }}</p>
-            <p class="text-white/50 font-medium mt-0.5">Pendientes</p>
-          </div>
-          <div class="py-4 border-r border-white/[0.06]">
-            <p class="text-2xl font-bold text-cyan-400">{{ p.inProgress }}</p>
-            <p class="text-white/50 font-medium mt-0.5">En Progreso</p>
-          </div>
-          <div class="py-4 border-r border-white/[0.06]">
-            <p class="text-2xl font-bold text-emerald-600">{{ p.completed }}</p>
-            <p class="text-white/50 font-medium mt-0.5">Completadas</p>
-          </div>
-          <div class="py-4">
-            <p class="text-2xl font-bold text-red-600">{{ p.failed }}</p>
-            <p class="text-white/50 font-medium mt-0.5">Fallidas</p>
-          </div>
-        </div>
-      </div>
+  <!-- ── Tabs ────────────────────────────────────────────────── -->
+  <div class="flex gap-1 border-b border-white/10 overflow-x-auto">
+    @for (t of tabs; track t.key) {
+      <button (click)="setTab(t.key)"
+        class="px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap"
+        [class]="activeTab() === t.key
+          ? 'border-cyan-400 text-white'
+          : 'border-transparent text-white/50 hover:text-white/80'">
+        {{ t.label }}
+      </button>
     }
+  </div>
 
-    <!-- ══════════════════════════════════════════════════════════
-         DETALLE DE MÉTRICA SELECCIONADA
-    ══════════════════════════════════════════════════════════ -->
-    @if (selectedMetric(); as m) {
-      <div class="space-y-4 animate-in">
+  <!-- ══════════════════════════════════════════════════════════
+       TAB: TAREAS
+  ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'tareas') {
+    @if (loading()) {
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 h-32 animate-pulse"></div>
+        }
+      </div>
+    } @else if (!summary()) {
+      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
+        <p class="text-white/50 text-sm">Sin datos de KPIs. Asigna tareas para generar métricas.</p>
+      </div>
+    } @else {
 
-        <!-- Header del detalle -->
-        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h2 class="text-base font-bold text-white">{{ m.label }}</h2>
-              <p class="text-xs text-white/50 mt-1">{{ m.desc }}</p>
+      <!-- Gauges principales -->
+      @if (taskGauges(); as g) {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Over-all</p>
+            <app-radial-gauge [value]="g.igeo" [arc]="270" caption="Índice Global de Ejecución" [size]="150" />
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">On-Time Rate</p>
+            <app-radial-gauge [value]="g.onTime" [arc]="360" caption="Completadas a tiempo" [size]="150" />
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Re-trabajo</p>
+            <app-radial-gauge [value]="g.rework" [arc]="360" [higherIsBetter]="false"
+                              caption="Tareas devueltas / total" [size]="150" />
+          </div>
+        </div>
+
+        <!-- Tendencia del Over-all -->
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-sm font-semibold text-white mb-3">Evolución del Over-all</p>
+          <app-trend-line [data]="g.trend" [showAxis]="true" [size]="120" />
+        </div>
+      }
+
+      <!-- ── Grid de Métricas (clickeables) ──────────────────────── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        @for (m of metrics; track m.key) {
+          <button
+            (click)="select(m.key)"
+            class="text-left bg-white/[0.04] border rounded-xl p-4 transition-all duration-200"
+            [class]="selected() === m.key
+              ? m.bg + ' ring-2 ring-offset-1 ' + m.color.replace('text-', 'ring-')
+              : 'border-white/10 hover:border-white/[0.15]'">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                   [class]="selected() === m.key ? m.color.replace('text-', 'bg-').replace('700', '200') : 'bg-white/[0.05]'">
+                <svg class="w-4 h-4" [class]="selected() === m.key ? m.color : 'text-white/50'"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="m.icon" />
+                </svg>
+              </div>
+              <span class="text-[11px] font-semibold uppercase tracking-wide"
+                    [class]="selected() === m.key ? m.color : 'text-white/50'">{{ m.label }}</span>
             </div>
-            <div class="text-right shrink-0">
-              <p class="text-3xl font-bold" [class]="m.color">
-                {{ metricValue() }}<span class="text-base font-normal text-white/40">{{ m.unit }}</span>
+            <p class="text-2xl font-bold tracking-tight" [class]="m.color">
+              {{ m.format(m.getValue(summary()!)) }}<span class="text-sm font-normal text-white/40">{{ m.unit }}</span>
+            </p>
+            <div class="mt-2 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500"
+                   [class]="barColor(m.getValue(summary()!), m)"
+                   [style.width.%]="barWidth(m.getValue(summary()!), m)"></div>
+            </div>
+          </button>
+        }
+      </div>
+
+      <!-- ── Pipeline Resumen ────────────────────────────────────── -->
+      @if (pipeline(); as p) {
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/[0.06]">
+            <p class="text-sm font-semibold text-white">Pipeline de Tareas</p>
+          </div>
+          <div class="grid grid-cols-5 text-center text-[11px]">
+            <div class="py-4 border-r border-white/[0.06]">
+              <p class="text-2xl font-bold text-white">{{ p.total }}</p>
+              <p class="text-white/50 font-medium mt-0.5">Total</p>
+            </div>
+            <div class="py-4 border-r border-white/[0.06]">
+              <p class="text-2xl font-bold text-amber-600">{{ p.pending }}</p>
+              <p class="text-white/50 font-medium mt-0.5">Pendientes</p>
+            </div>
+            <div class="py-4 border-r border-white/[0.06]">
+              <p class="text-2xl font-bold text-cyan-400">{{ p.inProgress }}</p>
+              <p class="text-white/50 font-medium mt-0.5">En Progreso</p>
+            </div>
+            <div class="py-4 border-r border-white/[0.06]">
+              <p class="text-2xl font-bold text-emerald-600">{{ p.completed }}</p>
+              <p class="text-white/50 font-medium mt-0.5">Completadas</p>
+            </div>
+            <div class="py-4">
+              <p class="text-2xl font-bold text-red-600">{{ p.failed }}</p>
+              <p class="text-white/50 font-medium mt-0.5">Fallidas</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- DETALLE DE MÉTRICA SELECCIONADA -->
+      @if (selectedMetric(); as m) {
+        <div class="space-y-4 animate-in">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h2 class="text-base font-bold text-white">{{ m.label }}</h2>
+                <p class="text-xs text-white/50 mt-1">{{ m.desc }}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-3xl font-bold" [class]="m.color">
+                  {{ metricValue() }}<span class="text-base font-normal text-white/40">{{ m.unit }}</span>
+                </p>
+                <p class="text-[10px] text-white/40 mt-0.5">Valor global de la sucursal</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            @if (storeBreakdown().length > 0) {
+              <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-white/[0.06]">
+                  <p class="text-sm font-semibold text-white">Por Sucursal</p>
+                </div>
+                <div class="divide-y divide-white/[0.04]">
+                  @for (store of storeBreakdown(); track store.storeId; let idx = $index) {
+                    <div class="flex items-center gap-3 px-4 py-3">
+                      <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                           [class]="idx === 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-white/[0.05] text-white/50'">
+                        {{ idx + 1 }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white/80 truncate">{{ store.storeId | slice:0:12 }}...</p>
+                        <div class="mt-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-500"
+                               [class]="barColor(store.value, m)"
+                               [style.width.%]="barWidth(store.value, m)"></div>
+                        </div>
+                      </div>
+                      <div class="text-right shrink-0">
+                        <span class="text-sm font-bold" [class]="valueClass(store.value, m)">
+                          {{ m.format(store.value) }}{{ m.unit }}
+                        </span>
+                        <p class="text-[10px] text-white/40">{{ store.tasks }} tareas</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (userBreakdown().length > 0) {
+              <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+                <div class="px-4 py-3 border-b border-white/[0.06]">
+                  <p class="text-sm font-semibold text-white">Por Colaborador</p>
+                </div>
+                <div class="divide-y divide-white/[0.04] max-h-[400px] overflow-y-auto">
+                  @for (user of userBreakdown(); track user.name; let idx = $index) {
+                    <div class="flex items-center gap-3 px-4 py-3">
+                      <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                           [class]="idx === 0 ? 'bg-cyan-500/10 text-cyan-300' : 'bg-white/[0.05] text-white/50'">
+                        {{ user.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white/80 truncate">{{ user.name }}</p>
+                        <p class="text-[10px] text-white/40">{{ user.position }} · {{ user.turno }}</p>
+                        <div class="mt-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-500"
+                               [class]="barColor(user.value, m)"
+                               [style.width.%]="barWidth(user.value, m)"></div>
+                        </div>
+                      </div>
+                      <div class="text-right shrink-0">
+                        <span class="text-sm font-bold" [class]="valueClass(user.value, m)">
+                          {{ m.format(user.value) }}{{ m.unit }}
+                        </span>
+                        <p class="text-[10px] text-white/40">{{ user.tasks }} tareas</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (shiftBreakdown().length > 0) {
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+              <p class="text-sm font-semibold text-white mb-4">Cumplimiento por Turno</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                @for (shift of shiftBreakdown(); track shift.shift) {
+                  <div class="text-center">
+                    <p class="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">{{ shift.shift }}</p>
+                    <p class="text-2xl font-bold" [class]="valueClass(shift.onTimeRate, metrics[1])">
+                      {{ shift.onTimeRate >= 0 ? shift.onTimeRate.toFixed(1) + '%' : 'S/D' }}
+                    </p>
+                    <p class="text-[10px] text-white/40 mt-1">{{ shift.onTimeCount }} a tiempo de {{ shift.totalClosed }}</p>
+                    <div class="mt-2 h-2 bg-white/[0.05] rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-500"
+                           [class]="barColor(shift.onTimeRate, metrics[1])"
+                           [style.width.%]="shift.onTimeRate >= 0 ? shift.onTimeRate : 0"></div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB: INCIDENCIAS
+  ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'incidencias') {
+    @if (!incidents()) {
+      <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
+    } @else if (incidents()!.total === 0) {
+      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
+        <p class="text-white/50 text-sm">Sin incidencias registradas en esta sucursal.</p>
+      </div>
+    } @else {
+      @if (incidents(); as i) {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <!-- Gauge resolución -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Tasa de Resolución</p>
+            <app-radial-gauge [value]="i.resolutionRate" [arc]="270" caption="Cerradas / total" [size]="150" />
+          </div>
+          <!-- Stat cards -->
+          <div class="grid grid-cols-2 gap-3 lg:col-span-2">
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Total</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ i.total }}</p>
+              <p class="text-[10px] text-white/40">incidencias activas</p>
+            </div>
+            <div class="bg-white/[0.04] border border-rose-500/20 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-rose-300/80">Críticas Abiertas</p>
+              <p class="text-2xl font-bold text-rose-400 mt-1">{{ i.criticalOpen }}</p>
+              <p class="text-[10px] text-white/40">sin cerrar</p>
+            </div>
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 col-span-2">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Tiempo Medio de Resolución</p>
+              <p class="text-2xl font-bold text-white mt-1">
+                {{ i.avgResolutionHours >= 0 ? i.avgResolutionHours.toFixed(1) : 'S/D' }}<span class="text-sm font-normal text-white/40">{{ i.avgResolutionHours >= 0 ? ' h' : '' }}</span>
               </p>
-              <p class="text-[10px] text-white/40 mt-0.5">Valor global de la sucursal</p>
+              <p class="text-[10px] text-white/40">desde apertura hasta cierre</p>
             </div>
           </div>
         </div>
 
-        <!-- Grid: Sucursales + Colaboradores -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
+          <!-- Donut por estado -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Estado</p>
+            <app-category-donut [data]="incidentStatusData()" centerLabel="Total" [size]="120" />
+          </div>
+          <!-- Barra severidad -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Severidad</p>
+            <app-distribution-bar [data]="incidentSeverityData()" [size]="180" />
+          </div>
+          <!-- Barra categoría -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Categoría</p>
+            @if (incidentCategoryData().length > 0) {
+              <app-distribution-bar [data]="incidentCategoryData()" [horizontal]="true" [size]="180" />
+            } @else {
+              <p class="text-white/40 text-xs py-8 text-center">Sin categorías registradas.</p>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
 
-          <!-- Desglose por Sucursal -->
-          @if (storeBreakdown().length > 0) {
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
-              <div class="px-4 py-3 border-b border-white/[0.06]">
-                <p class="text-sm font-semibold text-white">Por Sucursal</p>
-              </div>
-              <div class="divide-y divide-white/[0.04]">
-                @for (store of storeBreakdown(); track store.storeId; let idx = $index) {
-                  <div class="flex items-center gap-3 px-4 py-3">
-                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
-                         [class]="idx === 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-white/[0.05] text-white/50'">
-                      {{ idx + 1 }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-white/80 truncate">{{ store.storeId | slice:0:12 }}...</p>
-                      <div class="mt-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-500"
-                             [class]="barColor(store.value, m)"
-                             [style.width.%]="barWidth(store.value, m)"></div>
-                      </div>
-                    </div>
-                    <div class="text-right shrink-0">
-                      <span class="text-sm font-bold" [class]="valueClass(store.value, m)">
-                        {{ m.format(store.value) }}{{ m.unit }}
-                      </span>
-                      <p class="text-[10px] text-white/40">{{ store.tasks }} tareas</p>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- Desglose por Colaborador -->
-          @if (userBreakdown().length > 0) {
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
-              <div class="px-4 py-3 border-b border-white/[0.06]">
-                <p class="text-sm font-semibold text-white">Por Colaborador</p>
-              </div>
-              <div class="divide-y divide-white/[0.04] max-h-[400px] overflow-y-auto">
-                @for (user of userBreakdown(); track user.name; let idx = $index) {
-                  <div class="flex items-center gap-3 px-4 py-3">
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                         [class]="idx === 0 ? 'bg-cyan-500/10 text-cyan-300' : 'bg-white/[0.05] text-white/50'">
-                      {{ user.name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-white/80 truncate">{{ user.name }}</p>
-                      <p class="text-[10px] text-white/40">{{ user.position }} · {{ user.turno }}</p>
-                      <div class="mt-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-500"
-                             [class]="barColor(user.value, m)"
-                             [style.width.%]="barWidth(user.value, m)"></div>
-                      </div>
-                    </div>
-                    <div class="text-right shrink-0">
-                      <span class="text-sm font-bold" [class]="valueClass(user.value, m)">
-                        {{ m.format(user.value) }}{{ m.unit }}
-                      </span>
-                      <p class="text-[10px] text-white/40">{{ user.tasks }} tareas</p>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          }
+  <!-- ══════════════════════════════════════════════════════════
+       TAB: CAPACITACIONES
+  ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'capacitaciones') {
+    @if (!trainings()) {
+      <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
+    } @else if (trainings()!.total === 0) {
+      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
+        <p class="text-white/50 text-sm">Sin capacitaciones registradas en esta sucursal.</p>
+      </div>
+    } @else {
+      @if (trainings(); as t) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Completación</p>
+            <app-radial-gauge [value]="t.completionRate" [arc]="270" caption="Completadas / total" [size]="150" />
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Aprobación</p>
+            <app-radial-gauge [value]="t.passRate" [arc]="270" caption="Aprobadas con veredicto" [size]="150" />
+          </div>
         </div>
 
-        <!-- Desglose por Turno -->
-        @if (shiftBreakdown().length > 0) {
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-            <p class="text-sm font-semibold text-white mb-4">Cumplimiento por Turno</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              @for (shift of shiftBreakdown(); track shift.shift) {
-                <div class="text-center">
-                  <p class="text-xs font-semibold text-white/50 uppercase tracking-wide mb-2">{{ shift.shift }}</p>
-                  <p class="text-2xl font-bold" [class]="valueClass(shift.onTimeRate, metrics[1])">
-                    {{ shift.onTimeRate >= 0 ? shift.onTimeRate.toFixed(1) + '%' : 'S/D' }}
-                  </p>
-                  <p class="text-[10px] text-white/40 mt-1">{{ shift.onTimeCount }} a tiempo de {{ shift.totalClosed }}</p>
-                  <div class="mt-2 h-2 bg-white/[0.05] rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-500"
-                         [class]="barColor(shift.onTimeRate, metrics[1])"
-                         [style.width.%]="shift.onTimeRate >= 0 ? shift.onTimeRate : 0"></div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Total</p>
+            <p class="text-2xl font-bold text-white mt-1">{{ t.total }}</p>
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">A Tiempo</p>
+            <p class="text-2xl font-bold text-emerald-400 mt-1">{{ t.onTimeRate >= 0 ? t.onTimeRate.toFixed(1) + '%' : 'S/D' }}</p>
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Calif. Promedio</p>
+            <p class="text-2xl font-bold text-white mt-1">{{ t.avgGrade >= 0 ? t.avgGrade.toFixed(1) : 'S/D' }}<span class="text-sm font-normal text-white/40">{{ t.avgGrade >= 0 ? '/10' : '' }}</span></p>
+          </div>
+          <div class="bg-white/[0.04] border rounded-xl p-4"
+               [class]="t.overduePending > 0 ? 'border-amber-500/25' : 'border-white/10'">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Vencidas</p>
+            <p class="text-2xl font-bold mt-1" [class]="t.overduePending > 0 ? 'text-amber-400' : 'text-white'">{{ t.overduePending }}</p>
+            <p class="text-[10px] text-white/40">pendientes y fuera de plazo</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Estado</p>
+            <app-category-donut [data]="trainingStatusData()" centerLabel="Total" [size]="120" />
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Categoría</p>
+            @if (trainingCategoryData().length > 0) {
+              <app-distribution-bar [data]="trainingCategoryData()" [horizontal]="true" [size]="180" />
+            } @else {
+              <p class="text-white/40 text-xs py-8 text-center">Sin categorías registradas.</p>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB: EXÁMENES
+  ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'examenes') {
+    @if (!exams()) {
+      <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
+    } @else if (exams()!.totalSubmissions === 0) {
+      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
+        <p class="text-white/50 text-sm">Sin presentaciones de exámenes en esta sucursal.</p>
+      </div>
+    } @else {
+      @if (exams(); as e) {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Tasa de Aprobación</p>
+            <app-radial-gauge [value]="e.passRate" [arc]="270" caption="Aprobadas / presentadas" [size]="150" />
+          </div>
+          <div class="grid grid-cols-2 gap-3 lg:col-span-2">
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Exámenes</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ e.totalExams }}</p>
+            </div>
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Presentaciones</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ e.totalSubmissions }}</p>
+            </div>
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Puntaje Promedio</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ e.avgScore >= 0 ? e.avgScore.toFixed(1) : 'S/D' }}</p>
+            </div>
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Tiempo Promedio</p>
+              <p class="text-2xl font-bold text-white mt-1">{{ e.avgTimeSecs >= 0 ? (e.avgTimeSecs / 60).toFixed(1) + ' min' : 'S/D' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          <!-- Distribución de puntajes -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Distribución de Puntajes</p>
+            <app-distribution-bar [data]="examScoreData()" [size]="200" />
+          </div>
+          <!-- Ranking por examen -->
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/[0.06]">
+              <p class="text-sm font-semibold text-white">Ranking por Examen</p>
+            </div>
+            <div class="divide-y divide-white/[0.04] max-h-[260px] overflow-y-auto">
+              @for (row of examRows(); track row.examId; let idx = $index) {
+                <div class="flex items-center gap-3 px-4 py-3">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                       [class]="idx === 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-white/[0.05] text-white/50'">
+                    {{ idx + 1 }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white/80 truncate">{{ row.examTitle }}</p>
+                    <p class="text-[10px] text-white/40">{{ row.submissions }} presentaciones</p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-sm font-bold"
+                          [class]="row.passRate >= 80 ? 'text-emerald-400' : row.passRate >= 60 ? 'text-amber-400' : 'text-red-400'">
+                      {{ row.passRate }}%
+                    </span>
+                    <p class="text-[10px] text-white/40">prom. {{ row.avgScore.toFixed(0) }}</p>
                   </div>
                 </div>
+              } @empty {
+                <p class="text-white/40 text-xs py-8 text-center">Sin exámenes en esta sucursal.</p>
               }
             </div>
           </div>
-        }
+        </div>
 
-      </div>
+        <!-- Desempeño por colaborador -->
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-white/[0.06]">
+            <p class="text-sm font-semibold text-white">Desempeño por Colaborador</p>
+          </div>
+          <div class="divide-y divide-white/[0.04] max-h-[360px] overflow-y-auto">
+            @for (u of examUserRows(); track u.userId; let idx = $index) {
+              <div class="flex items-center gap-3 px-4 py-3">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                     [class]="idx === 0 ? 'bg-cyan-500/10 text-cyan-300' : 'bg-white/[0.05] text-white/50'">
+                  {{ u.userName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-white/80 truncate">{{ u.userName }}</p>
+                  <p class="text-[10px] text-white/40">{{ u.submissions }} presentaciones · {{ u.passed }} aprobadas</p>
+                </div>
+                <div class="w-24 h-1.5 bg-white/[0.05] rounded-full overflow-hidden shrink-0">
+                  <div class="h-full rounded-full transition-all duration-500"
+                       [class]="u.avgScore >= 80 ? 'bg-emerald-500' : u.avgScore >= 60 ? 'bg-amber-500' : 'bg-red-500'"
+                       [style.width.%]="u.avgScore"></div>
+                </div>
+                <div class="text-right shrink-0 w-16">
+                  <span class="text-sm font-bold"
+                        [class]="u.avgScore >= 80 ? 'text-emerald-400' : u.avgScore >= 60 ? 'text-amber-400' : 'text-red-400'">
+                    {{ u.avgScore.toFixed(0) }}
+                  </span>
+                  <p class="text-[10px] text-white/40">{{ u.passRate }}% aprob.</p>
+                </div>
+              </div>
+            } @empty {
+              <p class="text-white/40 text-xs py-8 text-center">Sin presentaciones por colaborador.</p>
+            }
+          </div>
+        </div>
+      }
     }
-
   }
 
 </div>

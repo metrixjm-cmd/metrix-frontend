@@ -3,7 +3,15 @@ import { RouterLink } from '@angular/router';
 import { SlicePipe } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { KpiService } from '../services/kpi.service';
-import { KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
+import { KpiSummary, LabelCount, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
+import { RadialGauge } from '../../../shared/components/charts/radial-gauge';
+import { CategoryDonut } from '../../../shared/components/charts/category-donut';
+import { TrendLine } from '../../../shared/components/charts/trend-line';
+import { DistributionBar } from '../../../shared/components/charts/distribution-bar';
+import { ChartDatum, PALETTE } from '../../../shared/components/charts/chart-core';
+
+/** Pestañas del panel de KPIs por módulo de evaluación. */
+export type KpiTab = 'tareas' | 'incidencias' | 'capacitaciones' | 'examenes';
 
 /** Definición de una métrica para el panel */
 interface MetricDef {
@@ -27,7 +35,7 @@ interface MetricDef {
 @Component({
   selector: 'app-kpi-panel',
   standalone: true,
-  imports: [RouterLink, SlicePipe],
+  imports: [RouterLink, SlicePipe, RadialGauge, CategoryDonut, TrendLine, DistributionBar],
   templateUrl: './kpi-panel.html',
 })
 export class KpiPanel implements OnInit {
@@ -35,6 +43,17 @@ export class KpiPanel implements OnInit {
   private readonly kpiSvc = inject(KpiService);
 
   readonly selected = signal<string | null>(null);
+
+  // ── Tabs ──────────────────────────────────────────────────────────
+  readonly activeTab = signal<KpiTab>('tareas');
+  readonly tabs: { key: KpiTab; label: string }[] = [
+    { key: 'tareas',         label: 'Tareas' },
+    { key: 'incidencias',    label: 'Incidencias' },
+    { key: 'capacitaciones', label: 'Capacitaciones' },
+    { key: 'examenes',       label: 'Exámenes' },
+  ];
+
+  setTab(tab: KpiTab): void { this.activeTab.set(tab); }
 
   // ── Definición de métricas ─────────────────────────────────────────
 
@@ -102,6 +121,77 @@ export class KpiPanel implements OnInit {
   readonly ranking  = this.kpiSvc.ranking;
   readonly users    = this.kpiSvc.usersResponsibility;
   readonly loading  = this.kpiSvc.loading;
+
+  // ── Datos por módulo ──────────────────────────────────────────────
+  readonly incidents = this.kpiSvc.incidents;
+  readonly trainings = this.kpiSvc.trainings;
+  readonly exams     = this.kpiSvc.exams;
+
+  // ── Tareas: gauges y tendencia ────────────────────────────────────
+  readonly taskGauges = computed(() => {
+    const s = this.summary();
+    if (!s) return null;
+    return {
+      igeo:    s.igeo,
+      onTime:  s.onTimeRate,
+      rework:  s.reworkRate,
+      trend:   s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [s.igeo >= 0 ? s.igeo : 0],
+    };
+  });
+
+  // ── Incidencias: view-models para gráficas ────────────────────────
+  readonly incidentStatusData = computed<ChartDatum[]>(() => {
+    const i = this.incidents();
+    if (!i || i.total === 0) return [];
+    return [
+      { label: 'Abiertas',      value: i.abiertas,     color: PALETTE.red },
+      { label: 'En resolución', value: i.enResolucion, color: PALETTE.amber },
+      { label: 'Cerradas',      value: i.cerradas,     color: PALETTE.emerald },
+    ];
+  });
+
+  /** Severidad de mejor a peor: BAJA→ALTA→CRITICA. */
+  private readonly severityColors: Record<string, string> = {
+    BAJA: PALETTE.emerald, MEDIA: PALETTE.amber, ALTA: PALETTE.red, CRITICA: PALETTE.rose,
+  };
+  readonly incidentSeverityData = computed<ChartDatum[]>(() =>
+    this.labelsToData(this.incidents()?.bySeverity, l => this.severityColors[l.label]));
+
+  readonly incidentCategoryData = computed<ChartDatum[]>(() =>
+    this.labelsToData(this.incidents()?.byCategory?.filter(c => c.count > 0)));
+
+  // ── Capacitaciones: view-models ───────────────────────────────────
+  readonly trainingStatusData = computed<ChartDatum[]>(() => {
+    const t = this.trainings();
+    if (!t || t.total === 0) return [];
+    return [
+      { label: 'Programadas',    value: t.programadas,   color: PALETTE.slate },
+      { label: 'En curso',       value: t.enCurso,       color: PALETTE.cyan },
+      { label: 'Completadas',    value: t.completadas,   color: PALETTE.emerald },
+      { label: 'No completadas', value: t.noCompletadas, color: PALETTE.red },
+    ];
+  });
+  readonly trainingCategoryData = computed<ChartDatum[]>(() =>
+    this.labelsToData(this.trainings()?.byCategory));
+
+  // ── Exámenes: view-models ─────────────────────────────────────────
+  /** Distribución de puntajes coloreada por desempeño (0-49 rojo … 90-100 esmeralda). */
+  private readonly scoreColors = [PALETTE.red, PALETTE.amber, PALETTE.cyan, PALETTE.emerald];
+  readonly examScoreData = computed<ChartDatum[]>(() => {
+    const e = this.exams();
+    if (!e) return [];
+    return e.scoreDistribution.map((l, idx) => ({
+      label: l.label, value: l.count, color: this.scoreColors[idx] ?? PALETTE.brand,
+    }));
+  });
+  readonly examRows = computed(() => this.exams()?.perExam ?? []);
+  readonly examUserRows = computed(() => this.exams()?.perUser ?? []);
+
+  /** Mapea LabelCount[] → ChartDatum[] usando count como valor. */
+  private labelsToData(items?: LabelCount[], colorFn?: (l: LabelCount) => string | undefined): ChartDatum[] {
+    if (!items) return [];
+    return items.map(l => ({ label: l.label, value: l.count, color: colorFn?.(l) }));
+  }
 
   readonly selectedMetric = computed(() => {
     const key = this.selected();
@@ -173,6 +263,9 @@ export class KpiPanel implements OnInit {
       this.kpiSvc.loadUsersResponsibility(storeId);
       this.kpiSvc.loadCorrectionSpeed(storeId);
       this.kpiSvc.loadAnalyticsIgeo();
+      this.kpiSvc.loadIncidentKpis(storeId);
+      this.kpiSvc.loadTrainingKpis(storeId);
+      this.kpiSvc.loadExamKpis(storeId);
     }
   }
 

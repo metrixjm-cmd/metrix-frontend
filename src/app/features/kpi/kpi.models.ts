@@ -1,3 +1,75 @@
+/** Par etiqueta-conteo para distribuciones (donuts/barras). Espeja LabelCount del backend. */
+export interface LabelCount {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+/** KPIs agregados de incidencias de una sucursal. */
+export interface IncidentKpi {
+  storeId: string;
+  total: number;
+  abiertas: number;
+  enResolucion: number;
+  cerradas: number;
+  resolutionRate: number;      // -1 = S/D
+  criticalOpen: number;
+  avgResolutionHours: number;  // -1 = S/D
+  bySeverity: LabelCount[];
+  byCategory: LabelCount[];
+}
+
+/** KPIs agregados de capacitaciones de una sucursal. */
+export interface TrainingKpi {
+  storeId: string;
+  total: number;
+  programadas: number;
+  enCurso: number;
+  completadas: number;
+  noCompletadas: number;
+  completionRate: number;  // -1 = S/D
+  onTimeRate: number;      // -1 = S/D
+  passRate: number;        // -1 = S/D
+  avgGrade: number;        // -1 = S/D, escala 0–10
+  avgProgress: number;     // 0–100
+  overduePending: number;
+  byCategory: LabelCount[];
+}
+
+/** Fila del ranking por examen. */
+export interface ExamKpiRow {
+  examId: string;
+  examTitle: string;
+  submissions: number;
+  passRate: number;  // 0–100
+  avgScore: number;  // 0–100
+}
+
+/** Fila del desglose por colaborador (todas sus submissions en la sucursal). */
+export interface ExamUserRow {
+  userId: string;
+  userName: string;
+  submissions: number;
+  passed: number;
+  passRate: number;  // 0–100
+  avgScore: number;  // 0–100
+}
+
+/** KPIs agregados de exámenes de una sucursal. */
+export interface ExamKpi {
+  storeId: string;
+  totalExams: number;
+  totalSubmissions: number;
+  passRate: number;     // -1 = S/D
+  avgScore: number;     // -1 = S/D
+  minScore: number;
+  maxScore: number;
+  avgTimeSecs: number;  // -1 = S/D
+  scoreDistribution: LabelCount[];
+  perExam: ExamKpiRow[];
+  perUser: ExamUserRow[];
+}
+
 export interface ShiftBreakdown {
   shift: string;
   onTimeRate: number;
