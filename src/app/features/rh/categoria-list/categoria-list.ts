@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { AuthService } from '../../auth/services/auth.service';
 import { CatalogService } from '../../../core/services/catalog.service';
+import { CatalogEntry } from '../../../core/services/catalog.models';
 
 @Component({
   selector: 'app-categoria-list',
@@ -64,6 +65,65 @@ export class CategoriaList implements OnInit {
       this.createForm.reset();
     } catch (e: any) {
       this.error.set(e?.error?.error ?? 'Error al crear la categoria');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  // ── Edición inline ────────────────────────────────────────────────────
+
+  readonly editingId = signal<string | null>(null);
+  readonly editForm = this.fb.group({
+    value: ['', [Validators.required, Validators.minLength(2)]],
+  });
+
+  startEdit(entry: CatalogEntry): void {
+    this.editingId.set(entry.id);
+    this.editForm.setValue({ value: entry.value });
+    this.error.set(null);
+  }
+
+  cancelEdit(): void {
+    this.editingId.set(null);
+    this.editForm.reset();
+  }
+
+  async submitEdit(): Promise<void> {
+    const id = this.editingId();
+    if (!id || this.editForm.invalid || this.saving()) return;
+
+    const newValue = this.editForm.getRawValue().value!.trim();
+    const duplicated = this.catalogSvc.categorias().some(
+      c => c.id !== id && c.value.toLowerCase() === newValue.toLowerCase()
+    );
+    if (duplicated) {
+      this.error.set('Ya existe otra categoria con ese nombre.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.error.set(null);
+    try {
+      await this.catalogSvc.updateEntry('CATEGORIA', id, newValue);
+      this.cancelEdit();
+    } catch (e: any) {
+      this.error.set(e?.error?.error ?? 'Error al actualizar la categoria');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async deleteEntry(entry: CatalogEntry): Promise<void> {
+    if (this.saving()) return;
+    if (!confirm(`¿Eliminar la categoria "${entry.value}"? Dejará de aparecer en los formularios; las tareas existentes no se modifican.`)) {
+      return;
+    }
+    this.saving.set(true);
+    this.error.set(null);
+    try {
+      await this.catalogSvc.deleteEntry('CATEGORIA', entry.id);
+    } catch (e: any) {
+      this.error.set(e?.error?.error ?? 'Error al eliminar la categoria');
     } finally {
       this.saving.set(false);
     }

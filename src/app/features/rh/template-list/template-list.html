@@ -135,8 +135,8 @@
               </div>
             </div>
 
-            <!-- Footer acciones -->
-            @if (isManager()) {
+            <!-- Footer acciones — solo ADMIN puede modificar plantillas de capacitación -->
+            @if (isAdmin()) {
               <div class="px-5 pb-4 pt-3 border-t border-white/[0.06] flex gap-2">
                 <button type="button" (click)="openEdit(t)"
                         class="flex-1 text-center text-xs font-medium text-white/70 border border-white/10 rounded-lg py-2 hover:bg-white/[0.04] transition-colors">

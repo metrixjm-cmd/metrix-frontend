@@ -302,6 +302,30 @@ export class TaskDetail implements OnInit {
     this.actionError.set(null);
   }
 
+  /** El asignado puede borrar evidencias mientras la tarea está en progreso;
+   *  ADMIN/GERENTE pueden depurarlas en cualquier estado. */
+  readonly canDeleteEvidence = computed(() =>
+    this.canUploadEvidence() || this.isManagerView(),
+  );
+
+  deletingEvidenceUrl = signal<string | null>(null);
+
+  deleteEvidence(url: string): void {
+    const taskId = this.task()?.id;
+    if (!taskId || this.deletingEvidenceUrl()) return;
+    if (!confirm('¿Eliminar esta evidencia? Esta acción no se puede deshacer.')) return;
+
+    this.deletingEvidenceUrl.set(url);
+    this.actionError.set(null);
+    this.taskSvc.deleteEvidence(taskId, url).subscribe({
+      next: () => this.deletingEvidenceUrl.set(null),
+      error: err => {
+        this.deletingEvidenceUrl.set(null);
+        this.actionError.set(this.extractMsg(err));
+      },
+    });
+  }
+
   private extractMsg(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
       const e = (err as { error?: { error?: string; message?: string } }).error;

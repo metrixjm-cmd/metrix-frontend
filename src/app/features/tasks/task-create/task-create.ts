@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../../auth/services/auth.service';
 import { TaskService } from '../services/task.service';
@@ -245,25 +245,32 @@ export class TaskCreate implements OnInit {
     this.submitting.set(true);
     this.submitError.set(null);
 
-    try {
-      const createdTasks = await firstValueFrom(
-        forkJoin(taskRequests.map(request => this.taskSvc.createTask(request)))
-      );
-      this.createdTasksCount.set(createdTasks.length);
+    // allSettled (no forkJoin): si falla una tarea, las demás igual se crean
+    // y se informa el conteo real — evita reintentos que duplican tareas.
+    const results = await Promise.allSettled(
+      taskRequests.map(request => firstValueFrom(this.taskSvc.createTask(request)))
+    );
+    const created = results.filter(r => r.status === 'fulfilled').length;
+    const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+
+    this.createdTasksCount.set(created);
+    this.templateDecisionOpen.set(false);
+    this.templateNamingOpen.set(false);
+
+    if (failures.length === 0) {
       this.submitted.set(true);
       this.selectedTemplate.set(null);
       this.selectedTemplateSnapshot.set(null);
       this.pendingTaskRequests = null;
-      this.templateDecisionOpen.set(false);
-      this.templateNamingOpen.set(false);
-    } catch (err) {
-      this.templateDecisionOpen.set(false);
-      this.templateNamingOpen.set(false);
-      this.submitError.set(this.extractMsg(err));
-    } finally {
-      this.submitting.set(false);
-      this.templateDecisionSaving.set(false);
+    } else {
+      const reason = this.extractMsg(failures[0].reason);
+      this.submitError.set(created > 0
+        ? `Se crearon ${created} de ${taskRequests.length} tareas. Las restantes fallaron: ${reason}`
+        : reason);
     }
+
+    this.submitting.set(false);
+    this.templateDecisionSaving.set(false);
   }
 
   private openTemplateDecision(taskRequests: CreateTaskRequest[]): void {
@@ -695,8 +702,12 @@ export class TaskCreate implements OnInit {
         this.submitting.set(false);
         return;
       }
-      if (startDate.getTime() < Date.now()) {
-        this.dueDateError.set('La fecha de inicio no puede ser anterior al momento actual.');
+      // Se valida a nivel de DÍA (no de hora): una tarea creada a las 10am
+      // con inicio "hoy 8am" es válida — el backend solo valida la fecha límite.
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      if (startDate.getTime() < startOfToday.getTime()) {
+        this.dueDateError.set('La fecha de inicio no puede ser un día anterior a hoy.');
         this.submitting.set(false);
         return;
       }
@@ -714,6 +725,11 @@ export class TaskCreate implements OnInit {
       }
       if (endDate.getTime() <= startDate.getTime()) {
         this.dueDateError.set('La fecha limite debe ser posterior a la fecha de inicio.');
+        this.submitting.set(false);
+        return;
+      }
+      if (endDate.getTime() <= Date.now()) {
+        this.dueDateError.set('La fecha y hora límite ya pasaron. Elige una hora futura.');
         this.submitting.set(false);
         return;
       }
@@ -831,8 +847,17 @@ export class TaskCreate implements OnInit {
 
   private extractMsg(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const e = (err as { error?: { message?: string } }).error;
+      const e = (err as {
+        error?: { message?: string; error?: string; details?: Record<string, string> };
+      }).error;
+      // GlobalExceptionHandler devuelve { error: "mensaje" } y, en validaciones,
+      // { error: "Error de validación", details: { campo: "mensaje" } }.
+      if (e?.details && typeof e.details === 'object') {
+        const first = Object.values(e.details)[0];
+        if (first) return first;
+      }
       if (e?.message) return e.message;
+      if (typeof e?.error === 'string' && e.error) return e.error;
     }
     return 'Error al crear la tarea. Verifica los datos e intenta de nuevo.';
   }

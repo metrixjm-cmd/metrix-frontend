@@ -41,7 +41,10 @@ export class BitacoraExamenes implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
-    if (user?.storeId) {
+    if (this.isAdmin()) {
+      // ADMIN ve la bitácora completa del sistema, tenga o no sucursal asignada
+      this.trainerSvc.loadAll();
+    } else if (user?.storeId) {
       this.trainerSvc.loadByStore(user.storeId);
     }
   }

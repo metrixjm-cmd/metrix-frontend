@@ -19,6 +19,8 @@ export class NotificationService {
   private eventSource: EventSource | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private currentToken: string | null = null;
+  /** Usuario (sub del JWT) de la última conexión — para aislar inboxes entre sesiones. */
+  private lastUser: string | null = null;
 
   // ── Estado reactivo ───────────────────────────────────────────────────────
 
@@ -44,6 +46,14 @@ export class NotificationService {
   connect(token: string): void {
     this.disconnect();
     this.currentToken = token;
+
+    // Si el token pertenece a OTRO usuario (logout + login en el mismo navegador),
+    // vaciar el inbox: las alertas del usuario anterior no deben filtrarse al nuevo.
+    const user = this.extractSubject(token);
+    if (user !== this.lastUser) {
+      this._notifications.set([]);
+      this.lastUser = user;
+    }
 
     // Evita que Angular Service Worker intercepte SSE (rompe streams en producción)
     const url = `${environment.apiUrl}/notifications/stream?token=${encodeURIComponent(token)}&ngsw-bypass=true`;
@@ -127,6 +137,17 @@ export class NotificationService {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+
+  /** Extrae el `sub` (numeroUsuario) del payload del JWT sin validar la firma. */
+  private extractSubject(token: string): string | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+      return typeof decoded.sub === 'string' ? decoded.sub : null;
+    } catch {
+      return null;
+    }
+  }
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer !== null || !this.currentToken) return;

@@ -55,12 +55,29 @@ export class CatalogService {
     const entry = await firstValueFrom(
       this.http.post<CatalogEntry>(this.baseUrl + '/' + type, { value, role })
     );
-    // Refrescar la lista correspondiente
+    await this.reload(type);
+    return entry;
+  }
+
+  async updateEntry(type: string, id: string, value: string, role?: string): Promise<CatalogEntry> {
+    const entry = await firstValueFrom(
+      this.http.put<CatalogEntry>(`${this.baseUrl}/${type}/${id}`, { value, role })
+    );
+    await this.reload(type);
+    return entry;
+  }
+
+  /** Soft-delete: el backend desactiva la entrada (deja de aparecer en dropdowns). */
+  async deleteEntry(type: string, id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.baseUrl}/${type}/${id}`));
+    await this.reload(type);
+  }
+
+  private async reload(type: string): Promise<void> {
     switch (type) {
       case 'PUESTO':    await this.loadPuestos(); break;
       case 'TURNO':     await this.loadTurnos(); break;
       case 'CATEGORIA': await this.loadCategorias(); break;
     }
-    return entry;
   }
 }

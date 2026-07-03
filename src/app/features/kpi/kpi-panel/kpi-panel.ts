@@ -257,12 +257,23 @@ export class KpiPanel implements OnInit {
 
   ngOnInit(): void {
     const storeId = this.auth.currentUser()?.storeId;
-    if (storeId) {
-      this.kpiSvc.loadStoreSummary(storeId);
+    const isAdmin = this.auth.hasRole('ADMIN');
+
+    if (isAdmin) {
+      // ADMIN: métricas globales del sistema — no dependen de tener sucursal asignada
+      this.kpiSvc.loadGlobalSummary();
       this.kpiSvc.loadRanking();
-      this.kpiSvc.loadUsersResponsibility(storeId);
-      this.kpiSvc.loadCorrectionSpeed(storeId);
+      this.kpiSvc.loadUsersResponsibilityGlobal();
       this.kpiSvc.loadAnalyticsIgeo();
+    } else if (storeId) {
+      this.kpiSvc.loadStoreSummary(storeId);
+      this.kpiSvc.loadUsersResponsibility(storeId);
+      this.kpiSvc.loadAnalyticsIgeo();
+    }
+
+    // KPIs que el backend solo expone por sucursal
+    if (storeId) {
+      this.kpiSvc.loadCorrectionSpeed(storeId);
       this.kpiSvc.loadIncidentKpis(storeId);
       this.kpiSvc.loadTrainingKpis(storeId);
       this.kpiSvc.loadExamKpis(storeId);

@@ -139,6 +139,28 @@ export class KpiService {
       });
   }
 
+  /** KPIs globales de todo el sistema (todas las sucursales). Solo ADMIN. */
+  loadGlobalSummary(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<KpiSummary>(`${this.apiUrl}/summary`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  s   => { this._summary.set(s); this._loading.set(false); },
+        error: err => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
+  /** KPI #7 global: ranking de TODOS los colaboradores del sistema. Solo ADMIN. */
+  loadUsersResponsibilityGlobal(): void {
+    this.http.get<UserResponsibilityEntry[]>(`${this.apiUrl}/users`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  r   => this._usersResponsibility.set(r),
+        error: err => this._error.set(this.extractMessage(err)),
+      });
+  }
+
   loadMySummary(): void {
     this._loading.set(true);
     this._error.set(null);

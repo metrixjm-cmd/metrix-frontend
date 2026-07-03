@@ -262,6 +262,32 @@ export class TaskService {
       );
   }
 
+  /** Elimina una evidencia (archivo + registros) y actualiza los signals locales. */
+  deleteEvidence(taskId: string, url: string): Observable<void> {
+    return this.http
+      .delete<void>(`${this.apiUrl}/${taskId}/evidence`, { params: { url } })
+      .pipe(
+        tap(() => {
+          const removeUrl = (list: string[] | undefined) => (list ?? []).filter(u => u !== url);
+          this._tasks.update(list =>
+            this.normalizeTasks(list).map(t => t.id !== taskId ? t : {
+              ...t,
+              evidenceImages: removeUrl(t.evidenceImages),
+              evidenceVideos: removeUrl(t.evidenceVideos),
+            }),
+          );
+          if (this._selectedTask()?.id === taskId) {
+            const selected = this._selectedTask()!;
+            this._selectedTask.set({
+              ...selected,
+              evidenceImages: removeUrl(selected.evidenceImages),
+              evidenceVideos: removeUrl(selected.evidenceVideos),
+            });
+          }
+        }),
+      );
+  }
+
   deactivateTask(taskId: string): Observable<void> {
     return this.http
       .patch<void>(`${this.apiUrl}/${taskId}/deactivate`, {})

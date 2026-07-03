@@ -254,7 +254,7 @@
                   </div>
 
                   @if (templateDropdownOpen() && templateResults().length > 0) {
-                    <div class="absolute z-50 w-full mt-1 bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden max-h-72 overflow-y-auto">
+                    <div class="absolute z-50 w-full mt-1 bg-[#0e1628] border border-white/10 rounded-xl overflow-hidden max-h-72 overflow-y-auto shadow-[0_8px_40px_rgba(0,0,0,0.6)]">
                       <div class="px-3 py-2 border-b border-white/[0.06] bg-white/[0.03] flex items-center justify-between">
                         <span class="text-xs font-medium text-white/50">Categorias</span>
                         <span class="text-xs text-white/40">{{ templateResults().length }} resultados</span>
@@ -304,7 +304,7 @@
                   }
 
                   @if (templateDropdownOpen() && !templateSearching() && templateResults().length === 0 && (form.get('title')?.value?.length ?? 0) >= 1) {
-                    <div class="absolute z-50 w-full mt-1 bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
+                    <div class="absolute z-50 w-full mt-1 bg-[#0e1628] border border-white/10 rounded-xl overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.6)]">
                       <div class="px-4 py-3 text-center">
                         <p class="text-xs text-white/40">Sin coincidencias en categorias. Continúa escribiendo para crear manualmente.</p>
                       </div>

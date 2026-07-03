@@ -160,15 +160,13 @@ export class Dashboard implements OnInit {
     const storeId = this.auth.currentUser()?.storeId ?? '';
 
     if (this.isAdmin()) {
-      // ADMIN ve todas las tareas del sistema
+      // ADMIN ve todo el sistema — NO depende de tener sucursal asignada
       this.taskSvc.loadAllTasks();
-      if (storeId) {
-        this.kpiSvc.loadStoreSummary(storeId);
-        this.kpiSvc.loadRanking();
-        this.kpiSvc.loadUsersResponsibility(storeId);
-        this.kpiSvc.loadAnalyticsIgeo();
-        this.incidentSvc.loadByStore(storeId);
-      }
+      this.kpiSvc.loadGlobalSummary();
+      this.kpiSvc.loadRanking();
+      this.kpiSvc.loadUsersResponsibilityGlobal();
+      this.kpiSvc.loadAnalyticsIgeo();
+      this.incidentSvc.loadVisible();
     } else if (this.isManagerView()) {
       // GERENTE ve tareas de su sucursal
       if (storeId) {

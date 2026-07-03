@@ -52,6 +52,16 @@ export class TrainerService {
       });
   }
 
+  /** Todos los exámenes del sistema (todas las sucursales). Solo ADMIN. */
+  loadAll(): void {
+    this._loading.set(true);
+    this.http.get<ExamResponse[]>(this.apiUrl)
+      .subscribe({
+        next:  exams => { this._exams.set(exams); this._loading.set(false); },
+        error: ()    => this._loading.set(false),
+      });
+  }
+
   loadMySubmissions(): void {
     this.http.get<ExamSubmissionResponse[]>(`${this.apiUrl}/my-submissions`)
       .subscribe({ next: s => this._mySubmissions.set(s) });

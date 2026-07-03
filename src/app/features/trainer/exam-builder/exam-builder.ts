@@ -5,6 +5,7 @@ import { map, startWith, switchMap } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import { TrainerService } from '../services/trainer.service';
 import {
   CreateExamQuestionDto,
@@ -42,8 +43,15 @@ export class ExamBuilder implements OnInit {
   private readonly fb          = inject(FormBuilder);
   private readonly auth        = inject(AuthService);
   private readonly trainerSvc  = inject(TrainerService);
+  private readonly settingsSvc = inject(SettingsService);
   private readonly router      = inject(Router);
   private readonly route       = inject(ActivatedRoute);
+
+  /** El ADMIN no tiene sucursal propia: debe elegir a cuál pertenece el examen. */
+  readonly needsStoreSelector = computed(() =>
+    this.auth.hasRole('ADMIN') || !this.auth.currentUser()?.storeId
+  );
+  readonly stores = this.settingsSvc.stores;
 
   readonly saving        = signal(false);
   readonly error         = signal('');
@@ -66,6 +74,7 @@ export class ExamBuilder implements OnInit {
   readonly form = this.fb.group({
     title:          ['', [Validators.required, Validators.maxLength(120)]],
     description:    [''],
+    storeId:        [this.auth.currentUser()?.storeId ?? '', Validators.required],
     targetAudience: ['EJECUTADOR' as ExamAudience, Validators.required],
     passingScore:   [70, [Validators.required, Validators.min(1), Validators.max(100)]],
     timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
@@ -98,6 +107,10 @@ export class ExamBuilder implements OnInit {
       this.returnUrl.set(requestedReturnUrl);
     }
 
+    if (this.needsStoreSelector() && this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
+
     const examId = this.route.snapshot.paramMap.get('examId');
     if (examId) {
       this.editMode.set(true);
@@ -113,6 +126,7 @@ export class ExamBuilder implements OnInit {
       this.form.patchValue({
         title: exam.title,
         description: exam.description || '',
+        storeId: exam.storeId || this.auth.currentUser()?.storeId || '',
         targetAudience: exam.targetAudience ?? 'EJECUTADOR',
         passingScore: exam.passingScore,
         timeLimitHours: exam.timeLimitMinutes ? Math.ceil(exam.timeLimitMinutes / 60) : null,
@@ -240,6 +254,7 @@ export class ExamBuilder implements OnInit {
 
     const fv = this.form.controls;
     if (fv.title.invalid)          { this.showToast('El título del examen es obligatorio.'); return; }
+    if (fv.storeId.invalid)        { this.showToast('Selecciona la sucursal a la que pertenece el examen.'); return; }
     if (fv.timeLimitHours.invalid) { this.showToast('Selecciona la duración del examen.'); return; }
     if (fv.passingScore.invalid)   { this.showToast('El puntaje mínimo debe estar entre 1 y 100.'); return; }
 
@@ -281,12 +296,11 @@ export class ExamBuilder implements OnInit {
     if (!this.canSubmit()) return;
     this.saving.set(true);
     this.error.set('');
-    const user = this.auth.currentUser()!;
     const fv   = this.form.value;
     const payload = {
       title:       fv.title!,
       description: fv.description || undefined,
-      storeId:     user.storeId!,
+      storeId:     fv.storeId!,
       targetAudience: fv.targetAudience!,
       passingScore:     fv.passingScore!,
       timeLimitMinutes: fv.timeLimitHours! * 60,
@@ -299,11 +313,26 @@ export class ExamBuilder implements OnInit {
         await this.trainerSvc.createExam(payload);
       }
       this.router.navigateByUrl(this.returnUrl());
-    } catch {
-      this.error.set('No se pudo guardar el examen. Verifica los datos e intenta de nuevo.');
+    } catch (err) {
+      this.error.set(this.extractMsg(err));
     } finally {
       this.saving.set(false);
     }
+  }
+
+  private extractMsg(err: unknown): string {
+    if (err && typeof err === 'object' && 'error' in err) {
+      const e = (err as {
+        error?: { message?: string; error?: string; details?: Record<string, string> };
+      }).error;
+      if (e?.details && typeof e.details === 'object') {
+        const first = Object.values(e.details)[0];
+        if (first) return first;
+      }
+      if (e?.message) return e.message;
+      if (typeof e?.error === 'string' && e.error) return e.error;
+    }
+    return 'No se pudo guardar el examen. Verifica los datos e intenta de nuevo.';
   }
 
   // ── Helpers privados ──────────────────────────────────────────────────
