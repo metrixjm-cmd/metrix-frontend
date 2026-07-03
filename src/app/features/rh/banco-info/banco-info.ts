@@ -34,11 +34,16 @@ export class BancoInfo implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
-    if (user?.storeId) {
+    if (this.isAdmin()) {
+      // ADMIN no tiene sucursal: usar endpoint global en vez de scope por storeId.
+      this.rhSvc.loadAll();
+      this.settingsSvc.loadAll();
+    } else if (user?.storeId) {
       this.rhSvc.loadUsersByStore(user.storeId);
+    }
+    if (user?.storeId) {
       this.trainerSvc.loadByStore(user.storeId);
     }
-    if (this.isAdmin()) this.settingsSvc.loadAll();
     this.taskTemplateSvc.loadAll().catch(() => undefined);
     this.catalogSvc.loadCategorias();
   }
