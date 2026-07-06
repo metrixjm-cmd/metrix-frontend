@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule, FormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthService } from '../../auth/services/auth.service';
@@ -31,6 +31,14 @@ type EditableTemplateSnapshot = {
   category: string;
   steps: EditableTemplateStep[];
 };
+
+/** Al menos un colaborador — Validators.required no detecta [] en arrays. */
+function nonEmptyArrayValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    return Array.isArray(value) && value.length > 0 ? null : { required: true };
+  };
+}
 
 @Component({
   selector: 'app-task-create',
@@ -360,8 +368,10 @@ export class TaskCreate implements OnInit {
   /** Usuarios disponibles en la sucursal seleccionada, filtrados por rol destino */
   filteredUsers = computed(() => {
     const role = this.targetRole();
-    return this.rhSvc.users().filter(u => u.activo && u.roles.includes(role));
+    return this.rhSvc.users().filter(u => u.activo && this.userHasRole(u, role));
   });
+
+  readonly assigneeCount = signal(0);
 
   /** Sucursales activas */
   activeStores = computed(() => this.settingsSvc.stores().filter(s => s.activo));
@@ -377,10 +387,16 @@ export class TaskCreate implements OnInit {
   /** Al cambiar sucursal, recargar usuarios y limpiar selección de colaborador */
   onStoreChange(storeId: string): void {
     this.form.get('storeId')?.setValue(storeId);
-    this.form.get('assignedToIds')?.setValue([]);
+    this.syncAssigneeCount([]);
     if (storeId) {
       this.rhSvc.loadUsersByStore(storeId);
     }
+  }
+
+  private syncAssigneeCount(ids?: string[]): void {
+    const next = ids ?? (this.form.get('assignedToIds')?.value as string[] | null) ?? [];
+    this.form.get('assignedToIds')?.setValue(next);
+    this.assigneeCount.set(next.length);
   }
 
   /** Meses disponibles */
@@ -554,7 +570,7 @@ export class TaskCreate implements OnInit {
     isRecurring: [false],
     recurrenceStartTime: [''],
     recurrenceEndTime:   [''],
-    assignedToIds:[[] as string[], [Validators.required, Validators.minLength(1)]],
+    assignedToIds:[[] as string[], nonEmptyArrayValidator()],
     storeId:     [this.auth.currentUser()?.storeId ?? '', Validators.required],
     startDay:    ['' as string | number, Validators.required],
     startMonth:  ['' as string | number, Validators.required],
@@ -565,13 +581,16 @@ export class TaskCreate implements OnInit {
   });
 
   toggleUser(userId: string): void {
-    const current = this.form.get('assignedToIds')?.value || [];
+    const ctrl = this.form.get('assignedToIds');
+    const current = (ctrl?.value as string[]) || [];
     const index = current.indexOf(userId);
-    if (index >= 0) {
-      this.form.get('assignedToIds')?.setValue(current.filter((id: string) => id !== userId));
-    } else {
-      this.form.get('assignedToIds')?.setValue([...current, userId]);
-    }
+    const next = index >= 0
+      ? current.filter((id: string) => id !== userId)
+      : [...current, userId];
+    ctrl?.setValue(next);
+    ctrl?.markAsDirty();
+    ctrl?.updateValueAndValidity();
+    this.assigneeCount.set(next.length);
   }
 
   isUserSelected(userId: string): boolean {
@@ -580,11 +599,33 @@ export class TaskCreate implements OnInit {
 
   selectAllUsers(): void {
     const allIds = this.filteredUsers().map(u => u.id);
-    this.form.get('assignedToIds')?.setValue(allIds);
+    const ctrl = this.form.get('assignedToIds');
+    ctrl?.setValue(allIds);
+    ctrl?.markAsDirty();
+    ctrl?.updateValueAndValidity();
+    this.assigneeCount.set(allIds.length);
   }
 
   clearUsers(): void {
-    this.form.get('assignedToIds')?.setValue([]);
+    const ctrl = this.form.get('assignedToIds');
+    ctrl?.setValue([]);
+    ctrl?.markAsDirty();
+    ctrl?.updateValueAndValidity();
+    this.assigneeCount.set(0);
+  }
+
+  /** Atajo: fecha límite = mañana (mismo mes o siguiente). */
+  setDueTomorrow(): void {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.form.patchValue({
+      dueDay: tomorrow.getDate(),
+      dueMonth: tomorrow.getMonth() + 1,
+    });
+    if (!this.form.get('dueTime')?.value) {
+      this.form.get('dueTime')?.setValue('17:00');
+    }
+    this.dueDateError.set(null);
   }
 
   /** Signal: si el toggle de recurrencia está activo */
@@ -600,6 +641,19 @@ export class TaskCreate implements OnInit {
       this.form.get('recurrenceEndTime')?.setValue(this.form.get('recurrenceEndTime')?.value || '17:00');
     } else {
       dateFields.forEach(f => { this.form.get(f)?.setValidators(Validators.required); });
+      const today = new Date();
+      const patch: Record<string, string | number> = {};
+      if (!this.form.get('startDay')?.value) {
+        patch['startDay'] = today.getDate();
+        patch['startMonth'] = today.getMonth() + 1;
+      }
+      if (!this.form.get('dueDay')?.value) {
+        patch['dueDay'] = today.getDate();
+        patch['dueMonth'] = today.getMonth() + 1;
+      }
+      if (Object.keys(patch).length > 0) {
+        this.form.patchValue(patch);
+      }
       this.selectedDays.set(new Set());
       this.form.get('recurrenceStartTime')?.setValue('');
       this.form.get('recurrenceEndTime')?.setValue('');
@@ -654,8 +708,22 @@ export class TaskCreate implements OnInit {
   }
 
   onSubmit(): void {
+    this.submitError.set(null);
+    this.dueDateError.set(null);
+    this.isRecurring.set(!!this.form.get('isRecurring')?.value);
+
+    const assignedIds = (this.form.get('assignedToIds')?.value ?? []) as string[];
+    if (!Array.isArray(assignedIds) || assignedIds.length === 0) {
+      this.form.get('assignedToIds')?.markAsTouched();
+      this.submitError.set('Debes seleccionar al menos un colaborador.');
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      if (!this.submitError()) {
+        this.submitError.set('Revisa los campos obligatorios del formulario.');
+      }
       return;
     }
 
@@ -689,21 +757,17 @@ export class TaskCreate implements OnInit {
       placeholder.setFullYear(placeholder.getFullYear() + 1);
       dueAt = placeholder.toISOString();
     } else {
-      const year = new Date().getFullYear();
-
-      // Construir fecha inicio
       const sMonth = Number(v.startMonth);
       const sDay = Number(v.startDay);
       const [sH, sM] = (v.startTime || '00:00').split(':').map(Number);
-      const startDate = new Date(year, sMonth - 1, sDay, sH, sM);
+      const startYear = this.resolveScheduleYear(sMonth, sDay, sH, sM);
+      const startDate = new Date(startYear, sMonth - 1, sDay, sH, sM);
 
       if (startDate.getMonth() !== sMonth - 1 || startDate.getDate() !== sDay) {
         this.dueDateError.set(`El dia ${sDay} no existe en el mes de inicio seleccionado.`);
         this.submitting.set(false);
         return;
       }
-      // Se valida a nivel de DÍA (no de hora): una tarea creada a las 10am
-      // con inicio "hoy 8am" es válida — el backend solo valida la fecha límite.
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
       if (startDate.getTime() < startOfToday.getTime()) {
@@ -712,16 +776,19 @@ export class TaskCreate implements OnInit {
         return;
       }
 
-      // Construir fecha fin
       const eMonth = Number(v.dueMonth);
       const eDay = Number(v.dueDay);
       const [eH, eM] = (v.dueTime || '00:00').split(':').map(Number);
-      const endDate = new Date(year, eMonth - 1, eDay, eH, eM);
+      let dueYear = Math.max(startYear, this.resolveScheduleYear(eMonth, eDay, eH, eM));
+      let endDate = new Date(dueYear, eMonth - 1, eDay, eH, eM);
 
       if (endDate.getMonth() !== eMonth - 1 || endDate.getDate() !== eDay) {
         this.dueDateError.set(`El dia ${eDay} no existe en el mes limite seleccionado.`);
         this.submitting.set(false);
         return;
+      }
+      if (endDate.getTime() <= startDate.getTime()) {
+        endDate = new Date(dueYear + 1, eMonth - 1, eDay, eH, eM);
       }
       if (endDate.getTime() <= startDate.getTime()) {
         this.dueDateError.set('La fecha limite debe ser posterior a la fecha de inicio.');
@@ -817,6 +884,7 @@ export class TaskCreate implements OnInit {
     this.dueHour12.set('');
     this.dueMinute.set('');
     this.dueMeridiem.set('PM');
+    this.assigneeCount.set(0);
     this.cancelEditStep();
     this.form.reset({
       title: '',
@@ -840,11 +908,6 @@ export class TaskCreate implements OnInit {
     }
   }
 
-  hasError(field: string, error: string): boolean {
-    const ctrl = this.form.get(field);
-    return !!(ctrl?.hasError(error) && ctrl?.touched);
-  }
-
   private extractMsg(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
       const e = (err as {
@@ -860,5 +923,26 @@ export class TaskCreate implements OnInit {
       if (typeof e?.error === 'string' && e.error) return e.error;
     }
     return 'Error al crear la tarea. Verifica los datos e intenta de nuevo.';
+  }
+
+  private userHasRole(user: { roles?: string[] }, role: 'GERENTE' | 'EJECUTADOR'): boolean {
+    return (user.roles ?? []).some(r => r === role || r === `ROLE_${role}`);
+  }
+
+  /** Año calendario: si mes/día ya pasó este año, usar el siguiente. */
+  private resolveScheduleYear(month: number, day: number, hour: number, minute: number): number {
+    const now = new Date();
+    const year = now.getFullYear();
+    const candidate = new Date(year, month - 1, day, hour, minute);
+    const startOfToday = new Date(year, now.getMonth(), now.getDate());
+    if (candidate.getTime() < startOfToday.getTime()) {
+      return year + 1;
+    }
+    return year;
+  }
+
+  hasError(field: string, error: string): boolean {
+    const ctrl = this.form.get(field);
+    return !!(ctrl?.hasError(error) && ctrl?.touched);
   }
 }
