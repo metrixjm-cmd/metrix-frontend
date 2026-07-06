@@ -47,9 +47,10 @@ export class ExamBuilder implements OnInit {
   private readonly router      = inject(Router);
   private readonly route       = inject(ActivatedRoute);
 
-  /** El ADMIN no tiene sucursal propia: debe elegir a cuál pertenece el examen. */
+  /** El ADMIN elige sucursal al crear desde /trainer; en banco/bitácora el examen es global. */
+  readonly bankMode = computed(() => this.returnUrl() === '/banco-info/bitacora-examenes');
   readonly needsStoreSelector = computed(() =>
-    this.auth.hasRole('ADMIN') || !this.auth.currentUser()?.storeId
+    !this.bankMode() && (this.auth.hasRole('ADMIN') || !this.auth.currentUser()?.storeId)
   );
   readonly stores = this.settingsSvc.stores;
 
@@ -105,6 +106,9 @@ export class ExamBuilder implements OnInit {
     const requestedReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     if (requestedReturnUrl === '/banco-info/bitacora-examenes') {
       this.returnUrl.set(requestedReturnUrl);
+      this.form.controls.storeId.clearValidators();
+      this.form.controls.storeId.setValue('');
+      this.form.controls.storeId.updateValueAndValidity();
     }
 
     if (this.needsStoreSelector() && this.settingsSvc.stores().length === 0) {
@@ -254,7 +258,10 @@ export class ExamBuilder implements OnInit {
 
     const fv = this.form.controls;
     if (fv.title.invalid)          { this.showToast('El título del examen es obligatorio.'); return; }
-    if (fv.storeId.invalid)        { this.showToast('Selecciona la sucursal a la que pertenece el examen.'); return; }
+    if (!this.bankMode() && fv.storeId.invalid) {
+      this.showToast('Selecciona la sucursal a la que pertenece el examen.');
+      return;
+    }
     if (fv.timeLimitHours.invalid) { this.showToast('Selecciona la duración del examen.'); return; }
     if (fv.passingScore.invalid)   { this.showToast('El puntaje mínimo debe estar entre 1 y 100.'); return; }
 
@@ -300,7 +307,7 @@ export class ExamBuilder implements OnInit {
     const payload = {
       title:       fv.title!,
       description: fv.description || undefined,
-      storeId:     fv.storeId!,
+      ...(this.bankMode() ? {} : { storeId: fv.storeId || undefined }),
       targetAudience: fv.targetAudience!,
       passingScore:     fv.passingScore!,
       timeLimitMinutes: fv.timeLimitHours! * 60,

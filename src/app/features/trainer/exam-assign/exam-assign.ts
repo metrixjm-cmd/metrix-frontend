@@ -59,6 +59,7 @@ export class ExamAssign implements OnInit {
   readonly canAssign = computed(() => this.isAdmin() || this.isExecutorExam());
 
   readonly examStoreId = computed(() => this.exam()?.storeId ?? this.auth.currentUser()?.storeId ?? '');
+  readonly isGlobalExam = computed(() => !this.exam()?.storeId);
 
   readonly filteredManagers = computed(() => {
     const q = this.managerSearch().trim().toLowerCase();
@@ -126,9 +127,21 @@ export class ExamAssign implements OnInit {
   }
 
   private async loadAlreadyAssigned(): Promise<void> {
-    const storeId = this.examStoreId();
     const examId = this.exam()?.id;
-    if (!storeId || !examId) return;
+    if (!examId) return;
+
+    if (this.isGlobalExam()) {
+      const trainings = await firstValueFrom(
+        this.http.get<{ assignedUserId: string }[]>(
+          `${environment.apiUrl}/trainings/exam/${examId}`
+        )
+      );
+      this.alreadyAssignedUserIds.set(new Set(trainings.map(t => t.assignedUserId)));
+      return;
+    }
+
+    const storeId = this.examStoreId();
+    if (!storeId) return;
     const trainings = await firstValueFrom(
       this.http.get<{ assignedUserId: string; examId?: string }[]>(
         `${environment.apiUrl}/trainings/store/${storeId}`
@@ -142,10 +155,19 @@ export class ExamAssign implements OnInit {
 
   /** Carga destinatarios según el rol: gerentes para ADMIN, ejecutadores para GERENTE. */
   private async loadOptions(): Promise<void> {
-    const storeId = this.examStoreId();
-    if (!storeId) return;
-
     if (this.isAdmin()) {
+      if (this.isGlobalExam()) {
+        const users = await firstValueFrom(
+          this.http.get<UserProfile[]>(`${environment.apiUrl}/users/all`)
+        );
+        this.managerOptions.set(
+          users.filter(u => u.activo && this.hasRole(u, 'GERENTE'))
+        );
+        return;
+      }
+
+      const storeId = this.examStoreId();
+      if (!storeId) return;
       try {
         this.managerOptions.set(await this.rhSvc.getManagersByStore(storeId));
       } catch {
@@ -155,7 +177,11 @@ export class ExamAssign implements OnInit {
       return;
     }
 
-    // GERENTE: solo redistribuye exámenes de tipo Ejecutador.
+    const storeId = this.examStoreId();
+    if (!storeId) {
+      this.selectionError.set('No se pudo determinar la sucursal para cargar ejecutadores.');
+      return;
+    }
     if (!this.isExecutorExam()) {
       this.selectionError.set('Este examen es para gerentes; no se redistribuye a ejecutadores.');
       this.executorOptions.set([]);
@@ -225,13 +251,25 @@ export class ExamAssign implements OnInit {
     return new Date(Date.now() + 7 * 86400000).toISOString();
   }
 
+  private resolveStoreIdForUser(userId: string): string {
+    const exam = this.exam()!;
+    if (exam.storeId) return exam.storeId;
+
+    const user = [...this.managerOptions(), ...this.executorOptions()]
+      .find(u => u.id === userId);
+    if (!user?.storeId) {
+      throw new Error('No se pudo determinar la sucursal del destinatario.');
+    }
+    return user.storeId;
+  }
+
   private buildPayload(userId: string): CreateTrainingRequest {
     const exam = this.exam()!;
     return {
       title: exam.title,
       description: exam.description || `Examen asignado: ${exam.title}`,
       assignedUserId: userId,
-      storeId: exam.storeId,
+      storeId: this.resolveStoreIdForUser(userId),
       shift: 'TODOS',
       startDate: new Date().toISOString(),
       dueAt: this.buildDueAt(),

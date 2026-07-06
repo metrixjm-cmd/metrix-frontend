@@ -40,7 +40,7 @@ export interface ExamResponse {
   title: string;
   description?: string;
   trainingId?: string;
-  storeId: string;
+  storeId?: string;
   targetAudience: ExamAudience;
   questions: ExamQuestion[];
   passingScore: number;
@@ -161,7 +161,7 @@ export interface CreateExamRequest {
   title: string;
   description?: string;
   trainingId?: string;
-  storeId: string;
+  storeId?: string;
   targetAudience: ExamAudience;
   questions: CreateExamQuestionDto[];
   passingScore: number;
@@ -243,7 +243,7 @@ export interface ExamTemplateDetail {
 }
 
 export interface CreateFromTemplateRequest {
-  storeId: string;
+  storeId?: string;
   passingScore?: number;
   timeLimitMinutes?: number;
 }

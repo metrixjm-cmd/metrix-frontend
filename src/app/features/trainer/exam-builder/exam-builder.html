@@ -9,7 +9,11 @@
     </a>
     <div>
       <h1 class="text-xl font-bold text-white">{{ editMode() ? 'Editar examen' : 'Nuevo examen' }}</h1>
-      <p class="text-white/50 text-sm">Se guardará en la bitácora de exámenes</p>
+      <p class="text-white/50 text-sm">
+        {{ bankMode()
+          ? 'Se guardará en el catálogo global. Asigna sucursal y destinatarios después.'
+          : 'Se guardará en la bitácora de exámenes' }}
+      </p>
     </div>
   </div>
 

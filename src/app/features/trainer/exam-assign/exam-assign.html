@@ -37,7 +37,13 @@
       </div>
 
       <div class="mt-4 flex flex-wrap gap-2 text-xs text-white/50">
-        <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Sucursal {{ currentExam.storeId }}</span>
+        @if (isGlobalExam()) {
+          <span class="rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-violet-200">
+            Catálogo global
+          </span>
+        } @else {
+          <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Sucursal {{ currentExam.storeId }}</span>
+        }
         @if (targetAudience()) {
           <span class="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-cyan-200">
             Examen para {{ examAudienceLabel().toLowerCase() }}
