@@ -425,7 +425,10 @@ export class TrainingCreate implements OnInit {
       if (this.isAdmin()) {
         await this.loadExamRecipientsForAdmin();
       } else {
-        this.rhSvc.loadUsersByStore(exam.storeId);
+        const storeId = exam.storeId ?? this.authSvc.currentUser()?.storeId;
+        if (storeId) {
+          this.rhSvc.loadUsersByStore(storeId);
+        }
       }
     } catch {
       // El formulario sigue disponible aunque el examen no pueda cargarse.
@@ -433,12 +436,21 @@ export class TrainingCreate implements OnInit {
   }
 
   private async loadExamRecipientsForAdmin(): Promise<void> {
-    const storeId = this.assignmentStoreId();
-    if (!storeId) return;
+    const exam = this.sourceExam();
     this.assignmentLoading.set(true);
     this.assignmentError.set('');
     try {
-      const managers = await this.rhSvc.getManagersByStore(storeId);
+      let managers: UserProfile[];
+      if (exam && !exam.storeId) {
+        const users = await this.rhSvc.getAllUsers();
+        managers = users.filter(u =>
+          u.activo && (u.roles ?? []).some(r => r === 'GERENTE' || r === 'ROLE_GERENTE')
+        );
+      } else {
+        const storeId = this.assignmentStoreId();
+        if (!storeId) return;
+        managers = await this.rhSvc.getManagersByStore(storeId);
+      }
       this.managerOptions.set(managers);
       this.executorOptions.set([]);
       this.selectedManagerIds.set([]);

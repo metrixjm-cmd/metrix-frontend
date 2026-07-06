@@ -77,6 +77,12 @@ export class RhService {
     );
   }
 
+  getAllUsers(): Promise<UserProfile[]> {
+    return firstValueFrom(
+      this.http.get<UserProfile[]>(`${this.apiUrl}/all`)
+    );
+  }
+
   getExecutorsByManagers(storeId: string, managerIds: string[]): Promise<UserProfile[]> {
     return firstValueFrom(
       this.http.get<UserProfile[]>(`${this.apiUrl}/executors`, {
