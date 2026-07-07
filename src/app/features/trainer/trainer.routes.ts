@@ -9,13 +9,13 @@ export const TRAINER_ROUTES: Routes = [
   },
   {
     path: 'new',
-    canActivate: [roleGuard('ADMIN', 'GERENTE')],
+    canActivate: [roleGuard('ADMIN')],
     loadComponent: () =>
       import('./exam-builder/exam-builder').then(m => m.ExamBuilder),
   },
   {
     path: ':examId/edit',
-    canActivate: [roleGuard('ADMIN', 'GERENTE')],
+    canActivate: [roleGuard('ADMIN')],
     loadComponent: () =>
       import('./exam-builder/exam-builder').then(m => m.ExamBuilder),
   },

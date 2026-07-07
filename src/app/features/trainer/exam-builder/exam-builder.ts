@@ -4,8 +4,6 @@ import { merge, of } from 'rxjs';
 import { map, startWith, switchMap } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../auth/services/auth.service';
-import { SettingsService } from '../../settings/services/settings.service';
 import { TrainerService } from '../services/trainer.service';
 import {
   CreateExamQuestionDto,
@@ -41,18 +39,9 @@ import {
 })
 export class ExamBuilder implements OnInit {
   private readonly fb          = inject(FormBuilder);
-  private readonly auth        = inject(AuthService);
   private readonly trainerSvc  = inject(TrainerService);
-  private readonly settingsSvc = inject(SettingsService);
   private readonly router      = inject(Router);
   private readonly route       = inject(ActivatedRoute);
-
-  /** El ADMIN elige sucursal al crear desde /trainer; en banco/bitácora el examen es global. */
-  readonly bankMode = computed(() => this.returnUrl() === '/banco-info/bitacora-examenes');
-  readonly needsStoreSelector = computed(() =>
-    !this.bankMode() && (this.auth.hasRole('ADMIN') || !this.auth.currentUser()?.storeId)
-  );
-  readonly stores = this.settingsSvc.stores;
 
   readonly saving        = signal(false);
   readonly error         = signal('');
@@ -75,7 +64,6 @@ export class ExamBuilder implements OnInit {
   readonly form = this.fb.group({
     title:          ['', [Validators.required, Validators.maxLength(120)]],
     description:    [''],
-    storeId:        [this.auth.currentUser()?.storeId ?? '', Validators.required],
     targetAudience: ['EJECUTADOR' as ExamAudience, Validators.required],
     passingScore:   [70, [Validators.required, Validators.min(1), Validators.max(100)]],
     timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
@@ -106,13 +94,6 @@ export class ExamBuilder implements OnInit {
     const requestedReturnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     if (requestedReturnUrl === '/banco-info/bitacora-examenes') {
       this.returnUrl.set(requestedReturnUrl);
-      this.form.controls.storeId.clearValidators();
-      this.form.controls.storeId.setValue('');
-      this.form.controls.storeId.updateValueAndValidity();
-    }
-
-    if (this.needsStoreSelector() && this.settingsSvc.stores().length === 0) {
-      this.settingsSvc.loadAll();
     }
 
     const examId = this.route.snapshot.paramMap.get('examId');
@@ -130,7 +111,6 @@ export class ExamBuilder implements OnInit {
       this.form.patchValue({
         title: exam.title,
         description: exam.description || '',
-        storeId: exam.storeId || this.auth.currentUser()?.storeId || '',
         targetAudience: exam.targetAudience ?? 'EJECUTADOR',
         passingScore: exam.passingScore,
         timeLimitHours: exam.timeLimitMinutes ? Math.ceil(exam.timeLimitMinutes / 60) : null,
@@ -258,10 +238,6 @@ export class ExamBuilder implements OnInit {
 
     const fv = this.form.controls;
     if (fv.title.invalid)          { this.showToast('El título del examen es obligatorio.'); return; }
-    if (!this.bankMode() && fv.storeId.invalid) {
-      this.showToast('Selecciona la sucursal a la que pertenece el examen.');
-      return;
-    }
     if (fv.timeLimitHours.invalid) { this.showToast('Selecciona la duración del examen.'); return; }
     if (fv.passingScore.invalid)   { this.showToast('El puntaje mínimo debe estar entre 1 y 100.'); return; }
 
@@ -307,7 +283,6 @@ export class ExamBuilder implements OnInit {
     const payload = {
       title:       fv.title!,
       description: fv.description || undefined,
-      ...(this.bankMode() ? {} : { storeId: fv.storeId || undefined }),
       targetAudience: fv.targetAudience!,
       passingScore:     fv.passingScore!,
       timeLimitMinutes: fv.timeLimitHours! * 60,

@@ -350,7 +350,13 @@
               </div>
               <div class="flex-1 min-w-0 space-y-1">
                 <h3 class="font-semibold text-white">Bitácora de exámenes</h3>
-                <p class="text-sm text-white/50 leading-relaxed">Exámenes creados para la sucursal</p>
+                <p class="text-sm text-white/50 leading-relaxed">
+                  @if (isAdmin()) {
+                    Catálogo global — crea y asigna exámenes
+                  } @else {
+                    Exámenes disponibles para asignar a tu equipo
+                  }
+                </p>
               </div>
             </div>
             <!-- Content -->
@@ -361,13 +367,18 @@
             <!-- Footer -->
             <div class="relative px-4 pb-4 flex gap-2">
               <a routerLink="/banco-info/bitacora-examenes"
-                 class="flex-1 text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors">
+                 class="text-center text-sm font-medium text-cyan-300 border border-cyan-500/25 rounded-lg py-2 hover:bg-cyan-500/[0.05] transition-colors"
+                 [class.flex-1]="isAdmin()"
+                 [class.w-full]="!isAdmin()">
                 Ver examenes
               </a>
-              <a routerLink="/trainer/new"
-                 class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
-                + Nuevo examen
-              </a>
+              @if (isAdmin()) {
+                <a routerLink="/trainer/new"
+                   [queryParams]="{ returnUrl: '/banco-info/bitacora-examenes' }"
+                   class="flex-1 text-center text-sm font-medium bg-brand-600 text-white rounded-lg py-2 hover:bg-brand-700 transition-colors">
+                  + Nuevo examen
+                </a>
+              }
             </div>
           </div>
 

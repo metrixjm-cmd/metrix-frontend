@@ -41,7 +41,9 @@ export class BancoInfo implements OnInit {
     } else if (user?.storeId) {
       this.rhSvc.loadUsersByStore(user.storeId);
     }
-    if (user?.storeId) {
+    if (this.isAdmin()) {
+      this.trainerSvc.loadAll();
+    } else if (user?.storeId) {
       this.trainerSvc.loadByStore(user.storeId);
     }
     this.taskTemplateSvc.loadAll().catch(() => undefined);

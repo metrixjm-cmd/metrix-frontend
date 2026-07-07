@@ -24,6 +24,8 @@ export class BitacoraExamenes implements OnInit {
 
   readonly isManager = computed(() => this.auth.hasAnyRole('ADMIN', 'GERENTE'));
   readonly isAdmin = computed(() => this.auth.hasRole('ADMIN'));
+  readonly isGerenteOnly = computed(() =>
+    this.auth.hasRole('GERENTE') && !this.auth.hasRole('ADMIN'));
 
   readonly activeTab = signal<ExamAudience>('GERENTE');
 
@@ -41,8 +43,10 @@ export class BitacoraExamenes implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
+    if (this.isGerenteOnly()) {
+      this.activeTab.set('EJECUTADOR');
+    }
     if (this.isAdmin()) {
-      // ADMIN ve la bitácora completa del sistema, tenga o no sucursal asignada
       this.trainerSvc.loadAll();
     } else if (user?.storeId) {
       this.trainerSvc.loadByStore(user.storeId);
