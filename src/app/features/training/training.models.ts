@@ -47,7 +47,7 @@ export interface TrainingResponse {
   position: string;
   storeId: string;
   shift: string;
-  dueAt: string;
+  dueAt?: string;
   assignmentGroupId?: string | null;
   examId?: string | null;
   // plantilla y materiales
@@ -76,7 +76,7 @@ export interface CreateTrainingRequest {
   assignedUserId: string;
   storeId: string;
   shift: string;
-  dueAt: string;
+  dueAt?: string;
   // multi-día
   startDate?: string;
   // opcionales
@@ -101,7 +101,7 @@ export interface UpdateTrainingRequest {
   description: string;
   storeId: string;
   shift: string;
-  dueAt: string;
+  dueAt?: string;
 }
 
 export interface UpdateTrainingProgressRequest {

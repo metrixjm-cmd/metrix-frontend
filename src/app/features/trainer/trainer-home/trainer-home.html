@@ -5,8 +5,10 @@
       <h1 class="text-2xl font-bold text-white">{{ isGerente() ? 'Mis exámenes asignados' : 'Exámenes' }}</h1>
       <p class="text-white/50 text-sm mt-1">
         {{ isGerente()
-          ? 'Aquí ves los exámenes que te asignó el administrador para resolver.'
-          : 'Evaluaciones y capacitaciones por examen' }}
+          ? 'Resuelve los exámenes que te asignó el administrador y designa exámenes a tu equipo.'
+          : isAdmin()
+            ? 'Asigna exámenes a gerentes y consulta el avance. Crea exámenes desde Banco de Datos.'
+            : 'Evaluaciones y capacitaciones por examen' }}
       </p>
     </div>
   </div>
@@ -56,7 +58,7 @@
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <h3 class="font-semibold text-white text-base leading-snug">{{ training.title }}</h3>
-                  <p class="text-xs text-white/45 mt-1">{{ training.position }} · vence {{ training.dueAt | appDate:'date' }}</p>
+                  <p class="text-xs text-white/45 mt-1">{{ training.position }}</p>
                 </div>
                 <span class="px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap {{ trainingStatusClass(training.status) }}">
                   {{ trainingStatusLabel(training.status) }}
@@ -96,7 +98,7 @@
     @if (gerenteTab() === 'PARA_EJECUTADORES') {
       @if (examsForExecutors().length === 0) {
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-8 text-center">
-          <p class="text-white/50 text-sm">No hay exámenes para ejecutadores en tu sucursal.</p>
+          <p class="text-white/50 text-sm">No hay exámenes para ejecutadores en el catálogo.</p>
         </div>
       } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -171,6 +173,12 @@
       </button>
     </div>
 
+    @if (adminTab() === 'EJECUTADOR') {
+      <p class="text-sm text-white/45">
+        Los exámenes para ejecutadores los asignan los gerentes desde su pestaña «Exámenes para designar».
+      </p>
+    }
+
     @if (loading()) {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (i of [1,2,3]; track i) {
@@ -190,9 +198,12 @@
         <p class="text-white/50 text-sm">
           No hay exámenes para {{ adminTab() === 'GERENTE' ? 'gerentes' : 'ejecutadores' }}
         </p>
-        <a routerLink="/trainer/new" class="mt-3 inline-block text-orange-500 text-sm font-medium hover:underline">
-          Crear examen →
-        </a>
+        @if (isAdmin()) {
+          <a routerLink="/banco-info/bitacora-examenes"
+             class="mt-3 inline-block text-orange-500 text-sm font-medium hover:underline">
+            Crear exámenes en Banco de Datos →
+          </a>
+        }
       </div>
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -278,15 +289,19 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 mt-auto pt-3 border-t border-white/[0.06]">
+            <div class="grid gap-2 mt-auto pt-3 border-t border-white/[0.06]"
+                 [class.grid-cols-2]="adminTab() === 'GERENTE'"
+                 [class.grid-cols-1]="adminTab() === 'EJECUTADOR'">
               <a [routerLink]="['/trainer', exam.id, 'view']"
                  class="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/70 border border-white/15 rounded-lg px-3 py-2 hover:bg-white/[0.06] hover:text-white transition-colors">
                 Ver examen
               </a>
-              <a [routerLink]="['/trainer', exam.id, 'assign']"
-                 class="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-orange-600 text-white rounded-lg px-3 py-2 hover:bg-orange-700 transition-colors">
-                Asignar
-              </a>
+              @if (adminTab() === 'GERENTE') {
+                <a [routerLink]="['/trainer', exam.id, 'assign']"
+                   class="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-orange-600 text-white rounded-lg px-3 py-2 hover:bg-orange-700 transition-colors">
+                  Asignar
+                </a>
+              }
             </div>
           </div>
         }
@@ -314,9 +329,6 @@
             }
 
             <div class="flex items-center gap-3 text-xs text-white/40">
-              @if (training.dueAt) {
-                <span>{{ training.dueAt | appDate:'due' }}</span>
-              }
               @if (attemptCountByExam().get(training.examId!); as attempts) {
                 <span>{{ attempts }} intento{{ attempts > 1 ? 's' : '' }}</span>
               }

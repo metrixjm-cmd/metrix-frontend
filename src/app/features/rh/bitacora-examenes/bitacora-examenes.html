@@ -13,9 +13,9 @@
         <h1 class="text-2xl font-bold text-white">Bitácora de exámenes</h1>
         <p class="text-white/50 text-sm mt-1">
           @if (isGerenteOnly()) {
-            Consulta exámenes para ejecutadores y asígnalos a tu equipo. Para resolver los tuyos, ve a Mis Exámenes.
+            Consulta el catálogo de exámenes (solo lectura). Para asignar a tu equipo, ve al menú Exámenes.
           } @else {
-            Catálogo global de exámenes. Asigna sucursal y destinatarios desde Exámenes.
+            Crea y edita exámenes del catálogo global. Asígnalos desde el menú Exámenes.
           }
         </p>
       </div>
@@ -117,10 +117,6 @@
           <!-- Acciones -->
           <div class="flex gap-2 shrink-0">
             @if (isAdmin()) {
-              <a [routerLink]="['/trainer', exam.id, 'assign']"
-                 class="text-xs font-medium text-orange-300 border border-orange-500/25 rounded-lg px-3 py-2 hover:bg-orange-500/[0.05] transition-colors">
-                Asignar
-              </a>
               <button (click)="goView(exam)"
                       class="text-xs font-medium text-white/80 border border-white/15 rounded-lg px-3 py-2 hover:bg-white/[0.06] transition-colors">
                 Ver examen
@@ -133,11 +129,7 @@
                       class="text-xs font-medium text-red-400 border border-red-500/25 rounded-lg px-3 py-2 hover:bg-red-500/[0.05] transition-colors">
                 Eliminar
               </button>
-            } @else if (isGerenteOnly() && exam.targetAudience === 'EJECUTADOR') {
-              <a [routerLink]="['/trainer', exam.id, 'assign']"
-                 class="text-xs font-medium text-orange-300 border border-orange-500/25 rounded-lg px-3 py-2 hover:bg-orange-500/[0.05] transition-colors">
-                Asignar a ejecutadores
-              </a>
+            } @else if (isGerenteOnly()) {
               <button (click)="goView(exam)"
                       class="text-xs font-medium text-white/80 border border-white/15 rounded-lg px-3 py-2 hover:bg-white/[0.06] transition-colors">
                 Ver examen

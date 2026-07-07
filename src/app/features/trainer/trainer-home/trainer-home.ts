@@ -88,11 +88,8 @@ export class TrainerHome implements OnInit {
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (this.isAdmin()) {
-      // ADMIN ve TODOS los exámenes del sistema, tenga o no sucursal asignada
       this.trainerSvc.loadAll();
-      if (user?.storeId) {
-        this.trainingSvc.loadByStore(user.storeId);
-      }
+      this.trainingSvc.loadAll();
     }
     if (this.isGerente() && user?.storeId) {
       this.trainerSvc.loadByStore(user.storeId);
