@@ -24,10 +24,15 @@
   }
 
   @if (showCreateForm()) {
-    <form [formGroup]="createForm"
+    <form #createFormAnchor
+          [formGroup]="createForm"
           (ngSubmit)="submitCreate()"
           class="bg-cyan-500/[0.05] border border-cyan-500/25 rounded-xl p-4 space-y-3">
       <p class="text-sm font-medium text-cyan-300">Nuevo puesto para {{ roleLabels[createRole() ?? 'EJECUTADOR'] }}</p>
+
+      @if (createSuccess()) {
+        <p class="text-xs text-emerald-400">{{ createSuccess() }}</p>
+      }
 
       <div>
         <label class="block text-xs font-medium text-white/60 mb-1">Nombre *</label>

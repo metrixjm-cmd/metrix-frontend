@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ElementRef, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -32,7 +32,10 @@ export class PuestoList implements OnInit {
 
   readonly saving     = signal(false);
   readonly error      = signal<string | null>(null);
+  readonly createSuccess = signal<string | null>(null);
   readonly createRole = signal<'GERENTE' | 'EJECUTADOR' | null>(null);
+
+  private readonly createFormAnchor = viewChild<ElementRef<HTMLElement>>('createFormAnchor');
 
   readonly showCreateForm = signal(false);
   readonly createForm = this.fb.group({
@@ -59,12 +62,15 @@ export class PuestoList implements OnInit {
     this.createForm.reset();
     this.showCreateForm.set(true);
     this.error.set(null);
+    this.createSuccess.set(null);
+    this.scrollToCreateForm();
   }
 
   cancelCreate(): void {
     this.createRole.set(null);
     this.showCreateForm.set(false);
     this.createForm.reset();
+    this.createSuccess.set(null);
   }
 
   async submitCreate(): Promise<void> {
@@ -90,9 +96,9 @@ export class PuestoList implements OnInit {
     try {
       await this.catalogSvc.addEntry('PUESTO', newValue, role);
       await this.catalogSvc.loadPuestos();
-      this.showCreateForm.set(false);
-      this.createRole.set(null);
       this.createForm.reset();
+      this.createSuccess.set(`"${newValue}" guardado. Puedes agregar otro puesto.`);
+      this.scrollToCreateForm();
     } catch (e: any) {
       this.error.set(e?.error?.error ?? 'Error al crear el puesto');
     } finally {
@@ -169,5 +175,11 @@ export class PuestoList implements OnInit {
   private currentEditingRole(): string | undefined {
     const id = this.editingId();
     return this.catalogSvc.puestos().find(entry => entry.id === id)?.role;
+  }
+
+  private scrollToCreateForm(): void {
+    requestAnimationFrame(() => {
+      this.createFormAnchor()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 }
