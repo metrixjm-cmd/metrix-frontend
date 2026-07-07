@@ -126,17 +126,14 @@
                     <span class="text-white/60 font-semibold">{{ examAssignments(exam.id).length }}</span>
                   </div>
                   @if (examAssignments(exam.id).length > 0) {
-                    <div class="mt-2 space-y-1.5">
-                      @for (training of examAssignments(exam.id).slice(0, 3); track training.id) {
+                    <div class="mt-2 max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                      @for (training of examAssignments(exam.id); track training.id) {
                         <div class="flex items-center justify-between gap-2">
                           <p class="truncate text-[11px] text-white/55">{{ training.assignedUserName || training.position }}</p>
                           <span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium {{ trainingStatusClass(training.status) }}">
                             {{ trainingStatusLabel(training.status) }}
                           </span>
                         </div>
-                      }
-                      @if (examAssignments(exam.id).length > 3) {
-                        <p class="text-[11px] text-white/35">+{{ examAssignments(exam.id).length - 3 }} más</p>
                       }
                     </div>
                   }
@@ -223,17 +220,6 @@
                 <span>{{ exam.questions.length }} preguntas</span>
                 <span>·</span>
                 <span>Mín. {{ exam.passingScore }}%</span>
-                @if (exam.maxAttempts > 0) {
-                  @let used = attemptCountByExam().get(exam.id) ?? 0;
-                  @let left = exam.maxAttempts - used;
-                  <span class="ml-auto" [class]="left === 0
-                      ? 'bg-red-500/15 text-red-400 border border-red-500/25 rounded-full px-2 py-0.5'
-                      : left === 1
-                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/25 rounded-full px-2 py-0.5'
-                      : 'bg-white/[0.02] text-white/50 border border-white/10 rounded-full px-2 py-0.5'">
-                    {{ left === 0 ? 'Sin intentos' : left + ' intento' + (left === 1 ? '' : 's') }}
-                  </span>
-                }
               </div>
 
               <div class="mb-4">
@@ -257,8 +243,8 @@
                 @if (examAssignments(exam.id).length === 0) {
                   <p class="text-xs text-white/35">Aún no hay usuarios con este examen asignado.</p>
                 } @else {
-                  <div class="space-y-2">
-                    @for (training of examAssignments(exam.id).slice(0, 3); track training.id) {
+                  <div class="max-h-48 overflow-y-auto space-y-2 pr-1">
+                    @for (training of examAssignments(exam.id); track training.id) {
                       <div class="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2">
                         <div class="flex items-start justify-between gap-2">
                           <div class="min-w-0">
@@ -280,9 +266,6 @@
                           </span>
                         </div>
                       </div>
-                    }
-                    @if (examAssignments(exam.id).length > 3) {
-                      <p class="text-[11px] text-white/35">Y {{ examAssignments(exam.id).length - 3 }} asignación(es) más.</p>
                     }
                   </div>
                 }

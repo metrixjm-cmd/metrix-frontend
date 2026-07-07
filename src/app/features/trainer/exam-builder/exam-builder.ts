@@ -50,7 +50,7 @@ export class ExamBuilder implements OnInit {
   readonly typeLabels    = QUESTION_TYPE_LABELS;
   readonly audienceLabels = EXAM_AUDIENCE_LABELS;
   readonly audiences: ExamAudience[] = ['GERENTE', 'EJECUTADOR'];
-  readonly hours = Array.from({ length: 24 }, (_, i) => i + 1);
+  readonly hours = Array.from({ length: 5 }, (_, i) => i + 1);
 
   readonly editMode = signal(false);
   readonly editExamId = signal<string | null>(null);
@@ -64,9 +64,9 @@ export class ExamBuilder implements OnInit {
   readonly form = this.fb.group({
     title:          ['', [Validators.required, Validators.maxLength(120)]],
     description:    [''],
-    targetAudience: ['EJECUTADOR' as ExamAudience, Validators.required],
+    targetAudience: ['GERENTE' as ExamAudience, Validators.required],
     passingScore:   [70, [Validators.required, Validators.min(1), Validators.max(100)]],
-    timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(24)]],
+    timeLimitHours: [null as number | null, [Validators.required, Validators.min(1), Validators.max(5)]],
   });
 
   readonly questions = signal<FormGroup[]>([]);
@@ -111,7 +111,7 @@ export class ExamBuilder implements OnInit {
       this.form.patchValue({
         title: exam.title,
         description: exam.description || '',
-        targetAudience: exam.targetAudience ?? 'EJECUTADOR',
+        targetAudience: exam.targetAudience ?? 'GERENTE',
         passingScore: exam.passingScore,
         timeLimitHours: exam.timeLimitMinutes ? Math.ceil(exam.timeLimitMinutes / 60) : null,
       });
