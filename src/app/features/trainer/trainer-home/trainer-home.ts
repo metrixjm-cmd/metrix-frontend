@@ -135,4 +135,12 @@ export class TrainerHome implements OnInit {
   examAssignments(examId: string) {
     return this.assignmentsByExam().get(examId) ?? [];
   }
+
+  hasAttemptedExam(examId: string | null | undefined): boolean {
+    return !!examId && this.attemptCountByExam().has(examId);
+  }
+
+  lastSubmissionFor(examId: string) {
+    return this.lastSub().get(examId) ?? null;
+  }
 }

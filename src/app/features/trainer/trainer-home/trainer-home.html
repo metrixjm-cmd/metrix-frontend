@@ -83,10 +83,22 @@
               </div>
 
               <div class="mt-auto grid grid-cols-1 gap-2 pt-2 border-t border-white/[0.06]">
-                <a [routerLink]="['/trainer', training.examId, 'take']"
-                   class="inline-flex items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors">
-                  {{ training.status === 'COMPLETADA' ? 'Ver examen' : training.status === 'EN_CURSO' ? 'Continuar examen' : 'Resolver examen' }}
-                </a>
+                @if (hasAttemptedExam(training.examId)) {
+                  @if (lastSubmissionFor(training.examId!)?.passed) {
+                    <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-300">
+                      Examen aprobado
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center justify-center rounded-lg border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-300">
+                      Examen enviado — sin reintento
+                    </span>
+                  }
+                } @else {
+                  <a [routerLink]="['/trainer', training.examId, 'take']"
+                     class="inline-flex items-center justify-center rounded-lg bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors">
+                    Resolver examen
+                  </a>
+                }
               </div>
             </div>
           }
@@ -331,14 +343,20 @@
             }
 
             <div class="mt-auto pt-3 border-t border-white/[0.06]">
-              @if (training.status === 'COMPLETADA' && training.passed) {
-                <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                  Examen aprobado
-                </span>
+              @if (hasAttemptedExam(training.examId)) {
+                @if (lastSubmissionFor(training.examId!)?.passed) {
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                    Examen aprobado
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium text-red-400">
+                    Examen enviado — sin reintento
+                  </span>
+                }
               } @else {
                 <a [routerLink]="['/trainer', training.examId, 'take']"
                    class="inline-flex items-center justify-center gap-1.5 w-full text-xs font-medium bg-orange-600 text-white rounded-lg px-3 py-2 hover:bg-orange-700 transition-colors">
-                  {{ attemptCountByExam().has(training.examId!) ? 'Reintentar examen' : 'Resolver examen' }}
+                  Resolver examen
                 </a>
               }
             </div>
