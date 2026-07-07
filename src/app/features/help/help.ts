@@ -46,7 +46,12 @@ export class Help {
         {
           id: 't3',
           question: '¿Cómo adjunto evidencia fotográfica o de video?',
-          answer:   'Abre el detalle de la tarea (debe estar EN PROGRESO). Desplázate a la sección "Evidencias" y arrastra archivos o haz clic en el área de carga. Se aceptan imágenes (JPG, PNG, WebP hasta 10 MB) y videos (MP4, WebM hasta 50 MB). Las evidencias quedan almacenadas en la nube.',
+          answer:   'Abre el detalle de la tarea (debe estar EN PROGRESO). Desplázate a la sección "Evidencias" y arrastra archivos o haz clic en el área de carga. Se aceptan imágenes (JPG, PNG, WebP hasta 10 MB) y videos (MP4, WebM hasta 50 MB). Las evidencias quedan almacenadas en la nube. Si subiste un archivo por error, puedes eliminarlo desde el mismo detalle (ver "¿Puedo eliminar una evidencia subida por error?").',
+        },
+        {
+          id: 't6',
+          question: '¿Puedo eliminar una evidencia subida por error?',
+          answer:   'Sí. En el detalle de la tarea, cada evidencia muestra un botón "Eliminar evidencia" (ícono de papelera). El colaborador asignado puede borrar evidencias mientras la tarea está EN PROGRESO. GERENTE y ADMIN pueden eliminar evidencias en cualquier estado de la tarea. La acción pide confirmación y no se puede deshacer.',
         },
         {
           id: 't4',
