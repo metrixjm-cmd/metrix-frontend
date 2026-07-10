@@ -50,6 +50,7 @@ export interface TrainingResponse {
   dueAt?: string;
   assignmentGroupId?: string | null;
   examId?: string | null;
+  retryGranted: boolean;
   // plantilla y materiales
   templateId: string | null;
   materials:  TrainingMaterialRef[];

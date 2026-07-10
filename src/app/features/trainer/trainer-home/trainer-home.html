@@ -90,7 +90,7 @@
               </div>
 
               <div class="mt-auto grid grid-cols-1 gap-2 pt-2 border-t border-white/[0.06]">
-                @if (hasAttemptedExam(training.examId)) {
+                @if (hasAttemptedExam(training)) {
                   @if (lastSubmissionFor(training.examId!)?.passed) {
                     <span class="inline-flex items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-300">
                       Examen aprobado
@@ -166,6 +166,13 @@
                                       title="Quitar y poder reasignar"
                                       class="text-[10px] font-medium text-white/35 hover:text-red-300 transition-colors">
                                 Quitar
+                              </button>
+                            }
+                            @if (canReassignAfterFailure(training)) {
+                              <button type="button" (click)="reassignAfterFailure(training)"
+                                      title="Dar una segunda oportunidad (solo una vez)"
+                                      class="text-[10px] font-medium text-cyan-300/70 hover:text-cyan-200 transition-colors">
+                                Reasignar
                               </button>
                             }
                           </div>
@@ -317,6 +324,13 @@
                                 Quitar
                               </button>
                             }
+                            @if (canReassignAfterFailure(training)) {
+                              <button type="button" (click)="reassignAfterFailure(training)"
+                                      title="Dar una segunda oportunidad (solo una vez)"
+                                      class="text-[10px] font-medium text-cyan-300/70 hover:text-cyan-200 transition-colors">
+                                Reasignar
+                              </button>
+                            }
                           </div>
                         </div>
                         <div class="mt-2 flex items-center justify-between text-[11px] text-white/40">
@@ -399,7 +413,7 @@
             }
 
             <div class="mt-auto pt-3 border-t border-white/[0.06]">
-              @if (hasAttemptedExam(training.examId)) {
+              @if (hasAttemptedExam(training)) {
                 @if (lastSubmissionFor(training.examId!)?.passed) {
                   <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
                     Examen aprobado

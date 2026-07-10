@@ -136,8 +136,12 @@ export class TrainerHome implements OnInit {
     return this.assignmentsByExam().get(examId) ?? [];
   }
 
-  hasAttemptedExam(examId: string | null | undefined): boolean {
-    return !!examId && this.attemptCountByExam().has(examId);
+  /** true si ya se agotaron los intentos disponibles (1, o 2 si tiene reasignación otorgada). */
+  hasAttemptedExam(training: TrainingResponse): boolean {
+    if (!training.examId) return false;
+    const attempts = this.attemptCountByExam().get(training.examId) ?? 0;
+    const allowed = training.retryGranted ? 2 : 1;
+    return attempts >= allowed;
   }
 
   lastSubmissionFor(examId: string) {
@@ -202,6 +206,22 @@ export class TrainerHome implements OnInit {
       await this.trainingSvc.delete(training.id);
     } catch {
       this.actionFeedback.set('No se pudo quitar la asignación.');
+    }
+  }
+
+  /** Solo cuando reprobó, está COMPLETADA y no se le ha otorgado ya la reasignación única. */
+  canReassignAfterFailure(training: TrainingResponse): boolean {
+    return training.status === 'COMPLETADA' && training.passed === false && !training.retryGranted;
+  }
+
+  async reassignAfterFailure(training: TrainingResponse): Promise<void> {
+    const name = training.assignedUserName || training.position;
+    if (!confirm(`¿Dar a ${name} una segunda oportunidad en este examen? Solo se puede hacer una vez.`)) return;
+    try {
+      await this.trainingSvc.reassignRetry(training.id);
+      this.actionFeedback.set(`Se le dio una nueva oportunidad a ${name}.`);
+    } catch {
+      this.actionFeedback.set('No se pudo reasignar el examen.');
     }
   }
 }

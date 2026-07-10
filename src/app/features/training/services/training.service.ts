@@ -280,6 +280,24 @@ export class TrainingService {
     }
   }
 
+  /** Reasignación única de un examen reprobado — desactiva la actual y crea una con un intento extra. */
+  async reassignRetry(id: string): Promise<TrainingResponse> {
+    this.ensureUserScope();
+    this._saving.set(true);
+    this._error.set(null);
+    try {
+      const t = await firstValueFrom(this.http.post<TrainingResponse>(`${this.apiUrl}/${id}/reassign-retry`, {}));
+      this.removeById(id);
+      this.upsert(t);
+      return t;
+    } catch (err) {
+      this._error.set(this.extractMessage(err));
+      throw err;
+    } finally {
+      this._saving.set(false);
+    }
+  }
+
   async updateProgress(id: string, req: UpdateTrainingProgressRequest): Promise<TrainingResponse> {
     this.ensureUserScope();
     this._saving.set(true);
