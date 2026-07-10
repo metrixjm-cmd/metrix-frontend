@@ -12,7 +12,8 @@ export type NotificationType =
   | 'INCIDENT_REOPENED'
   | 'TASK_DEADLINE_WARNING'
   | 'TASK_OVERDUE'
-  | 'DAILY_IGEO_ALERT';
+  | 'DAILY_IGEO_ALERT'
+  | 'EXAM_DELETION_REQUESTED';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
@@ -26,6 +27,7 @@ export interface NotificationEvent {
   body:      string;
   taskId:     string | null;
   incidentId: string | null;
+  examId:     string | null;
   storeId:    string;
   timestamp: string; // ISO-8601
 }

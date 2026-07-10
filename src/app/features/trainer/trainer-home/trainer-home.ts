@@ -143,4 +143,43 @@ export class TrainerHome implements OnInit {
   lastSubmissionFor(examId: string) {
     return this.lastSub().get(examId) ?? null;
   }
+
+  // ── Eliminar / solicitar eliminación ────────────────────────────────────
+
+  readonly actionFeedback = signal('');
+
+  async deleteExam(examId: string, title: string): Promise<void> {
+    if (!confirm(`¿Eliminar el examen "${title}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      await this.trainerSvc.deleteExam(examId);
+    } catch {
+      this.actionFeedback.set('No se pudo eliminar el examen.');
+    }
+  }
+
+  async requestExamDeletion(examId: string, title: string): Promise<void> {
+    if (!confirm(`¿Solicitar al administrador que elimine "${title}"?`)) return;
+    try {
+      await this.trainerSvc.requestExamDeletion(examId);
+      this.actionFeedback.set('Solicitud enviada al administrador.');
+    } catch {
+      this.actionFeedback.set('No se pudo enviar la solicitud.');
+    }
+  }
+
+  // ── Quitar / reasignar ejecutador ───────────────────────────────────────
+
+  canRemoveAssignment(training: TrainingResponse): boolean {
+    return training.status !== 'COMPLETADA';
+  }
+
+  async removeAssignment(training: TrainingResponse): Promise<void> {
+    const name = training.assignedUserName || training.position;
+    if (!confirm(`¿Quitar a ${name} de este examen? Podrás volver a asignarlo después.`)) return;
+    try {
+      await this.trainingSvc.delete(training.id);
+    } catch {
+      this.actionFeedback.set('No se pudo quitar la asignación.');
+    }
+  }
 }

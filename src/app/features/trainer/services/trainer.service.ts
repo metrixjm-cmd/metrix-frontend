@@ -113,6 +113,11 @@ export class TrainerService {
     this._exams.update(list => list.filter(e => e.id !== examId));
   }
 
+  /** GERENTE solicita al ADMIN eliminar un examen — no lo borra, solo notifica. */
+  async requestExamDeletion(examId: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.apiUrl}/${examId}/request-deletion`, {}));
+  }
+
   async createFromTemplate(templateId: string, request: CreateFromTemplateRequest): Promise<ExamResponse> {
     const exam = await firstValueFrom(
       this.http.post<ExamResponse>(`${this.apiUrl}/from-template/${templateId}`, request)

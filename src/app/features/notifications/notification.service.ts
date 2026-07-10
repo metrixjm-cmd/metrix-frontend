@@ -128,6 +128,7 @@ export class NotificationService {
       body: input.body,
       taskId: null,
       incidentId: null,
+      examId: null,
       storeId: input.storeId ?? '',
       timestamp,
       read: false,
