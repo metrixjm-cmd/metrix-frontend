@@ -51,6 +51,9 @@ export interface ExamResponse {
   updatedAt: string;
   submissionCount: number;
   passRate: number;
+  deletionRequested: boolean;
+  deletionRequestedByName?: string;
+  deletionRequestCount: number;
 }
 
 /** Vista del examen para responder — SIN respuestas correctas. */

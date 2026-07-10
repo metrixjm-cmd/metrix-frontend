@@ -113,9 +113,20 @@ export class TrainerService {
     this._exams.update(list => list.filter(e => e.id !== examId));
   }
 
-  /** GERENTE solicita al ADMIN eliminar un examen — no lo borra, solo notifica. */
-  async requestExamDeletion(examId: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>(`${this.apiUrl}/${examId}/request-deletion`, {}));
+  /** GERENTE solicita al ADMIN eliminar un examen — no lo borra, marca el examen y notifica. */
+  async requestExamDeletion(examId: string): Promise<ExamResponse> {
+    const updated = await firstValueFrom(
+      this.http.post<ExamResponse>(`${this.apiUrl}/${examId}/request-deletion`, {}));
+    this._exams.update(list => list.map(e => e.id === examId ? updated : e));
+    return updated;
+  }
+
+  /** ADMIN descarta una solicitud de eliminación sin borrar el examen. */
+  async dismissDeletionRequest(examId: string): Promise<ExamResponse> {
+    const updated = await firstValueFrom(
+      this.http.post<ExamResponse>(`${this.apiUrl}/${examId}/dismiss-deletion-request`, {}));
+    this._exams.update(list => list.map(e => e.id === examId ? updated : e));
+    return updated;
   }
 
   async createFromTemplate(templateId: string, request: CreateFromTemplateRequest): Promise<ExamResponse> {

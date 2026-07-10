@@ -122,7 +122,15 @@
       } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           @for (exam of examsForExecutors(); track exam.id) {
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 flex flex-col">
+            <div class="border rounded-xl p-5 flex flex-col transition-colors"
+                 [class]="exam.deletionRequested
+                   ? 'bg-amber-500/[0.06] border-amber-500/30'
+                   : 'bg-white/[0.04] border-white/10'">
+              @if (exam.deletionRequested) {
+                <div class="mb-3 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                  Solicitud de eliminación enviada — esperando respuesta del administrador.
+                </div>
+              }
               <div class="flex-1">
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <h3 class="font-semibold text-white text-sm leading-snug">{{ exam.title }}</h3>
@@ -173,9 +181,11 @@
                    class="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-orange-600 text-white rounded-lg px-3 py-2 hover:bg-orange-700 transition-colors">
                   Asignar a ejecutadores
                 </a>
-                <button type="button" (click)="requestExamDeletion(exam.id, exam.title)"
-                        class="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/60 border border-white/15 rounded-lg px-3 py-2 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/25 transition-colors">
-                  Solicitar eliminación
+                <button type="button" (click)="requestExamDeletion(exam)"
+                        [class]="exam.deletionRequested
+                          ? 'inline-flex items-center justify-center gap-1.5 text-xs font-medium text-amber-300 border border-amber-500/30 bg-amber-500/10 rounded-lg px-3 py-2 hover:bg-amber-500/20 transition-colors'
+                          : 'inline-flex items-center justify-center gap-1.5 text-xs font-medium text-white/60 border border-white/15 rounded-lg px-3 py-2 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/25 transition-colors'">
+                  {{ exam.deletionRequested ? 'Solicitud enviada' : 'Solicitar eliminación' }}
                 </button>
               </div>
             </div>
@@ -237,7 +247,20 @@
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (exam of activeTabExams(); track exam.id) {
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 flex flex-col">
+          <div class="border rounded-xl p-5 flex flex-col transition-colors"
+               [class]="exam.deletionRequested
+                 ? 'bg-amber-500/[0.06] border-amber-500/30'
+                 : 'bg-white/[0.04] border-white/10'">
+            @if (exam.deletionRequested) {
+              <div class="mb-3 flex items-center justify-between gap-2 rounded-lg border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                <span>{{ exam.deletionRequestedByName }} solicita eliminar este examen
+                  @if (exam.deletionRequestCount > 1) { (x{{ exam.deletionRequestCount }}) }</span>
+                <button type="button" (click)="dismissDeletionRequest(exam)"
+                        class="shrink-0 font-medium text-amber-300/80 hover:text-amber-100 underline underline-offset-2">
+                  Descartar
+                </button>
+              </div>
+            }
             <div class="flex-1">
               <div class="flex items-start justify-between gap-2 mb-2">
                 <h3 class="font-semibold text-white text-sm leading-snug">{{ exam.title }}</h3>

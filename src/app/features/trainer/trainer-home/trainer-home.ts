@@ -6,7 +6,7 @@ import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { DecimalPipe } from '@angular/common';
 import { TrainingService } from '../../training/services/training.service';
 import { TrainingResponse } from '../../training/training.models';
-import { ExamAudience } from '../trainer.models';
+import { ExamAudience, ExamResponse } from '../trainer.models';
 
 @Component({
   selector: 'app-trainer-home',
@@ -157,13 +157,35 @@ export class TrainerHome implements OnInit {
     }
   }
 
-  async requestExamDeletion(examId: string, title: string): Promise<void> {
-    if (!confirm(`¿Solicitar al administrador que elimine "${title}"?`)) return;
+  async requestExamDeletion(exam: ExamResponse): Promise<void> {
+    if (!confirm(this.deletionConfirmMessage(exam))) return;
     try {
-      await this.trainerSvc.requestExamDeletion(examId);
+      await this.trainerSvc.requestExamDeletion(exam.id);
       this.actionFeedback.set('Solicitud enviada al administrador.');
     } catch {
       this.actionFeedback.set('No se pudo enviar la solicitud.');
+    }
+  }
+
+  private deletionConfirmMessage(exam: ExamResponse): string {
+    const count = exam.deletionRequestCount;
+    if (count >= 2) {
+      return `Has solicitado eliminar "${exam.title}" ${count} veces sin respuesta. `
+        + `Te recomendamos contactar directamente al administrador. ¿Aún así quieres enviar la solicitud de nuevo?`;
+    }
+    if (count === 1) {
+      return `Ya habías solicitado eliminar "${exam.title}" anteriormente y aún no se ha resuelto. `
+        + `¿Quieres solicitarlo de nuevo?`;
+    }
+    return `¿Solicitar al administrador que elimine "${exam.title}"?`;
+  }
+
+  async dismissDeletionRequest(exam: ExamResponse): Promise<void> {
+    if (!confirm(`¿Descartar la solicitud de eliminación de "${exam.title}"? Se notificará a ${exam.deletionRequestedByName ?? 'quien la pidió'}.`)) return;
+    try {
+      await this.trainerSvc.dismissDeletionRequest(exam.id);
+    } catch {
+      this.actionFeedback.set('No se pudo descartar la solicitud.');
     }
   }
 
