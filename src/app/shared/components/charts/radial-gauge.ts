@@ -3,7 +3,7 @@ import {
   computed, effect, inject, input, viewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js';
-import { PALETTE, ensureChartsRegistered, thresholdColor, withAlpha } from './chart-core';
+import { PALETTE, ensureChartsRegistered, mixHex, thresholdColor, withAlpha } from './chart-core';
 
 /**
  * Gauge radial (velocímetro 270° o anillo 360°) con valor central.
@@ -68,14 +68,6 @@ export class RadialGauge {
       const color = this.resolvedColor();
       const data = [value, Math.max(100 - value, 0)];
 
-      if (this.chart) {
-        this.chart.data.datasets[0].data = data;
-        (this.chart.data.datasets[0].backgroundColor as string[])[0] =
-          this.hasData() ? color : PALETTE.track;
-        this.chart.update();
-        return;
-      }
-
       // Tamaño fijo y cuadrado: el gauge no usa el auto-resize de Chart.js
       // (medía mal el contenedor por timing y desbordaba). Buffer escalado por
       // DPR para nitidez en pantallas retina.
@@ -86,12 +78,24 @@ export class RadialGauge {
       el.width = Math.round(size * dpr);
       el.height = Math.round(size * dpr);
 
+      const ctx = el.getContext('2d');
+      const arcFill = this.hasData() && ctx ? this.buildGradient(ctx, size, dpr, color) : (this.hasData() ? color : PALETTE.track);
+
+      if (this.chart) {
+        this.chart.data.datasets[0].data = data;
+        (this.chart.data.datasets[0].backgroundColor as (string | CanvasGradient)[])[0] =
+          this.hasData() ? arcFill : PALETTE.track;
+        this.chart.update();
+        el.style.filter = this.hasData() ? `drop-shadow(0 0 10px ${withAlpha(color, 0.55)})` : 'none';
+        return;
+      }
+
       this.chart = new Chart(el, {
         type: 'doughnut',
         data: {
           datasets: [{
             data,
-            backgroundColor: [this.hasData() ? color : PALETTE.track, PALETTE.track],
+            backgroundColor: [arcFill, PALETTE.track],
             borderWidth: 0,
             borderRadius: arc === 360 ? 0 : 8,
           }],
@@ -106,8 +110,17 @@ export class RadialGauge {
           plugins: { legend: { display: false }, tooltip: { enabled: false } },
         },
       });
-      // Glow sutil consistente con los medidores del dashboard (solo con datos).
-      el.style.filter = this.hasData() ? `drop-shadow(0 0 6px ${withAlpha(color, 0.35)})` : 'none';
+      // Glow neón consistente con el estilo del dashboard (solo con datos).
+      el.style.filter = this.hasData() ? `drop-shadow(0 0 10px ${withAlpha(color, 0.55)})` : 'none';
     });
+  }
+
+  /** Gradiente diagonal claro→base para un arco con más profundidad que un relleno plano. */
+  private buildGradient(ctx: CanvasRenderingContext2D, size: number, dpr: number, color: string): CanvasGradient {
+    const px = size * dpr;
+    const g = ctx.createLinearGradient(0, 0, px, px);
+    g.addColorStop(0, mixHex(color, '#ffffff', 0.35));
+    g.addColorStop(1, color);
+    return g;
   }
 }

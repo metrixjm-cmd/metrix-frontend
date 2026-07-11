@@ -1,6 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { SlicePipe } from '@angular/common';
 import { AuthService } from '../../auth/services/auth.service';
 import { KpiService } from '../services/kpi.service';
 import { KpiSummary, LabelCount, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
@@ -35,7 +34,7 @@ interface MetricDef {
 @Component({
   selector: 'app-kpi-panel',
   standalone: true,
-  imports: [RouterLink, SlicePipe, RadialGauge, CategoryDonut, TrendLine, DistributionBar],
+  imports: [RouterLink, RadialGauge, CategoryDonut, TrendLine, DistributionBar],
   templateUrl: './kpi-panel.html',
 })
 export class KpiPanel implements OnInit {
@@ -43,6 +42,14 @@ export class KpiPanel implements OnInit {
   private readonly kpiSvc = inject(KpiService);
 
   readonly selected = signal<string | null>(null);
+
+  // ── Desglose por dimensión (Sucursal / Colaborador / Turno) ────────
+  readonly breakdownDimension = signal<'store' | 'user' | 'shift'>('store');
+  readonly breakdownDims: { key: 'store' | 'user' | 'shift'; label: string }[] = [
+    { key: 'store', label: 'Sucursal' },
+    { key: 'user',  label: 'Colaborador' },
+    { key: 'shift', label: 'Turno' },
+  ];
 
   // ── Tabs ──────────────────────────────────────────────────────────
   readonly activeTab = signal<KpiTab>('tareas');
@@ -115,6 +122,15 @@ export class KpiPanel implements OnInit {
     },
   ];
 
+  /** Hex por métrica para las gráficas Chart.js (las clases Tailwind de `metrics` no sirven ahí). */
+  private readonly metricHexMap: Record<string, string> = {
+    igeo: PALETTE.brand, ontime: PALETTE.emerald, rework: PALETTE.red,
+    quality: PALETTE.amber, delegation: PALETTE.violet, exectime: PALETTE.cyan,
+    critical: PALETTE.rose, training: PALETTE.violet,
+  };
+  metricHex(m: MetricDef): string { return this.metricHexMap[m.key] ?? PALETTE.brand; }
+  absVal(n: number): number { return Math.abs(n); }
+
   // ── Signals derivados ─────────────────────────────────────────────
 
   readonly summary  = this.kpiSvc.summary;
@@ -137,6 +153,60 @@ export class KpiPanel implements OnInit {
       rework:  s.reworkRate,
       trend:   s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [s.igeo >= 0 ? s.igeo : 0],
     };
+  });
+
+  /** Delta del Over-all vs el punto anterior del sparkline (≈ "vs ayer"). null si no hay ≥2 puntos. */
+  readonly igeoDelta = computed(() => {
+    const t = this.taskGauges()?.trend;
+    if (!t || t.length < 2) return null;
+    return Math.round((t[t.length - 1] - t[t.length - 2]) * 10) / 10;
+  });
+
+  /** Leyenda del pipeline de tareas (para la tarjeta "Resumen de Ejecución"). */
+  readonly pipelineLegend = computed(() => {
+    const p = this.pipeline();
+    if (!p || p.total === 0) return [];
+    const pct = (n: number) => Math.round((n / p.total) * 1000) / 10;
+    return [
+      { label: 'Completadas', value: p.completed,   pct: pct(p.completed),   color: PALETTE.emerald },
+      { label: 'En Progreso', value: p.inProgress,  pct: pct(p.inProgress),  color: PALETTE.cyan },
+      { label: 'Pendientes',  value: p.pending,     pct: pct(p.pending),     color: PALETTE.amber },
+      { label: 'Fallidas',    value: p.failed,      pct: pct(p.failed),      color: PALETTE.red },
+    ];
+  });
+
+  /** Métrica que alimenta el desglose por dimensión — Over-all por defecto si no hay selección. */
+  readonly breakdownMetric = computed(() => this.selectedMetric() ?? this.metrics[0]);
+
+  readonly breakdownTitle = computed(() => {
+    if (this.breakdownDimension() === 'shift') return 'Desempeño por Turno · On-Time Rate';
+    const dimLabel = this.breakdownDimension() === 'store' ? 'Sucursal' : 'Colaborador';
+    return `Desempeño por ${dimLabel} · ${this.breakdownMetric().label}`;
+  });
+
+  /** Datos ya formateados para <app-distribution-bar> según la dimensión activa. */
+  readonly breakdownChartData = computed<ChartDatum[]>(() => {
+    const dim = this.breakdownDimension();
+    if (dim === 'shift') {
+      return this.shiftBreakdown().map(s => ({
+        label: s.shift, value: s.onTimeRate >= 0 ? s.onTimeRate : 0, color: PALETTE.cyan,
+      }));
+    }
+    const color = this.metricHex(this.breakdownMetric());
+    if (dim === 'store') {
+      return this.storeBreakdown().slice(0, 8).map(s => ({ label: s.storeName, value: s.value, color }));
+    }
+    return this.userBreakdown().slice(0, 8).map(u => ({ label: u.name, value: u.value, color }));
+  });
+
+  /**
+   * Máximo fijo del eje para el desglose — sin esto, cuando casi todos los
+   * valores son 0 (ej. rework=0 en la mayoría), Chart.js auto-escala a un
+   * máximo diminuto y las barras se ven "rotas"/invisibles.
+   */
+  readonly breakdownMax = computed<number | null>(() => {
+    if (this.breakdownDimension() === 'shift') return 100; // onTimeRate siempre %
+    return this.breakdownMetric().unit === '%' ? 100 : null;
   });
 
   // ── Incidencias: view-models para gráficas ────────────────────────
@@ -205,25 +275,26 @@ export class KpiPanel implements OnInit {
     return m.format(m.getValue(s));
   });
 
-  /** Breakdown por sucursal para la métrica seleccionada */
+  /** Breakdown por sucursal para la métrica activa (seleccionada, u Over-all por defecto) */
   readonly storeBreakdown = computed(() => {
-    const m = this.selectedMetric();
+    const m = this.breakdownMetric();
     const r = this.ranking();
-    if (!m || !m.getStoreValue || r.length === 0) return [];
+    if (!m.getStoreValue || r.length === 0) return [];
     return r
       .map(store => ({
-        storeId: store.storeId,
-        value:   m.getStoreValue!(store),
-        tasks:   store.totalTasks,
+        storeId:   store.storeId,
+        storeName: store.storeName || store.storeId,
+        value:     m.getStoreValue!(store),
+        tasks:     store.totalTasks,
       }))
       .sort((a, b) => m.lowerIsBetter ? a.value - b.value : b.value - a.value);
   });
 
-  /** Breakdown por usuario para la métrica seleccionada */
+  /** Breakdown por usuario para la métrica activa (seleccionada, u Over-all por defecto) */
   readonly userBreakdown = computed(() => {
-    const m = this.selectedMetric();
+    const m = this.breakdownMetric();
     const u = this.users();
-    if (!m || !m.getUserValue || u.length === 0) return [];
+    if (!m.getUserValue || u.length === 0) return [];
     return u
       .map(user => ({
         name:     user.nombre,

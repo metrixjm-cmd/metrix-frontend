@@ -86,6 +86,36 @@ export function thresholdColor(value: number, higherIsBetter = true): string {
   return PALETTE.red;
 }
 
+/**
+ * Plugin Chart.js: aplica un glow (sombra) SOLO a los datasets (barras/líneas),
+ * no al grid ni a las etiquetas de eje — evita que el texto se vea borroso.
+ * Se engancha en beforeDatasetsDraw/afterDatasetsDraw, que corren después de
+ * que Chart.js ya dibujó el grid pero antes/después de las marcas de datos.
+ */
+export function glowPlugin(color: string, blur = 10) {
+  return {
+    id: `glow-${color}-${blur}`,
+    beforeDatasetsDraw(chart: Chart) {
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = blur;
+    },
+    afterDatasetsDraw(chart: Chart) {
+      chart.ctx.restore();
+    },
+  };
+}
+
+/** Mezcla dos hex por una fracción t∈[0,1] — usado para gradientes de arco. */
+export function mixHex(a: string, b: string, t: number): string {
+  const pa = a.replace('#', ''), pb = b.replace('#', '');
+  const ar = parseInt(pa.substring(0, 2), 16), ag = parseInt(pa.substring(2, 4), 16), ab = parseInt(pa.substring(4, 6), 16);
+  const br = parseInt(pb.substring(0, 2), 16), bg = parseInt(pb.substring(2, 4), 16), bb = parseInt(pb.substring(4, 6), 16);
+  const r = Math.round(ar + (br - ar) * t), g = Math.round(ag + (bg - ag) * t), b2 = Math.round(ab + (bb - ab) * t);
+  return `#${[r, g, b2].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 /** Opciones de tooltip oscuro consistentes con el tema. */
 export const DARK_TOOLTIP = {
   backgroundColor: 'rgba(15, 23, 42, 0.95)',

@@ -3,7 +3,7 @@ import {
   computed, effect, inject, input, viewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js';
-import { ChartDatum, DARK_TOOLTIP, PALETTE, ensureChartsRegistered, withAlpha } from './chart-core';
+import { ChartDatum, DARK_TOOLTIP, PALETTE, ensureChartsRegistered, glowPlugin, withAlpha } from './chart-core';
 
 const FALLBACK = [PALETTE.brand, PALETTE.cyan, PALETTE.emerald, PALETTE.amber, PALETTE.violet, PALETTE.red];
 
@@ -45,9 +45,13 @@ export class DistributionBar {
       const items = this.resolved();
       const labels = items.map(d => d.label);
       const values = items.map(d => d.value);
-      const colors = items.map(d => withAlpha(d.color!, 0.85));
       const horizontal = this.horizontal();
       const max = this.max();
+      const ctx = el.getContext('2d');
+      const colors = ctx ? items.map(d => this.buildBarGradient(ctx, d.color!, horizontal)) : items.map(d => withAlpha(d.color!, 0.85));
+      // Glow tenue con el color de la primera barra — funciona bien porque en
+      // este dashboard cada gráfica de barras usa un único color por métrica.
+      const glowColor = withAlpha(items[0]?.color ?? PALETTE.brand, 0.5);
 
       if (this.chart) {
         this.chart.data.labels = labels;
@@ -69,6 +73,7 @@ export class DistributionBar {
 
       this.chart = new Chart(el, {
         type: 'bar',
+        plugins: [glowPlugin(glowColor, 8)],
         data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 6, borderWidth: 0,
                  maxBarThickness: horizontal ? 22 : 48 }] },
         options: {
@@ -83,5 +88,15 @@ export class DistributionBar {
         },
       });
     });
+  }
+
+  /** Gradiente vertical claro→base (u horizontal si la barra es horizontal). */
+  private buildBarGradient(ctx: CanvasRenderingContext2D, color: string, horizontal: boolean): CanvasGradient {
+    const g = horizontal
+      ? ctx.createLinearGradient(0, 0, 400, 0)
+      : ctx.createLinearGradient(0, 0, 0, 300);
+    g.addColorStop(0, withAlpha(color, 0.95));
+    g.addColorStop(1, withAlpha(color, 0.55));
+    return g;
   }
 }

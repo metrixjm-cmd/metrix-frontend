@@ -3,7 +3,7 @@ import {
   effect, inject, input, viewChild,
 } from '@angular/core';
 import { Chart } from 'chart.js';
-import { PALETTE, ensureChartsRegistered, withAlpha } from './chart-core';
+import { PALETTE, ensureChartsRegistered, glowPlugin, withAlpha } from './chart-core';
 
 /**
  * Línea de tendencia tipo sparkline con relleno degradado.
@@ -57,20 +57,28 @@ export class TrendLine {
         return;
       }
 
+      // Resalta el último punto (valor más reciente) con un punto más grande,
+      // como acento visual del "estado actual" de la tendencia.
+      const pointRadii = values.map((_, i) =>
+        i === values.length - 1 ? 5 : (showAxis ? 2 : 0));
+
       this.chart = new Chart(el, {
         type: 'line',
+        plugins: [glowPlugin(withAlpha(color, 0.6), 8)],
         data: {
           labels,
           datasets: [{
             data: values,
             borderColor: color,
             backgroundColor: fill,
-            borderWidth: 2,
+            borderWidth: 2.5,
             fill: true,
             tension: 0.4,
-            pointRadius: showAxis ? 2 : 0,
-            pointHoverRadius: 4,
+            pointRadius: pointRadii,
+            pointHoverRadius: 5,
             pointBackgroundColor: color,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 1,
           }],
         },
         options: {
