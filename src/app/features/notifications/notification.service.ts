@@ -1,6 +1,12 @@
 import { computed, inject, Injectable, NgZone, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AppNotification, NotificationEvent } from './notification.models';
+
+interface NotificationResponse extends NotificationEvent {
+  read: boolean;
+}
 
 /**
  * Servicio de notificaciones en tiempo real vía SSE (Sprint 6).
@@ -15,6 +21,8 @@ import { AppNotification, NotificationEvent } from './notification.models';
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly zone = inject(NgZone);
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/notifications`;
 
   private eventSource: EventSource | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -54,6 +62,10 @@ export class NotificationService {
       this._notifications.set([]);
       this.lastUser = user;
     }
+
+    // Historial persistido: cubre notificaciones enviadas mientras el usuario
+    // no tenía el stream SSE conectado (antes se perdían para siempre).
+    void this.loadRecent();
 
     // Evita que Angular Service Worker intercepte SSE (rompe streams en producción)
     const url = `${environment.apiUrl}/notifications/stream?token=${encodeURIComponent(token)}&ngsw-bypass=true`;
@@ -99,13 +111,46 @@ export class NotificationService {
     this._connected.set(false);
   }
 
+  // ── Historial persistido ──────────────────────────────────────────────────
+
+  /**
+   * Trae las últimas notificaciones persistidas del backend y las fusiona
+   * con las que ya están en memoria (recibidas en vivo por SSE), sin
+   * duplicar por id. El backend gana en caso de conflicto (estado `read`
+   * autoritativo).
+   */
+  async loadRecent(): Promise<void> {
+    try {
+      const list = await firstValueFrom(this.http.get<NotificationResponse[]>(this.apiUrl));
+      const mapped: AppNotification[] = list.map(raw => ({
+        ...raw,
+        timeAgo: this.toTimeAgo(raw.timestamp),
+      }));
+      this._notifications.update(current => {
+        const byId = new Map(mapped.map(n => [n.id, n]));
+        for (const n of current) {
+          if (!byId.has(n.id)) byId.set(n.id, n);
+        }
+        return [...byId.values()]
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+          .slice(0, 50);
+      });
+    } catch {
+      // El stream SSE sigue funcionando aunque falle la carga del historial.
+    }
+  }
+
   // ── Estado de lectura ─────────────────────────────────────────────────────
 
   markAllRead(): void {
     this._notifications.update(list => list.map(n => ({ ...n, read: true })));
+    firstValueFrom(this.http.post<void>(`${this.apiUrl}/read-all`, {})).catch(() => {});
   }
 
   markRead(id: string): void {
+    if (!id.startsWith('local-')) {
+      firstValueFrom(this.http.post<void>(`${this.apiUrl}/${id}/read`, {})).catch(() => {});
+    }
     this._notifications.update(list =>
       list.map(n => n.id === id ? { ...n, read: true } : n),
     );
