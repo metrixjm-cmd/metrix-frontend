@@ -131,11 +131,11 @@
       </div>
 
       <!-- Podio: [2do][1ro][3ro] -->
-      <div class="flex items-start justify-center gap-3 md:gap-5">
+      <div class="flex items-start justify-center gap-2 md:gap-5">
 
         <!-- 2do lugar (izquierda) -->
         @if (effectivePodium()[0]; as p2) {
-          <div class="gamif-podium-card gamif-podium-card--silver p-5 md:p-6 flex-1 max-w-[200px] md:max-w-[230px]"
+          <div class="gamif-podium-card gamif-podium-card--silver p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px]"
                style="padding-top: 28px; padding-bottom: 20px;">
 
             <!-- Rank badge -->
@@ -174,7 +174,7 @@
 
         <!-- 1er lugar (centro — más grande) -->
         @if (effectivePodium()[1]; as p1) {
-          <div class="gamif-podium-card gamif-podium-card--gold p-5 md:p-7 flex-1 max-w-[240px] md:max-w-[270px] -mt-4"
+          <div class="gamif-podium-card gamif-podium-card--gold p-3 md:p-7 flex-1 min-w-0 max-w-[240px] md:max-w-[270px] -mt-4"
                style="padding-top: 32px; padding-bottom: 22px;">
 
             <!-- Rank badge -->
@@ -215,7 +215,7 @@
 
         <!-- 3er lugar (derecha) -->
         @if (effectivePodium()[2]; as p3) {
-          <div class="gamif-podium-card gamif-podium-card--bronze p-5 md:p-6 flex-1 max-w-[200px] md:max-w-[230px] mt-6"
+          <div class="gamif-podium-card gamif-podium-card--bronze p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px] mt-6"
                style="padding-top: 28px; padding-bottom: 20px;">
 
             <!-- Rank badge -->
