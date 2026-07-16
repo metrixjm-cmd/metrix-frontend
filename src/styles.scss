@@ -178,6 +178,45 @@ select option {
   }
 }
 
+/* ── Campos en móvil ──────────────────────────────
+   Safari en iOS hace zoom automático al enfocar un campo cuya fuente
+   mide menos de 16px, y deja la vista descuadrada. Los campos usan
+   text-sm (14px), así que en pantallas chicas se suben a 16px.
+   El alto mínimo de 44px cumple el área táctil de Apple HIG.
+   Se excluyen checkbox/radio/range: su tamaño es intencional. */
+@media (max-width: 767px) {
+  .input-field,
+  .input-field-icon,
+  .select-field,
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .input-field,
+  .input-field-icon,
+  .select-field,
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select {
+    min-height: 44px;
+  }
+}
+
+/* ── Accesibilidad: movimiento reducido ───────────
+   html tiene scroll-behavior: smooth y la app usa transiciones;
+   ambos se neutralizan si el sistema lo pide. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Animación insignia de primer lugar ──────────── */
 @keyframes rank-badge-glow {
   0%, 100% {
