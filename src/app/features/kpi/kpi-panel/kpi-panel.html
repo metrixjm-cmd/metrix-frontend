@@ -8,7 +8,7 @@
       <span class="text-white/60 font-medium">Panel de Métricas</span>
     </div>
     <h1 class="text-lg font-bold text-white">Panel de Métricas</h1>
-    <p class="text-white/50 text-xs mt-0.5">Reportes de desempeño por módulo: tareas, incidencias, capacitaciones y exámenes.</p>
+    <p class="text-white/50 text-xs mt-0.5">Reportes de desempeño por módulo: tareas, incidencias y exámenes.</p>
   </div>
 
   <!-- ── Tabs ────────────────────────────────────────────────── -->
@@ -29,8 +29,8 @@
   ══════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'tareas') {
     @if (loading()) {
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        @for (i of [1,2,3,4,5]; track i) {
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 h-32 animate-pulse"></div>
         }
       </div>
@@ -41,7 +41,7 @@
     } @else {
 
       <!-- ── Grid de Métricas compacto (clickeable) ──────────────────────── -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         @for (m of metrics; track m.key) {
           <button
             (click)="select(m.key)"
@@ -245,68 +245,6 @@
             <p class="text-sm font-semibold text-white mb-3">Por Categoría</p>
             @if (incidentCategoryData().length > 0) {
               <app-distribution-bar [data]="incidentCategoryData()" [horizontal]="true" [size]="180" />
-            } @else {
-              <p class="text-white/40 text-xs py-8 text-center">Sin categorías registradas.</p>
-            }
-          </div>
-        </div>
-      }
-    }
-  }
-
-  <!-- ══════════════════════════════════════════════════════════
-       TAB: CAPACITACIONES
-  ══════════════════════════════════════════════════════════ -->
-  @if (activeTab() === 'capacitaciones') {
-    @if (!trainings()) {
-      <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
-    } @else if (trainings()!.total === 0) {
-      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
-        <p class="text-white/50 text-sm">Sin capacitaciones registradas en esta sucursal.</p>
-      </div>
-    } @else {
-      @if (trainings(); as t) {
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Completación</p>
-            <app-radial-gauge [value]="t.completionRate" [arc]="270" caption="Completadas / total" [size]="150" />
-          </div>
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Aprobación</p>
-            <app-radial-gauge [value]="t.passRate" [arc]="270" caption="Aprobadas con veredicto" [size]="150" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Total</p>
-            <p class="text-2xl font-bold text-white mt-1">{{ t.total }}</p>
-          </div>
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">A Tiempo</p>
-            <p class="text-2xl font-bold text-emerald-400 mt-1">{{ t.onTimeRate >= 0 ? t.onTimeRate.toFixed(1) + '%' : 'S/D' }}</p>
-          </div>
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Calif. Promedio</p>
-            <p class="text-2xl font-bold text-white mt-1">{{ t.avgGrade >= 0 ? t.avgGrade.toFixed(1) : 'S/D' }}<span class="text-sm font-normal text-white/40">{{ t.avgGrade >= 0 ? '/10' : '' }}</span></p>
-          </div>
-          <div class="bg-white/[0.04] border rounded-xl p-4"
-               [class]="t.overduePending > 0 ? 'border-amber-500/25' : 'border-white/10'">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Vencidas</p>
-            <p class="text-2xl font-bold mt-1" [class]="t.overduePending > 0 ? 'text-amber-400' : 'text-white'">{{ t.overduePending }}</p>
-            <p class="text-[10px] text-white/40">pendientes y fuera de plazo</p>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-sm font-semibold text-white mb-3">Por Estado</p>
-            <app-category-donut [data]="trainingStatusData()" centerLabel="Total" [size]="120" />
-          </div>
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-sm font-semibold text-white mb-3">Por Categoría</p>
-            @if (trainingCategoryData().length > 0) {
-              <app-distribution-bar [data]="trainingCategoryData()" [horizontal]="true" [size]="180" />
             } @else {
               <p class="text-white/40 text-xs py-8 text-center">Sin categorías registradas.</p>
             }

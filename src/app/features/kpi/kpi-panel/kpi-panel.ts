@@ -10,7 +10,7 @@ import { DistributionBar } from '../../../shared/components/charts/distribution-
 import { ChartDatum, PALETTE } from '../../../shared/components/charts/chart-core';
 
 /** Pestañas del panel de KPIs por módulo de evaluación. */
-export type KpiTab = 'tareas' | 'incidencias' | 'capacitaciones' | 'examenes';
+export type KpiTab = 'tareas' | 'incidencias' | 'examenes';
 
 /** Definición de una métrica para el panel */
 interface MetricDef {
@@ -54,10 +54,9 @@ export class KpiPanel implements OnInit {
   // ── Tabs ──────────────────────────────────────────────────────────
   readonly activeTab = signal<KpiTab>('tareas');
   readonly tabs: { key: KpiTab; label: string }[] = [
-    { key: 'tareas',         label: 'Tareas' },
-    { key: 'incidencias',    label: 'Incidencias' },
-    { key: 'capacitaciones', label: 'Capacitaciones' },
-    { key: 'examenes',       label: 'Exámenes' },
+    { key: 'tareas',      label: 'Tareas' },
+    { key: 'incidencias', label: 'Incidencias' },
+    { key: 'examenes',    label: 'Exámenes' },
   ];
 
   setTab(tab: KpiTab): void { this.activeTab.set(tab); }
@@ -88,24 +87,10 @@ export class KpiPanel implements OnInit {
       lowerIsBetter: true,
     },
     {
-      key: 'quality', label: 'Calidad Promedio', icon: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
-      color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', unit: '/5',
-      desc: 'Calificación promedio otorgada por gerentes a tareas completadas.',
-      getValue: s => s.avgQualityRating, format: v => v >= 0 ? v.toFixed(1) : 'S/D',
-    },
-    {
       key: 'delegation', label: 'Delegación Efectiva', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
       color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200', unit: '%',
       desc: 'Porcentaje de tareas delegadas que se completaron exitosamente.',
       getValue: s => s.delegacionEfectiva, format: v => v >= 0 ? v.toFixed(1) : 'S/D',
-    },
-    {
-      key: 'exectime', label: 'Tiempo Promedio', icon: 'M13 10V3L4 14h7v7l9-11h-7z',
-      color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', unit: 'min',
-      desc: 'Tiempo promedio de ejecución desde inicio hasta completar una tarea.',
-      getValue: s => s.avgExecutionMinutes, format: v => v >= 0 ? v.toFixed(0) : 'S/D',
-      getUserValue: u => u.avgExecMinutes,
-      lowerIsBetter: true,
     },
     {
       key: 'critical', label: 'Críticas Pendientes', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
@@ -114,19 +99,12 @@ export class KpiPanel implements OnInit {
       getValue: s => s.criticalPending, format: v => v.toString(),
       lowerIsBetter: true,
     },
-    {
-      key: 'training', label: 'Capacitación', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-      color: 'text-violet-700', bg: 'bg-violet-50 border-violet-200', unit: '%',
-      desc: 'Porcentaje de capacitaciones programadas que fueron completadas.',
-      getValue: s => s.trainingCompletionRate, format: v => (v ?? 0).toFixed(1),
-    },
   ];
 
   /** Hex por métrica para las gráficas Chart.js (las clases Tailwind de `metrics` no sirven ahí). */
   private readonly metricHexMap: Record<string, string> = {
     igeo: PALETTE.brand, ontime: PALETTE.emerald, rework: PALETTE.red,
-    quality: PALETTE.amber, delegation: PALETTE.violet, exectime: PALETTE.cyan,
-    critical: PALETTE.rose, training: PALETTE.violet,
+    delegation: PALETTE.violet, critical: PALETTE.rose,
   };
   metricHex(m: MetricDef): string { return this.metricHexMap[m.key] ?? PALETTE.brand; }
   absVal(n: number): number { return Math.abs(n); }
@@ -140,7 +118,6 @@ export class KpiPanel implements OnInit {
 
   // ── Datos por módulo ──────────────────────────────────────────────
   readonly incidents = this.kpiSvc.incidents;
-  readonly trainings = this.kpiSvc.trainings;
   readonly exams     = this.kpiSvc.exams;
 
   // ── Tareas: gauges y tendencia ────────────────────────────────────
@@ -229,20 +206,6 @@ export class KpiPanel implements OnInit {
 
   readonly incidentCategoryData = computed<ChartDatum[]>(() =>
     this.labelsToData(this.incidents()?.byCategory?.filter(c => c.count > 0)));
-
-  // ── Capacitaciones: view-models ───────────────────────────────────
-  readonly trainingStatusData = computed<ChartDatum[]>(() => {
-    const t = this.trainings();
-    if (!t || t.total === 0) return [];
-    return [
-      { label: 'Programadas',    value: t.programadas,   color: PALETTE.slate },
-      { label: 'En curso',       value: t.enCurso,       color: PALETTE.cyan },
-      { label: 'Completadas',    value: t.completadas,   color: PALETTE.emerald },
-      { label: 'No completadas', value: t.noCompletadas, color: PALETTE.red },
-    ];
-  });
-  readonly trainingCategoryData = computed<ChartDatum[]>(() =>
-    this.labelsToData(this.trainings()?.byCategory));
 
   // ── Exámenes: view-models ─────────────────────────────────────────
   /** Distribución de puntajes coloreada por desempeño (0-49 rojo … 90-100 esmeralda). */
@@ -346,7 +309,6 @@ export class KpiPanel implements OnInit {
     if (storeId) {
       this.kpiSvc.loadCorrectionSpeed(storeId);
       this.kpiSvc.loadIncidentKpis(storeId);
-      this.kpiSvc.loadTrainingKpis(storeId);
       this.kpiSvc.loadExamKpis(storeId);
     }
   }
@@ -358,8 +320,6 @@ export class KpiPanel implements OnInit {
   // ── Helpers de UI ─────────────────────────────────────────────────
 
   barWidth(value: number, metric: MetricDef): number {
-    if (metric.unit === '/5') return (value / 5) * 100;
-    if (metric.unit === 'min') return Math.min((value / 1500) * 100, 100);
     if (metric.unit === '') return Math.min(value * 10, 100);
     return Math.min(Math.max(value, 0), 100);
   }
@@ -368,11 +328,6 @@ export class KpiPanel implements OnInit {
     if (metric.lowerIsBetter) {
       if (value <= 10) return 'bg-emerald-500';
       if (value <= 25) return 'bg-amber-500';
-      return 'bg-red-500';
-    }
-    if (metric.unit === '/5') {
-      if (value >= 4) return 'bg-emerald-500';
-      if (value >= 3) return 'bg-amber-500';
       return 'bg-red-500';
     }
     if (value >= 80) return 'bg-emerald-500';
@@ -385,11 +340,6 @@ export class KpiPanel implements OnInit {
     if (metric.lowerIsBetter) {
       if (value <= 10) return 'text-emerald-700';
       if (value <= 25) return 'text-amber-700';
-      return 'text-red-700';
-    }
-    if (metric.unit === '/5') {
-      if (value >= 4) return 'text-emerald-700';
-      if (value >= 3) return 'text-amber-700';
       return 'text-red-700';
     }
     if (value >= 80) return 'text-emerald-700';
