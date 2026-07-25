@@ -102,11 +102,6 @@ export class Dashboard implements OnInit {
     this.kpiSvc.summary()?.shiftBreakdown ?? []
   );
 
-  // ── GERENTE: Tasa de capacitación ─────────────────────────────────────────
-  readonly trainingRate = computed(() =>
-    this.kpiSvc.summary()?.trainingCompletionRate ?? 0
-  );
-
   // ── ADMIN: Sucursales en alerta (Over-all < 70) ───────────────────────────────
   readonly storesInAlert = computed(() =>
     this.kpiSvc.rankingForDisplay().filter(s => s.igeo > 0 && s.igeo < 70)

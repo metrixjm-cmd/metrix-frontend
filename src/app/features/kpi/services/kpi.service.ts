@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, TrainingKpi, UserResponsibilityEntry } from '../kpi.models';
+import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
 import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
 
 /**
@@ -28,7 +28,6 @@ export class KpiService {
   private readonly _correctionSpeed     = signal<CorrectionSpeedData | null>(null);
   private readonly _igeoAnalytics       = signal<IgeoAnalyticsResponse | null>(null);
   private readonly _incidents           = signal<IncidentKpi | null>(null);
-  private readonly _trainings           = signal<TrainingKpi | null>(null);
   private readonly _exams               = signal<ExamKpi | null>(null);
 
   readonly summary             = this._summary.asReadonly();
@@ -39,7 +38,6 @@ export class KpiService {
   readonly correctionSpeed     = this._correctionSpeed.asReadonly();
   readonly igeoAnalytics       = this._igeoAnalytics.asReadonly();
   readonly incidents           = this._incidents.asReadonly();
-  readonly trainings           = this._trainings.asReadonly();
   readonly exams               = this._exams.asReadonly();
 
   // ── Computed signals para el dashboard ──────────────────────────────────
@@ -90,16 +88,6 @@ export class KpiService {
         data:     [Math.max(s.criticalPending, 1)],
         color:    '#ef4444',
         accentBg: 'red',
-      },
-      {
-        label:    'Capacitación',
-        value:    `${(s.trainingCompletionRate ?? 0).toFixed(1)}%`,
-        delta:    '',
-        deltaUp:  true,
-        sub:      'Capacitaciones completadas',
-        data:     [Math.max(s.trainingCompletionRate ?? 0, 1)],
-        color:    '#8b5cf6',
-        accentBg: 'violet',
       },
     ];
   });
@@ -222,16 +210,6 @@ export class KpiService {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next:  r   => this._incidents.set(r),
-        error: err => this._error.set(this.extractMessage(err)),
-      });
-  }
-
-  /** KPIs agregados de capacitaciones de una sucursal. */
-  loadTrainingKpis(storeId: string): void {
-    this.http.get<TrainingKpi>(`${this.apiUrl}/trainings/store/${storeId}`)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next:  r   => this._trainings.set(r),
         error: err => this._error.set(this.extractMessage(err)),
       });
   }

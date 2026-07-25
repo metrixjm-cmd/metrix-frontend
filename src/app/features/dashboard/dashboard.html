@@ -21,8 +21,8 @@
        KPI CARDS CON SPARKLINES — comunes a todos los roles
   ══════════════════════════════════════════════ -->
   @if (kpisLoading()) {
-    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
-      @for (i of [1,2,3,4,5]; track i) {
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      @for (i of [1,2,3,4]; track i) {
         <div class="ds-skeleton h-28 rounded-xl"></div>
       }
     </div>
@@ -35,7 +35,7 @@
       Sin datos de KPIs disponibles. Asigna tareas para generar métricas.
     </div>
   } @else {
-    <div class="grid grid-cols-2 xl:grid-cols-5 gap-3">
+    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
       @for (kpi of kpis(); track kpi.label; let idx = $index) {
         <div class="ds-card p-4">
           <div class="flex items-start justify-between mb-3">
@@ -343,7 +343,7 @@
       </div>
     </div>
 
-    <!-- Fila: Tabla de equipo + Turno & Capacitación -->
+    <!-- Fila: Tabla de equipo + Desglose por turno -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
       <!-- Tabla de equipo (KPI #7) -->
@@ -410,7 +410,7 @@
         }
       </div>
 
-      <!-- Desglose por turno + Capacitación -->
+      <!-- Desglose por turno -->
       <div class="space-y-4">
 
         <!-- Desglose por turno (KPI #5) -->
@@ -439,22 +439,6 @@
               }
             </div>
           }
-        </div>
-
-        <!-- Tasa de capacitación -->
-        <div class="bg-white/[0.04] border border-white/10 rounded-2xl p-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm font-semibold text-white">Capacitación</p>
-            <a routerLink="/training" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium">Ver todas</a>
-          </div>
-          <p class="text-3xl font-bold text-white">{{ trainingRate().toFixed(1) }}<span class="text-base text-white/40 font-normal">%</span></p>
-          <p class="text-xs text-white/40 mb-3">Capacitaciones completadas</p>
-          <div class="w-full bg-white/[0.06] rounded-full h-2.5">
-            <div class="h-2.5 rounded-full transition-all duration-700"
-                 [class]="shiftBarColor(trainingRate())"
-                 [style.width.%]="trainingRate()">
-            </div>
-          </div>
         </div>
 
       </div>
