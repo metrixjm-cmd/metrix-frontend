@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { AuthService }         from '../../auth/services/auth.service';
 import { GamificationService } from '../services/gamification.service';
 import { RhService }           from '../../rh/services/rh.service';
-import { SettingsService }     from '../../settings/services/settings.service';
 import { LeaderboardEntry }    from '../gamification.models';
 
 export interface MetricCard {
@@ -30,7 +29,6 @@ export class Leaderboard implements OnInit {
   private readonly authSvc  = inject(AuthService);
   readonly gamifSvc         = inject(GamificationService);
   readonly rhSvc            = inject(RhService);
-  readonly settingsSvc      = inject(SettingsService);
 
   readonly loading  = this.gamifSvc.loading;
   readonly error    = this.gamifSvc.error;
@@ -39,6 +37,32 @@ export class Leaderboard implements OnInit {
   readonly isAdmin      = computed(() => this.authSvc.hasRole('ADMIN'));
   readonly isGerente    = computed(() => this.authSvc.hasRole('GERENTE') && !this.authSvc.hasRole('ADMIN'));
   readonly isEjecutador = computed(() => !this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));
+
+  /** El ADMIN rankea gerentes; el resto, colaboradores. Gobierna la columna EQUIPO. */
+  readonly showingGerentes = this.isAdmin;
+
+  readonly pageTitle = computed(() =>
+    this.showingGerentes() ? 'Ranking Gerencial' : 'Ranking de Equipo');
+
+  readonly pageSubtitle = computed(() => this.showingGerentes()
+    ? 'Desempeño de gerentes y de los equipos a su cargo'
+    : 'Desempeño y gamificación de la sucursal');
+
+  /** La vista gerencial suma la columna EQUIPO, por eso ensancha el grid. */
+  readonly gridColumns = computed(() => this.showingGerentes()
+    ? '52px 1fr 160px 130px 130px 120px 110px 130px'
+    : '52px 1fr 130px 130px 120px 110px 130px');
+
+  readonly gridMinWidth = computed(() => this.showingGerentes() ? '920px' : '760px');
+
+  /**
+   * Puntaje con el que se rankea la fila: al gerente se le mide por su equipo,
+   * al colaborador por su propio IGEO. El podio debe mostrar este número, o
+   * enseñaría una cifra distinta a la que define el orden.
+   */
+  headlineScore(entry: LeaderboardEntry): number {
+    return this.showingGerentes() ? (entry.teamAvgIgeo ?? -1) : entry.igeo;
+  }
 
   // ── Mock data (fallback when API devuelve vacío) ─────────────────────────
   readonly mockLeaderboard: LeaderboardEntry[] = [
@@ -133,26 +157,16 @@ export class Leaderboard implements OnInit {
   ];
 
   // ── Computed: filas reales ────────────────────────────────────────────────
-  readonly adminRows = computed(() => {
-    const users  = this.rhSvc.users();
-    const stores = this.settingsSvc.stores();
-    const gerentes = users.filter(u => u.roles?.includes('GERENTE'));
-    return gerentes.map(g => ({
-      id:               g.id,
-      nombre:           g.nombre,
-      puesto:           g.puesto,
-      turno:            g.turno,
-      storeName:        stores.find(s => s.id === g.storeId)?.nombre ?? '—',
-      storeCodigo:      stores.find(s => s.id === g.storeId)?.codigo ?? '',
-      colaboradorCount: users.filter(u => u.storeId === g.storeId && u.roles?.includes('EJECUTADOR')).length,
-    }));
-  });
-
   readonly gerenteRows = computed((): LeaderboardEntry[] => {
     const users = this.rhSvc.users();
     const board = this.gamifSvc.leaderboard();
     const ejecutadorIds = new Set(users.filter(u => u.roles?.includes('EJECUTADOR')).map(u => u.id));
-    return board.filter(e => ejecutadorIds.has(e.userId));
+    // El backend rankea sobre toda la sucursal (gerentes incluidos). Al quedarnos
+    // sólo con ejecutadores hay que renumerar, o la tabla muestra huecos como "#4"
+    // en la primera fila y contradice al podio.
+    return board
+      .filter(e => ejecutadorIds.has(e.userId))
+      .map((e, i) => ({ ...e, rank: i + 1 }));
   });
 
   readonly ejecutadorRows = computed(() => this.gamifSvc.leaderboard());
@@ -175,7 +189,10 @@ export class Leaderboard implements OnInit {
   readonly effectiveRows = computed((): LeaderboardEntry[] => {
     if (this.loading()) return [];
     const real = this.tableRows();
-    return real.length > 0 ? real : this.mockLeaderboard;
+    if (real.length > 0) return real;
+    // Sin fallback en la vista gerencial: mostrar colaboradores ficticios como si
+    // fueran gerentes daría una lectura falsa al ADMIN. Mejor el estado vacío.
+    return this.showingGerentes() ? [] : this.mockLeaderboard;
   });
 
   readonly effectivePodium = computed(() => {
@@ -189,30 +206,28 @@ export class Leaderboard implements OnInit {
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
-    const storeId = this.authSvc.currentUser()?.storeId ?? '';
-
-    if (this.isAdmin()) {
-      this.settingsSvc.loadAll();
-      this.rhSvc.loadAll();
-      if (storeId) {
-        this.gamifSvc.loadLeaderboard(storeId, 'weekly');
-        setTimeout(() => {
-          if (this.rhSvc.users().length === 0) this.rhSvc.loadUsersByStore(storeId);
-        }, 800);
-      }
-    } else if (this.isGerente()) {
-      if (storeId) {
-        this.gamifSvc.loadLeaderboard(storeId, 'weekly');
-        this.rhSvc.loadUsersByStore(storeId);
-      }
-    } else {
-      if (storeId) this.gamifSvc.loadLeaderboard(storeId, 'weekly');
-    }
+    this.load('weekly');
   }
 
   selectPeriod(p: 'weekly' | 'monthly'): void {
+    this.load(p);
+  }
+
+  /**
+   * El ADMIN no tiene sucursal asignada: su ranking usa el endpoint gerencial de
+   * alcance global. Condicionarlo a `storeId` dejaría la vista vacía.
+   */
+  private load(period: 'weekly' | 'monthly'): void {
+    if (this.isAdmin()) {
+      this.gamifSvc.loadGerencialesLeaderboard(period);
+      return;
+    }
+
     const storeId = this.authSvc.currentUser()?.storeId ?? '';
-    if (storeId) this.gamifSvc.loadLeaderboard(storeId, p);
+    if (!storeId) return;
+
+    this.gamifSvc.loadLeaderboard(storeId, period);
+    if (this.isGerente()) this.rhSvc.loadUsersByStore(storeId);
   }
 
   // ── Helpers visuales ─────────────────────────────────────────────────────
