@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
 import { DailyReportResponse } from '../../kpi/kpi.models';
+import { EmployeesReportResponse, ManagersReportResponse, ReportPeriod } from '../reports.models';
 
 /**
  * Servicio HTTP para reportes de cierre diario — Sprint 8.
@@ -43,6 +44,38 @@ export class ReportService {
     return this.http.get(
       `${this.base}/user/${userId}/performance-card`,
       { responseType: 'blob' }
+    );
+  }
+
+  // ── Sprint 18: reportes de ranking ──────────────────────────────────────
+  // Van por `period` y no por fecha: el backend los calcula sobre una ventana
+  // móvil desde hoy, así que un día calendario no describiría los datos.
+
+  getManagersReport(period: ReportPeriod): Observable<ManagersReportResponse> {
+    return this.http.get<ManagersReportResponse>(
+      `${this.base}/managers`,
+      { params: { period } }
+    );
+  }
+
+  downloadManagersPdf(period: ReportPeriod): Observable<Blob> {
+    return this.http.get(
+      `${this.base}/managers/pdf`,
+      { params: { period }, responseType: 'blob' }
+    );
+  }
+
+  getEmployeesReport(storeId: string, period: ReportPeriod): Observable<EmployeesReportResponse> {
+    return this.http.get<EmployeesReportResponse>(
+      `${this.base}/employees`,
+      { params: { storeId, period } }
+    );
+  }
+
+  downloadEmployeesPdf(storeId: string, period: ReportPeriod): Observable<Blob> {
+    return this.http.get(
+      `${this.base}/employees/pdf`,
+      { params: { storeId, period }, responseType: 'blob' }
     );
   }
 
