@@ -47,6 +47,26 @@ export class GamificationService {
       });
   }
 
+  /**
+   * Ranking gerencial de toda la cadena (sólo ADMIN).
+   * Alimenta el mismo signal `leaderboard` que el ranking de sucursal: la vista
+   * es la misma tabla y sólo cambia el conjunto de filas y las columnas de equipo.
+   */
+  loadGerencialesLeaderboard(period: 'weekly' | 'monthly' = 'weekly'): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this._period.set(period);
+    this.http
+      .get<LeaderboardEntry[]>(`${this.base}/gerentes/leaderboard`, {
+        params: { period },
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  data => { this._leaderboard.set(data); this._loading.set(false); },
+        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+      });
+  }
+
   loadMySummary(): void {
     this._loading.set(true);
     this._error.set(null);
