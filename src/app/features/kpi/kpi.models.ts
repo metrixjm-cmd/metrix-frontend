@@ -19,6 +19,23 @@ export interface IncidentKpi {
   byCategory: LabelCount[];
 }
 
+/** KPIs agregados de capacitaciones de una sucursal (o de todo el sistema). */
+export interface TrainingKpi {
+  storeId: string;
+  total: number;
+  programadas: number;
+  enCurso: number;
+  completadas: number;
+  noCompletadas: number;
+  completionRate: number;  // -1 = S/D
+  onTimeRate: number;      // -1 = S/D
+  passRate: number;        // -1 = S/D
+  avgGrade: number;        // -1 = S/D, escala 0–10
+  avgProgress: number;     // 0–100
+  overduePending: number;
+  byCategory: LabelCount[];
+}
+
 /** Fila del ranking por examen. */
 export interface ExamKpiRow {
   examId: string;

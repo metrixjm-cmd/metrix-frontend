@@ -10,7 +10,17 @@ import { DistributionBar } from '../../../shared/components/charts/distribution-
 import { ChartDatum, PALETTE } from '../../../shared/components/charts/chart-core';
 
 /** Pestañas del panel de KPIs por módulo de evaluación. */
-export type KpiTab = 'tareas' | 'incidencias' | 'examenes';
+export type KpiTab = 'tareas' | 'incidencias' | 'capacitaciones' | 'examenes';
+
+/** Tarjeta métrica de los módulos por dominio (incidencias, capacitaciones, exámenes). */
+interface ModuleStat {
+  label: string;
+  value: string;
+  hex:   string;
+  desc:  string;
+  /** 0–100 para la barra inferior; null si la métrica no es porcentual. */
+  bar:   number | null;
+}
 
 /** Definición de una métrica para el panel */
 interface MetricDef {
@@ -54,9 +64,10 @@ export class KpiPanel implements OnInit {
   // ── Tabs ──────────────────────────────────────────────────────────
   readonly activeTab = signal<KpiTab>('tareas');
   readonly tabs: { key: KpiTab; label: string }[] = [
-    { key: 'tareas',      label: 'Tareas' },
-    { key: 'incidencias', label: 'Incidencias' },
-    { key: 'examenes',    label: 'Exámenes' },
+    { key: 'tareas',         label: 'Tareas' },
+    { key: 'incidencias',    label: 'Incidencias' },
+    { key: 'capacitaciones', label: 'Capacitaciones' },
+    { key: 'examenes',       label: 'Exámenes' },
   ];
 
   setTab(tab: KpiTab): void { this.activeTab.set(tab); }
@@ -107,6 +118,28 @@ export class KpiPanel implements OnInit {
     delegation: PALETTE.violet, critical: PALETTE.rose,
   };
   metricHex(m: MetricDef): string { return this.metricHexMap[m.key] ?? PALETTE.brand; }
+
+  /**
+   * Color del Over-all, derivado del mismo mapa que pinta su tarjeta arriba.
+   * El gauge y la línea de evolución lo reciben explícitamente para que la
+   * métrica se vea del mismo color en las tres representaciones.
+   */
+  readonly igeoHex = this.metricHexMap['igeo'];
+
+  /**
+   * Color de los gauges de tasa en los módulos por dominio (resolución,
+   * aprobación). Es el mismo verde de su tarjeta correspondiente, para que la
+   * métrica no se vea de dos colores distintos en la misma pestaña.
+   */
+  readonly rateHex = PALETTE.emerald;
+
+  /** Colores del pipeline — única fuente para la leyenda y la banda inferior. */
+  readonly pipelineHex = {
+    pending:    PALETTE.amber,
+    inProgress: PALETTE.cyan,
+    completed:  PALETTE.emerald,
+    failed:     PALETTE.red,
+  } as const;
   absVal(n: number): number { return Math.abs(n); }
 
   // ── Signals derivados ─────────────────────────────────────────────
@@ -118,6 +151,7 @@ export class KpiPanel implements OnInit {
 
   // ── Datos por módulo ──────────────────────────────────────────────
   readonly incidents = this.kpiSvc.incidents;
+  readonly trainings = this.kpiSvc.trainings;
   readonly exams     = this.kpiSvc.exams;
 
   // ── Tareas: gauges y tendencia ────────────────────────────────────
@@ -145,10 +179,10 @@ export class KpiPanel implements OnInit {
     if (!p || p.total === 0) return [];
     const pct = (n: number) => Math.round((n / p.total) * 1000) / 10;
     return [
-      { label: 'Completadas', value: p.completed,   pct: pct(p.completed),   color: PALETTE.emerald },
-      { label: 'En Progreso', value: p.inProgress,  pct: pct(p.inProgress),  color: PALETTE.cyan },
-      { label: 'Pendientes',  value: p.pending,     pct: pct(p.pending),     color: PALETTE.amber },
-      { label: 'Fallidas',    value: p.failed,      pct: pct(p.failed),      color: PALETTE.red },
+      { label: 'Completadas', value: p.completed,   pct: pct(p.completed),   color: this.pipelineHex.completed },
+      { label: 'En Progreso', value: p.inProgress,  pct: pct(p.inProgress),  color: this.pipelineHex.inProgress },
+      { label: 'Pendientes',  value: p.pending,     pct: pct(p.pending),     color: this.pipelineHex.pending },
+      { label: 'Fallidas',    value: p.failed,      pct: pct(p.failed),      color: this.pipelineHex.failed },
     ];
   });
 
@@ -207,6 +241,75 @@ export class KpiPanel implements OnInit {
   readonly incidentCategoryData = computed<ChartDatum[]>(() =>
     this.labelsToData(this.incidents()?.byCategory?.filter(c => c.count > 0)));
 
+  // ── Estructura común de los módulos por dominio ───────────────────
+  //
+  // Cada módulo se lee igual que Tareas: un resumen con gauge y leyenda
+  // arriba, luego las tarjetas métricas y al final las gráficas.
+
+  /** Formatea una tasa 0–100 respetando el sentinel -1 = sin datos. */
+  private pct(v: number): string { return v >= 0 ? `${v.toFixed(1)}%` : 'S/D'; }
+
+  /** Ancho de la barra de una tarjeta; null si la métrica no es porcentual. */
+  private barPct(v: number): number | null {
+    return v >= 0 ? Math.min(Math.max(v, 0), 100) : null;
+  }
+
+  /** Leyenda con porcentaje a partir de los datos de una gráfica. */
+  private toLegend(data: ChartDatum[], total: number) {
+    if (total <= 0) return [];
+    return data.map(d => ({
+      label: d.label,
+      value: d.value,
+      pct:   Math.round((d.value / total) * 1000) / 10,
+      color: d.color ?? PALETTE.brand,
+    }));
+  }
+
+  readonly incidentLegend = computed(() =>
+    this.toLegend(this.incidentStatusData(), this.incidents()?.total ?? 0));
+
+  readonly incidentStats = computed<ModuleStat[]>(() => {
+    const i = this.incidents();
+    if (!i) return [];
+    return [
+      { label: 'Total',              value: `${i.total}`,        hex: PALETTE.brand,   desc: 'Incidencias activas registradas', bar: null },
+      { label: 'Tasa de Resolución', value: this.pct(i.resolutionRate), hex: PALETTE.emerald, desc: 'Cerradas sobre el total', bar: this.barPct(i.resolutionRate) },
+      { label: 'Críticas Abiertas',  value: `${i.criticalOpen}`, hex: PALETTE.rose,    desc: 'Severidad crítica sin cerrar',    bar: null },
+      { label: 'Tiempo Medio',       value: i.avgResolutionHours >= 0 ? `${i.avgResolutionHours.toFixed(1)} h` : 'S/D',
+        hex: PALETTE.amber, desc: 'Desde apertura hasta cierre', bar: null },
+    ];
+  });
+
+  // ── Capacitaciones: view-models ───────────────────────────────────
+  readonly trainingStatusData = computed<ChartDatum[]>(() => {
+    const t = this.trainings();
+    if (!t || t.total === 0) return [];
+    return [
+      { label: 'Completadas',    value: t.completadas,   color: PALETTE.emerald },
+      { label: 'En curso',       value: t.enCurso,       color: PALETTE.cyan },
+      { label: 'Programadas',    value: t.programadas,   color: PALETTE.amber },
+      { label: 'No completadas', value: t.noCompletadas, color: PALETTE.red },
+    ];
+  });
+  readonly trainingCategoryData = computed<ChartDatum[]>(() =>
+    this.labelsToData(this.trainings()?.byCategory));
+
+  readonly trainingLegend = computed(() =>
+    this.toLegend(this.trainingStatusData(), this.trainings()?.total ?? 0));
+
+  readonly trainingStats = computed<ModuleStat[]>(() => {
+    const t = this.trainings();
+    if (!t) return [];
+    return [
+      { label: 'Total',            value: `${t.total}`,          hex: PALETTE.brand,   desc: 'Capacitaciones asignadas',        bar: null },
+      { label: 'Aprobación',       value: this.pct(t.passRate),  hex: PALETTE.emerald, desc: 'Aprobadas con veredicto emitido', bar: this.barPct(t.passRate) },
+      { label: 'A Tiempo',         value: this.pct(t.onTimeRate), hex: PALETTE.cyan,   desc: 'Completadas dentro de plazo',     bar: this.barPct(t.onTimeRate) },
+      { label: 'Calif. Promedio',  value: t.avgGrade >= 0 ? `${t.avgGrade.toFixed(1)}/10` : 'S/D',
+        hex: PALETTE.violet, desc: 'Promedio de calificación obtenida', bar: t.avgGrade >= 0 ? t.avgGrade * 10 : null },
+      { label: 'Vencidas',         value: `${t.overduePending}`, hex: PALETTE.rose,    desc: 'Pendientes y fuera de plazo',     bar: null },
+    ];
+  });
+
   // ── Exámenes: view-models ─────────────────────────────────────────
   /** Distribución de puntajes coloreada por desempeño (0-49 rojo … 90-100 esmeralda). */
   private readonly scoreColors = [PALETTE.red, PALETTE.amber, PALETTE.cyan, PALETTE.emerald];
@@ -219,6 +322,23 @@ export class KpiPanel implements OnInit {
   });
   readonly examRows = computed(() => this.exams()?.perExam ?? []);
   readonly examUserRows = computed(() => this.exams()?.perUser ?? []);
+
+  readonly examLegend = computed(() =>
+    this.toLegend(this.examScoreData(), this.exams()?.totalSubmissions ?? 0));
+
+  readonly examStats = computed<ModuleStat[]>(() => {
+    const e = this.exams();
+    if (!e) return [];
+    return [
+      { label: 'Exámenes',        value: `${e.totalExams}`,       hex: PALETTE.brand,   desc: 'Disponibles en el alcance',     bar: null },
+      { label: 'Presentaciones',  value: `${e.totalSubmissions}`, hex: PALETTE.cyan,    desc: 'Intentos entregados',           bar: null },
+      { label: 'Aprobación',      value: this.pct(e.passRate),    hex: PALETTE.emerald, desc: 'Aprobados sobre presentados',   bar: this.barPct(e.passRate) },
+      { label: 'Puntaje Promedio', value: e.avgScore >= 0 ? e.avgScore.toFixed(1) : 'S/D',
+        hex: PALETTE.violet, desc: 'Promedio sobre 100', bar: this.barPct(e.avgScore) },
+      { label: 'Tiempo Promedio', value: e.avgTimeSecs >= 0 ? `${(e.avgTimeSecs / 60).toFixed(1)} min` : 'S/D',
+        hex: PALETTE.amber, desc: 'Duración media por intento', bar: null },
+    ];
+  });
 
   /** Mapea LabelCount[] → ChartDatum[] usando count como valor. */
   private labelsToData(items?: LabelCount[], colorFn?: (l: LabelCount) => string | undefined): ChartDatum[] {
@@ -305,11 +425,21 @@ export class KpiPanel implements OnInit {
       this.kpiSvc.loadAnalyticsIgeo();
     }
 
-    // KPIs que el backend solo expone por sucursal
+    // KPIs por dominio. ADMIN no tiene sucursal asignada, así que consume el
+    // alcance global; condicionarlos a storeId dejaba sus pestañas vacías.
+    if (isAdmin) {
+      this.kpiSvc.loadGlobalIncidentKpis();
+      this.kpiSvc.loadGlobalTrainingKpis();
+      this.kpiSvc.loadGlobalExamKpis();
+    } else if (storeId) {
+      this.kpiSvc.loadIncidentKpis(storeId);
+      this.kpiSvc.loadTrainingKpis(storeId);
+      this.kpiSvc.loadExamKpis(storeId);
+    }
+
+    // Velocidad de corrección solo existe por sucursal
     if (storeId) {
       this.kpiSvc.loadCorrectionSpeed(storeId);
-      this.kpiSvc.loadIncidentKpis(storeId);
-      this.kpiSvc.loadExamKpis(storeId);
     }
   }
 

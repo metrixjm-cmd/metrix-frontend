@@ -1,9 +1,9 @@
-import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, UserResponsibilityEntry } from '../kpi.models';
+import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, TrainingKpi, UserResponsibilityEntry } from '../kpi.models';
 import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
 
 /**
@@ -28,6 +28,7 @@ export class KpiService {
   private readonly _correctionSpeed     = signal<CorrectionSpeedData | null>(null);
   private readonly _igeoAnalytics       = signal<IgeoAnalyticsResponse | null>(null);
   private readonly _incidents           = signal<IncidentKpi | null>(null);
+  private readonly _trainings           = signal<TrainingKpi | null>(null);
   private readonly _exams               = signal<ExamKpi | null>(null);
 
   readonly summary             = this._summary.asReadonly();
@@ -38,6 +39,7 @@ export class KpiService {
   readonly correctionSpeed     = this._correctionSpeed.asReadonly();
   readonly igeoAnalytics       = this._igeoAnalytics.asReadonly();
   readonly incidents           = this._incidents.asReadonly();
+  readonly trainings           = this._trainings.asReadonly();
   readonly exams               = this._exams.asReadonly();
 
   // ── Computed signals para el dashboard ──────────────────────────────────
@@ -204,22 +206,26 @@ export class KpiService {
       });
   }
 
-  /** KPIs agregados de incidencias de una sucursal. */
-  loadIncidentKpis(storeId: string): void {
-    this.http.get<IncidentKpi>(`${this.apiUrl}/incidents/store/${storeId}`)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next:  r   => this._incidents.set(r),
-        error: err => this._error.set(this.extractMessage(err)),
-      });
-  }
+  // ── KPIs por dominio ─────────────────────────────────────────────────────
+  //
+  // Cada dominio tiene dos alcances: por sucursal (GERENTE) y global (ADMIN,
+  // que no tiene sucursal asignada). El backend usa la misma fórmula en ambos;
+  // solo cambia el conjunto de datos de entrada.
 
-  /** KPIs agregados de exámenes de una sucursal. */
-  loadExamKpis(storeId: string): void {
-    this.http.get<ExamKpi>(`${this.apiUrl}/exams/store/${storeId}`)
+  loadIncidentKpis(storeId: string): void { this.fetchInto(`/incidents/store/${storeId}`, this._incidents); }
+  loadGlobalIncidentKpis(): void          { this.fetchInto('/incidents/summary', this._incidents); }
+
+  loadTrainingKpis(storeId: string): void { this.fetchInto(`/trainings/store/${storeId}`, this._trainings); }
+  loadGlobalTrainingKpis(): void          { this.fetchInto('/trainings/summary', this._trainings); }
+
+  loadExamKpis(storeId: string): void     { this.fetchInto(`/exams/store/${storeId}`, this._exams); }
+  loadGlobalExamKpis(): void              { this.fetchInto('/exams/summary', this._exams); }
+
+  private fetchInto<T>(path: string, target: WritableSignal<T | null>): void {
+    this.http.get<T>(`${this.apiUrl}${path}`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  r   => this._exams.set(r),
+        next:  r   => target.set(r),
         error: err => this._error.set(this.extractMessage(err)),
       });
   }

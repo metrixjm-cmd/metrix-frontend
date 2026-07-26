@@ -8,7 +8,7 @@
       <span class="text-white/60 font-medium">Panel de Métricas</span>
     </div>
     <h1 class="text-lg font-bold text-white">Panel de Métricas</h1>
-    <p class="text-white/50 text-xs mt-0.5">Reportes de desempeño por módulo: tareas, incidencias y exámenes.</p>
+    <p class="text-white/50 text-xs mt-0.5">Reportes de desempeño por módulo: tareas, incidencias, capacitaciones y exámenes.</p>
   </div>
 
   <!-- ── Tabs ────────────────────────────────────────────────── -->
@@ -39,6 +39,36 @@
         <p class="text-white/50 text-sm">Sin datos de KPIs. Asigna tareas para generar métricas.</p>
       </div>
     } @else {
+
+      <!-- ── Resumen de Ejecución — primero: lectura ejecutiva de un vistazo ── -->
+      @if (taskGauges(); as g) {
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-sm font-semibold text-white mb-3">Resumen de Ejecución</p>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <app-radial-gauge [value]="g.igeo" [color]="igeoHex" [arc]="270" [size]="120" [decimals]="1" />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-white/50">Desempeño general</p>
+              @if (igeoDelta(); as d) {
+                <p class="text-xs font-semibold mt-0.5" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'">
+                  {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp vs ayer
+                </p>
+              }
+              <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
+                @for (item of pipelineLegend(); track item.label) {
+                  <li class="flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-sm shrink-0" [style.background]="item.color"></span>
+                    <span class="text-white/60 flex-1 truncate">{{ item.label }}</span>
+                    <span class="font-semibold text-white/80">{{ item.value }} <span class="text-white/35 font-normal">({{ item.pct }}%)</span></span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+          @if (pipeline(); as p) {
+            <p class="text-[10px] text-white/35 mt-3 pt-3 border-t border-white/[0.06]">Total de tareas: <span class="font-semibold text-white/60">{{ p.total }}</span></p>
+          }
+        </div>
+      }
 
       <!-- ── Grid de Métricas compacto (clickeable) ──────────────────────── -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
@@ -75,37 +105,9 @@
         }
       </div>
 
-      <!-- ── Resumen · Desempeño por dimensión · Evolución ───────────────── -->
+      <!-- ── Desempeño por dimensión · Evolución ─────────────────────────── -->
       @if (taskGauges(); as g) {
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
-
-          <!-- Resumen de Ejecución -->
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-sm font-semibold text-white mb-3">Resumen de Ejecución</p>
-            <div class="flex items-center gap-4">
-              <app-radial-gauge [value]="g.igeo" [arc]="270" [size]="120" [decimals]="1" />
-              <div class="flex-1 min-w-0">
-                <p class="text-xs text-white/50">Desempeño general</p>
-                @if (igeoDelta(); as d) {
-                  <p class="text-xs font-semibold mt-0.5" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'">
-                    {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp vs ayer
-                  </p>
-                }
-                <ul class="mt-3 space-y-1.5">
-                  @for (item of pipelineLegend(); track item.label) {
-                    <li class="flex items-center gap-2 text-xs">
-                      <span class="w-2 h-2 rounded-sm shrink-0" [style.background]="item.color"></span>
-                      <span class="text-white/60 flex-1 truncate">{{ item.label }}</span>
-                      <span class="font-semibold text-white/80">{{ item.value }} <span class="text-white/35 font-normal">({{ item.pct }}%)</span></span>
-                    </li>
-                  }
-                </ul>
-              </div>
-            </div>
-            @if (pipeline(); as p) {
-              <p class="text-[10px] text-white/35 mt-3 pt-3 border-t border-white/[0.06]">Total de tareas: <span class="font-semibold text-white/60">{{ p.total }}</span></p>
-            }
-          </div>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
 
           <!-- Desempeño por dimensión (Sucursal / Colaborador / Turno) -->
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 flex flex-col">
@@ -133,7 +135,7 @@
           <!-- Evolución del Índice Global -->
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
             <p class="text-sm font-semibold text-white mb-3">Evolución del Índice Global</p>
-            <app-trend-line [data]="g.trend" [showAxis]="true" [size]="180" />
+            <app-trend-line [data]="g.trend" [color]="igeoHex" [showAxis]="true" [size]="180" />
           </div>
         </div>
       }
@@ -150,19 +152,19 @@
               <p class="text-white/50 font-medium mt-0.5">Total</p>
             </div>
             <div class="py-4 border-r border-white/[0.06]">
-              <p class="text-2xl font-bold text-amber-600">{{ p.pending }}</p>
+              <p class="text-2xl font-bold" [style.color]="pipelineHex.pending">{{ p.pending }}</p>
               <p class="text-white/50 font-medium mt-0.5">Pendientes</p>
             </div>
             <div class="py-4 border-r border-white/[0.06]">
-              <p class="text-2xl font-bold text-cyan-400">{{ p.inProgress }}</p>
+              <p class="text-2xl font-bold" [style.color]="pipelineHex.inProgress">{{ p.inProgress }}</p>
               <p class="text-white/50 font-medium mt-0.5">En Progreso</p>
             </div>
             <div class="py-4 border-r border-white/[0.06]">
-              <p class="text-2xl font-bold text-emerald-600">{{ p.completed }}</p>
+              <p class="text-2xl font-bold" [style.color]="pipelineHex.completed">{{ p.completed }}</p>
               <p class="text-white/50 font-medium mt-0.5">Completadas</p>
             </div>
             <div class="py-4">
-              <p class="text-2xl font-bold text-red-600">{{ p.failed }}</p>
+              <p class="text-2xl font-bold" [style.color]="pipelineHex.failed">{{ p.failed }}</p>
               <p class="text-white/50 font-medium mt-0.5">Fallidas</p>
             </div>
           </div>
@@ -197,36 +199,48 @@
       <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
     } @else if (incidents()!.total === 0) {
       <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
-        <p class="text-white/50 text-sm">Sin incidencias registradas en esta sucursal.</p>
+        <p class="text-white/50 text-sm">Sin incidencias registradas en este alcance.</p>
       </div>
     } @else {
       @if (incidents(); as i) {
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <!-- Gauge resolución -->
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Tasa de Resolución</p>
-            <app-radial-gauge [value]="i.resolutionRate" [arc]="270" caption="Cerradas / total" [size]="150" />
-          </div>
-          <!-- Stat cards -->
-          <div class="grid grid-cols-2 gap-3 lg:col-span-2">
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Total</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ i.total }}</p>
-              <p class="text-[10px] text-white/40">incidencias activas</p>
-            </div>
-            <div class="bg-white/[0.04] border border-rose-500/20 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-rose-300/80">Críticas Abiertas</p>
-              <p class="text-2xl font-bold text-rose-400 mt-1">{{ i.criticalOpen }}</p>
-              <p class="text-[10px] text-white/40">sin cerrar</p>
-            </div>
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 col-span-2">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Tiempo Medio de Resolución</p>
-              <p class="text-2xl font-bold text-white mt-1">
-                {{ i.avgResolutionHours >= 0 ? i.avgResolutionHours.toFixed(1) : 'S/D' }}<span class="text-sm font-normal text-white/40">{{ i.avgResolutionHours >= 0 ? ' h' : '' }}</span>
-              </p>
-              <p class="text-[10px] text-white/40">desde apertura hasta cierre</p>
+
+        <!-- Resumen (misma anatomía que Tareas: gauge + leyenda + total) -->
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-sm font-semibold text-white mb-3">Resumen de Incidencias</p>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <app-radial-gauge [value]="i.resolutionRate" [color]="rateHex" [arc]="270" [size]="120" [decimals]="1" />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-white/50">Tasa de resolución</p>
+              <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
+                @for (item of incidentLegend(); track item.label) {
+                  <li class="flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-sm shrink-0" [style.background]="item.color"></span>
+                    <span class="text-white/60 flex-1 truncate">{{ item.label }}</span>
+                    <span class="font-semibold text-white/80">{{ item.value }} <span class="text-white/35 font-normal">({{ item.pct }}%)</span></span>
+                  </li>
+                }
+              </ul>
             </div>
           </div>
+          <p class="text-[10px] text-white/35 mt-3 pt-3 border-t border-white/[0.06]">Total de incidencias: <span class="font-semibold text-white/60">{{ i.total }}</span></p>
+        </div>
+
+        <!-- Tarjetas métricas -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          @for (s of incidentStats(); track s.label) {
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-3.5">
+              <span class="block text-[10px] font-semibold uppercase tracking-wide text-white/50 truncate">{{ s.label }}</span>
+              <p class="text-xl font-bold tracking-tight mt-1" [style.color]="s.hex">{{ s.value }}</p>
+              <p class="text-[10px] text-white/35 mt-0.5 truncate">{{ s.desc }}</p>
+              <div class="mt-2 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                @if (s.bar !== null) {
+                  <div class="h-full rounded-full transition-all duration-500"
+                       [style.width.%]="s.bar" [style.background]="s.hex"
+                       [style.boxShadow]="'0 0 6px ' + s.hex"></div>
+                }
+              </div>
+            </div>
+          }
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
@@ -255,6 +269,77 @@
   }
 
   <!-- ══════════════════════════════════════════════════════════
+       TAB: CAPACITACIONES
+  ══════════════════════════════════════════════════════════ -->
+  @if (activeTab() === 'capacitaciones') {
+    @if (!trainings()) {
+      <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
+    } @else if (trainings()!.total === 0) {
+      <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
+        <p class="text-white/50 text-sm">Sin capacitaciones registradas en este alcance.</p>
+      </div>
+    } @else {
+      @if (trainings(); as t) {
+
+        <!-- Resumen -->
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-sm font-semibold text-white mb-3">Resumen de Capacitaciones</p>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <app-radial-gauge [value]="t.completionRate" [color]="rateHex" [arc]="270" [size]="120" [decimals]="1" />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-white/50">Tasa de completación</p>
+              <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
+                @for (item of trainingLegend(); track item.label) {
+                  <li class="flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-sm shrink-0" [style.background]="item.color"></span>
+                    <span class="text-white/60 flex-1 truncate">{{ item.label }}</span>
+                    <span class="font-semibold text-white/80">{{ item.value }} <span class="text-white/35 font-normal">({{ item.pct }}%)</span></span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+          <p class="text-[10px] text-white/35 mt-3 pt-3 border-t border-white/[0.06]">Total de capacitaciones: <span class="font-semibold text-white/60">{{ t.total }}</span></p>
+        </div>
+
+        <!-- Tarjetas métricas -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          @for (s of trainingStats(); track s.label) {
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-3.5">
+              <span class="block text-[10px] font-semibold uppercase tracking-wide text-white/50 truncate">{{ s.label }}</span>
+              <p class="text-xl font-bold tracking-tight mt-1" [style.color]="s.hex">{{ s.value }}</p>
+              <p class="text-[10px] text-white/35 mt-0.5 truncate">{{ s.desc }}</p>
+              <div class="mt-2 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                @if (s.bar !== null) {
+                  <div class="h-full rounded-full transition-all duration-500"
+                       [style.width.%]="s.bar" [style.background]="s.hex"
+                       [style.boxShadow]="'0 0 6px ' + s.hex"></div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Gráficas -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Estado</p>
+            <app-category-donut [data]="trainingStatusData()" centerLabel="Total" [size]="120" />
+          </div>
+          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+            <p class="text-sm font-semibold text-white mb-3">Por Categoría</p>
+            @if (trainingCategoryData().length > 0) {
+              <app-distribution-bar [data]="trainingCategoryData()" [horizontal]="true" [size]="180" />
+            } @else {
+              <p class="text-white/40 text-xs py-8 text-center">Sin categorías registradas.</p>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
        TAB: EXÁMENES
   ══════════════════════════════════════════════════════════ -->
   @if (activeTab() === 'examenes') {
@@ -262,33 +347,48 @@
       <div class="h-40 bg-white/[0.04] border border-white/10 rounded-xl animate-pulse"></div>
     } @else if (exams()!.totalSubmissions === 0) {
       <div class="bg-white/[0.02] border border-white/10 rounded-xl p-8 text-center">
-        <p class="text-white/50 text-sm">Sin presentaciones de exámenes en esta sucursal.</p>
+        <p class="text-white/50 text-sm">Sin presentaciones de exámenes en este alcance.</p>
       </div>
     } @else {
       @if (exams(); as e) {
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50 mb-1">Tasa de Aprobación</p>
-            <app-radial-gauge [value]="e.passRate" [arc]="270" caption="Aprobadas / presentadas" [size]="150" />
-          </div>
-          <div class="grid grid-cols-2 gap-3 lg:col-span-2">
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Exámenes</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ e.totalExams }}</p>
-            </div>
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Presentaciones</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ e.totalSubmissions }}</p>
-            </div>
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Puntaje Promedio</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ e.avgScore >= 0 ? e.avgScore.toFixed(1) : 'S/D' }}</p>
-            </div>
-            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-              <p class="text-[11px] font-semibold uppercase tracking-wide text-white/50">Tiempo Promedio</p>
-              <p class="text-2xl font-bold text-white mt-1">{{ e.avgTimeSecs >= 0 ? (e.avgTimeSecs / 60).toFixed(1) + ' min' : 'S/D' }}</p>
+
+        <!-- Resumen -->
+        <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
+          <p class="text-sm font-semibold text-white mb-3">Resumen de Exámenes</p>
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <app-radial-gauge [value]="e.passRate" [color]="rateHex" [arc]="270" [size]="120" [decimals]="1" />
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-white/50">Tasa de aprobación</p>
+              <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
+                @for (item of examLegend(); track item.label) {
+                  <li class="flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-sm shrink-0" [style.background]="item.color"></span>
+                    <span class="text-white/60 flex-1 truncate">{{ item.label }}</span>
+                    <span class="font-semibold text-white/80">{{ item.value }} <span class="text-white/35 font-normal">({{ item.pct }}%)</span></span>
+                  </li>
+                }
+              </ul>
             </div>
           </div>
+          <p class="text-[10px] text-white/35 mt-3 pt-3 border-t border-white/[0.06]">Total de presentaciones: <span class="font-semibold text-white/60">{{ e.totalSubmissions }}</span></p>
+        </div>
+
+        <!-- Tarjetas métricas -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          @for (s of examStats(); track s.label) {
+            <div class="bg-white/[0.04] border border-white/10 rounded-xl p-3.5">
+              <span class="block text-[10px] font-semibold uppercase tracking-wide text-white/50 truncate">{{ s.label }}</span>
+              <p class="text-xl font-bold tracking-tight mt-1" [style.color]="s.hex">{{ s.value }}</p>
+              <p class="text-[10px] text-white/35 mt-0.5 truncate">{{ s.desc }}</p>
+              <div class="mt-2 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                @if (s.bar !== null) {
+                  <div class="h-full rounded-full transition-all duration-500"
+                       [style.width.%]="s.bar" [style.background]="s.hex"
+                       [style.boxShadow]="'0 0 6px ' + s.hex"></div>
+                }
+              </div>
+            </div>
+          }
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
