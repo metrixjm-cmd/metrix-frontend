@@ -50,10 +50,10 @@ export class Leaderboard implements OnInit {
 
   /** La vista gerencial suma la columna EQUIPO, por eso ensancha el grid. */
   readonly gridColumns = computed(() => this.showingGerentes()
-    ? '52px 1fr 160px 130px 130px 120px 110px 130px'
-    : '52px 1fr 130px 130px 120px 110px 130px');
+    ? '48px 1fr 130px 100px 100px 90px 80px 100px'
+    : '48px 1fr 100px 100px 90px 80px 100px');
 
-  readonly gridMinWidth = computed(() => this.showingGerentes() ? '920px' : '760px');
+  readonly gridMinWidth = computed(() => this.showingGerentes() ? '800px' : '680px');
 
   /**
    * Puntaje con el que se rankea la fila: al gerente se le mide por su equipo,
