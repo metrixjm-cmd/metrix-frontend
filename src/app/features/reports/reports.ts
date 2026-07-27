@@ -52,7 +52,7 @@ export class Reports implements OnInit {
     switch (this.reportType()) {
       case 'managers':  return 'Ranking de gerentes de toda la cadena, ordenado por IGEO de equipo.';
       case 'employees': return 'Ranking de colaboradores de una sucursal, ordenado por IGEO.';
-      default:          return 'Genera y descarga reportes PDF y Excel por sucursal y fecha.';
+      default:          return 'Genera y descarga reportes PDF por sucursal y fecha.';
     }
   });
 
@@ -149,16 +149,6 @@ export class Reports implements OnInit {
           error: err  => this.failDownload(err),
         });
     }
-  }
-
-  downloadExcel(): void {
-    if (!this.validate()) return;
-    this.downloading.set(true);
-    this.error.set(null);
-    this.reportSvc.downloadExcel(this.storeId(), this.selectedDate()).subscribe({
-      next:  blob => this.saveAs(blob, `cierre-${this.selectedDate()}.xlsx`),
-      error: err  => this.failDownload(err),
-    });
   }
 
   // ── Formatters ─────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ import { EmployeesReportResponse, ManagersReportResponse, ReportPeriod } from '.
  * Servicio HTTP para reportes de cierre diario — Sprint 8.
  *
  * - `getReportData()`: preview JSON del reporte.
- * - `downloadPdf()` / `downloadExcel()`: descarga binaria via responseType 'blob'.
+ * - `downloadPdf()`: descarga binaria via responseType 'blob'.
  * - `triggerDownload()`: crea un <a> temporal para disparar la descarga del blob.
  */
 @Injectable({ providedIn: 'root' })
@@ -28,13 +28,6 @@ export class ReportService {
   downloadPdf(storeId: string, date: string): Observable<Blob> {
     return this.http.get(
       `${this.base}/daily/pdf`,
-      { params: { storeId, date }, responseType: 'blob' }
-    );
-  }
-
-  downloadExcel(storeId: string, date: string): Observable<Blob> {
-    return this.http.get(
-      `${this.base}/daily/excel`,
       { params: { storeId, date }, responseType: 'blob' }
     );
   }
