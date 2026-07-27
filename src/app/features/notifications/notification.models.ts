@@ -13,7 +13,17 @@ export type NotificationType =
   | 'TASK_DEADLINE_WARNING'
   | 'TASK_OVERDUE'
   | 'DAILY_IGEO_ALERT'
-  | 'EXAM_DELETION_REQUESTED';
+  | 'EXAM_DELETION_REQUESTED'
+  // Capacitación: los emiten TrainingEventListener y AlertScheduler. Faltaban
+  // aquí; la UI los pintaba bien igualmente porque el icono y el color salen de
+  // la severidad, no del tipo, pero el union mentía sobre lo que llega.
+  | 'TRAINING_ASSIGNED'
+  | 'TRAINING_STARTED'
+  | 'TRAINING_COMPLETED'
+  | 'TRAINING_FAILED'
+  | 'TRAINING_UPDATED'
+  | 'TRAINING_DEADLINE_WARNING'
+  | 'TRAINING_OVERDUE';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
