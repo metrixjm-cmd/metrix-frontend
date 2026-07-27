@@ -228,6 +228,18 @@ export class AppLayout implements OnInit, OnDestroy {
     this.notifSvc.markAllRead();
   }
 
+  /**
+   * Marca una notificación como leída al abrirla.
+   * <p>
+   * Hasta ahora las del dropdown no eran clicables: sólo existía "Marcar leídas"
+   * en bloque, así que `markRead` y su endpoint estaban muertos y no había forma
+   * de despachar una alerta sin borrarlas todas.
+   */
+  openNotification(n: AppNotification): void {
+    if (n.read) return;
+    this.notifSvc.markRead(n.id);
+  }
+
   closeDropdowns(): void {
     this.showNotifs.set(false);
     this.showProfile.set(false);
