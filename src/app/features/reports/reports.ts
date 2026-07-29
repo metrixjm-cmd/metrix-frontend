@@ -50,8 +50,8 @@ export class Reports implements OnInit {
 
   readonly pageSubtitle = computed(() => {
     switch (this.reportType()) {
-      case 'managers':  return 'Ranking de gerentes de toda la cadena, ordenado por IGEO de equipo.';
-      case 'employees': return 'Ranking de colaboradores de una sucursal, ordenado por IGEO.';
+      case 'managers':  return 'Ranking de gerentes de toda la cadena, ordenado por Over-all de equipo.';
+      case 'employees': return 'Ranking de colaboradores de una sucursal, ordenado por Over-all.';
       default:          return 'Genera y descarga reportes PDF por sucursal y fecha.';
     }
   });
