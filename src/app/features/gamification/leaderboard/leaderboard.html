@@ -166,9 +166,13 @@
               <p class="text-[10px] text-white/30 -mt-2 mb-2 uppercase tracking-wide">IGEO equipo</p>
             }
 
-            <!-- Badge icon -->
-            <svg class="w-6 h-6 shield-blue opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-6 h-6 shield-blue opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -214,9 +218,13 @@
               <p class="text-[10px] text-white/30 -mt-3 mb-3 uppercase tracking-wide">IGEO equipo</p>
             }
 
-            <!-- Badge icon -->
-            <svg class="w-7 h-7 shield-cyan opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-7 h-7 shield-cyan opacity-90 gamif-medal-shine" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -260,9 +268,13 @@
               <p class="text-[10px] text-white/30 -mt-2 mb-2 uppercase tracking-wide">IGEO equipo</p>
             }
 
-            <!-- Badge icon -->
-            <svg class="w-6 h-6 shield-purple opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-6 h-6 shield-purple opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -349,7 +361,16 @@
           [style.min-width]="gridMinWidth()"
         >
           <!-- # Rank -->
-          <div class="text-sm font-bold" [class]="rankColor(entry.rank)">
+          <div class="flex items-center gap-1 text-sm font-bold" [class]="rankColor(entry.rank)">
+            @if (entry.rank <= 3) {
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+                <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+                <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+                <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <circle cx="12" cy="15" r="2.4"/>
+              </svg>
+            }
             {{ entry.rank }}
           </div>
 
@@ -459,7 +480,16 @@
         >
           <div class="flex items-center gap-3">
             <!-- rank -->
-            <span class="text-sm font-bold w-5 text-center shrink-0" [class]="rankColor(entry.rank)">
+            <span class="flex flex-col items-center gap-0.5 w-6 shrink-0 text-sm font-bold" [class]="rankColor(entry.rank)">
+              @if (entry.rank <= 3) {
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+                  <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+                  <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+                  <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  <circle cx="12" cy="15" r="2.4"/>
+                </svg>
+              }
               {{ entry.rank }}
             </span>
             <!-- avatar -->
