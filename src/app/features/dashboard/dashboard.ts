@@ -9,6 +9,7 @@ import { KpiService } from '../kpi/services/kpi.service';
 import { GamificationService } from '../gamification/services/gamification.service';
 import { IncidentService } from '../incidents/services/incident.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { TrendLine } from '../../shared/components/charts/trend-line';
 import { APP_VERSION } from '../../../environments/app-version';
 
 export interface KpiCard {
@@ -44,7 +45,7 @@ export interface LiveEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, AppDatePipe, TimeFormatPipe],
+  imports: [RouterLink, StatusBadgeComponent, TrendLine, AppDatePipe, TimeFormatPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -83,13 +84,14 @@ export class Dashboard implements OnInit {
     ];
   });
 
-  // ── Sparklines pre-calculados (evita recálculo por change detection) ──────
-  readonly kpiSparklines = computed(() => {
+  // ── Sparklines: cada punto es una de las últimas tareas cerradas (orden
+  // cronológico, la más reciente a la derecha). Las etiquetas alimentan el
+  // eje X y el tooltip de app-trend-line para que quede claro qué representa
+  // cada punto — el valor exacto se ve al pasar el cursor.
+  readonly kpiChartLabels = computed(() => {
     const cards = this.kpis();
-    return cards.map(kpi => ({
-      path: this.sparklinePath(kpi.data),
-      fill: this.sparklineFill(kpi.data),
-    }));
+    return cards.map(kpi => kpi.data.map((_, i) =>
+      i === kpi.data.length - 1 ? 'Últ.' : `${i + 1}`));
   });
 
   // ── GERENTE: Tabla de equipo (KPI #7 top-5) ───────────────────────────────
@@ -177,21 +179,6 @@ export class Dashboard implements OnInit {
       this.kpiSvc.loadMySummary();
       this.gamifSvc.loadMySummary();
     }
-  }
-
-  // ── Sparkline helpers ─────────────────────────────────────────────────────
-
-  sparklinePath(data: number[], w = 120, h = 36): string {
-    const min   = Math.min(...data);
-    const max   = Math.max(...data);
-    const range = max - min || 1;
-    const xs    = data.map((_, i) => (i / (data.length - 1)) * w);
-    const ys    = data.map(v => h - ((v - min) / range) * (h - 4) - 2);
-    return xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
-  }
-
-  sparklineFill(data: number[], w = 120, h = 36): string {
-    return `${this.sparklinePath(data, w, h)} L ${w},${h} L 0,${h} Z`;
   }
 
   // ── Live feed helpers ─────────────────────────────────────────────────────

@@ -58,19 +58,23 @@
           </div>
           <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
           <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
-          <div class="mt-3">
-            <svg viewBox="0 0 120 36" class="w-full h-9" preserveAspectRatio="none">
-              <defs>
-                <linearGradient [id]="'grad-' + kpi.accentBg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" [attr.stop-color]="kpi.color" stop-opacity="0.2" />
-                  <stop offset="100%" [attr.stop-color]="kpi.color" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-              <path [attr.d]="kpiSparklines()[idx]?.fill" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
-              <path [attr.d]="kpiSparklines()[idx]?.path" [attr.stroke]="kpi.color"
-                    stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
+          @if (kpi.data.length > 1) {
+            <div class="mt-3">
+              <app-trend-line
+                [data]="kpi.data"
+                [labels]="kpiChartLabels()[idx]"
+                [color]="kpi.color"
+                [size]="36"
+                [showTooltip]="true"
+                [unit]="kpi.label === 'On-Time Rate' ? '%' : ''"
+              />
+            </div>
+            <p class="text-[10px] text-white/30 mt-1">
+              Últimas {{ kpi.data.length }} tareas cerradas, de más antigua a más reciente · pasa el cursor para ver el valor
+            </p>
+          } @else {
+            <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
+          }
           @if (kpi.label === 'Over-all') {
             @if (kpiSvc.igeoAnalytics(); as igeo) {
               <!-- Desglose por pilar del Over-all analítico (Sprint 17) -->
