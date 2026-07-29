@@ -173,6 +173,13 @@ export class KpiPanel implements OnInit {
     return Math.round((t[t.length - 1] - t[t.length - 2]) * 10) / 10;
   });
 
+  /** Etiquetas del eje X del gráfico de evolución: posición de cada tarea en la
+   *  ventana de las últimas 10 tareas cerradas (más antigua → más reciente). */
+  readonly trendLabels = computed(() => {
+    const n = this.taskGauges()?.trend.length ?? 0;
+    return Array.from({ length: n }, (_, i) => i === n - 1 ? 'Últ.' : `${i + 1}`);
+  });
+
   /** Leyenda del pipeline de tareas (para la tarjeta "Resumen de Ejecución"). */
   readonly pipelineLegend = computed(() => {
     const p = this.pipeline();
