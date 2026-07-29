@@ -97,6 +97,7 @@ export class TrendLine {
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: { padding: { top: 10, right: 6, bottom: 2, left: 2 } },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -109,20 +110,21 @@ export class TrendLine {
           scales: {
             x: {
               display: showAxis, grid: { display: false }, border: { display: false },
-              ticks: { font: { size: 10 }, color: 'rgba(255,255,255,0.4)' },
+              ticks: { font: { size: 11 }, color: 'rgba(255,255,255,0.45)', padding: 6 },
               title: {
                 display: !!xAxisLabel, text: xAxisLabel,
-                font: { size: 10, weight: 'normal' }, color: 'rgba(255,255,255,0.4)',
-                padding: { top: 4 },
+                font: { size: 11, weight: 'normal' }, color: 'rgba(255,255,255,0.45)',
+                padding: { top: 8 },
               },
             },
             y: {
               display: !!yAxisLabel, beginAtZero: true,
               grid: { display: false }, border: { display: false },
-              ticks: { font: { size: 9 }, color: 'rgba(255,255,255,0.35)', maxTicksLimit: 3 },
+              ticks: { font: { size: 10 }, color: 'rgba(255,255,255,0.4)', maxTicksLimit: 3, padding: 6 },
               title: {
                 display: !!yAxisLabel, text: yAxisLabel,
-                font: { size: 10, weight: 'normal' }, color: 'rgba(255,255,255,0.4)',
+                font: { size: 11, weight: 'normal' }, color: 'rgba(255,255,255,0.45)',
+                padding: { bottom: 8 },
               },
             },
           },
