@@ -104,10 +104,11 @@
   @if (isAdmin()) {
 
     <!-- Fila: Feed en vivo + Ranking inter-sucursal -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <!-- Ranking a 1.2fr (20% más ancho que el 1fr original) frente a 2fr del feed -->
+    <div class="grid grid-cols-1 xl:grid-cols-[2fr_1.2fr] gap-4">
 
       <!-- Feed en vivo -->
-      <div class="xl:col-span-2 bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+      <div class="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -168,7 +169,7 @@
                     <svg class="w-3 h-3" [class]="trendClass(store.trend)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="trendIcon(store.trend)" />
                     </svg>
-                    <span class="text-xs font-bold text-white">{{ store.igeo >= 0 ? store.igeo : 'S/D' }}</span>
+                    <span class="text-xs font-bold text-white">{{ store.igeo >= 0 ? store.igeo.toFixed(1) + '%' : 'S/D' }}</span>
                   </div>
                 </div>
                 <div class="mt-1.5 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
@@ -233,8 +234,8 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-white/80 truncate">{{ store.name }}</p>
                   <p class="text-xs text-white/40 mt-0.5">
-                    Over-all: <span class="text-red-400 font-semibold">{{ store.igeo }}%</span> ·
-                    On-Time: {{ store.onTime }}%
+                    Over-all: <span class="text-red-400 font-semibold">{{ store.igeo.toFixed(1) }}%</span> ·
+                    On-Time: {{ store.onTime.toFixed(1) }}%
                   </p>
                 </div>
                 <a routerLink="/reports"
