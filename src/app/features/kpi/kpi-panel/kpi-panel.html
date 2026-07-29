@@ -135,7 +135,18 @@
           <!-- Evolución del Índice Global -->
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
             <p class="text-sm font-semibold text-white mb-3">Evolución del Índice Global</p>
-            <app-trend-line [data]="g.trend" [color]="igeoHex" [showAxis]="true" [size]="180" />
+            <app-trend-line
+              [data]="g.trend"
+              [labels]="trendLabels()"
+              [color]="igeoHex"
+              [showAxis]="true"
+              [size]="180"
+              xAxisLabel="Tareas cerradas (antigua → reciente)"
+              yAxisLabel="Índice"
+            />
+            @if (g.trend.length > 1) {
+              <p class="text-[10px] text-white/30 mt-1.5">Pasa el cursor sobre un punto para ver el valor exacto</p>
+            }
           </div>
         </div>
       }
