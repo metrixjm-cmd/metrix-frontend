@@ -21,7 +21,7 @@
        KPI CARDS CON SPARKLINES — comunes a todos los roles
   ══════════════════════════════════════════════ -->
   @if (kpisLoading()) {
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       @for (i of [1,2,3,4]; track i) {
         <div class="ds-skeleton h-28 rounded-xl"></div>
       }
@@ -35,7 +35,7 @@
       Sin datos de KPIs disponibles. Asigna tareas para generar métricas.
     </div>
   } @else {
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       @for (kpi of kpis(); track kpi.label; let idx = $index) {
         <div class="ds-card p-4">
           <div class="flex items-start justify-between mb-3">
