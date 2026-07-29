@@ -8,7 +8,6 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AuthService }  from '../services/auth.service';
-import { ThemeService } from '../../../core/theme.service';
 import { APP_VERSION }  from '../../../../environments/app-version';
 
 @Component({
@@ -23,7 +22,6 @@ export class Login {
   private readonly auth    = inject(AuthService);
   private readonly router  = inject(Router);
   private readonly route   = inject(ActivatedRoute);
-  readonly themeSvc        = inject(ThemeService);
 
   readonly form: FormGroup = this.fb.group({
     numeroUsuario: ['', [Validators.required]],
@@ -53,8 +51,7 @@ export class Login {
     this.errorMessage.set('');
 
     this.auth.login(this.form.value).subscribe({
-      next: response => {
-        this.themeSvc.assignLoginSelectionToUser(response.numeroUsuario);
+      next: () => {
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },

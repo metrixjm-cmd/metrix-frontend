@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ThemeService, ThemeId } from '../../core/theme.service';
 
 export interface FaqItem {
   id:       string;
@@ -22,8 +21,6 @@ export interface FaqCategory {
   templateUrl: './help.html',
 })
 export class Help {
-  readonly themeSvc = inject(ThemeService);
-
   /** IDs de preguntas abiertas (accordion multi-open) */
   readonly openIds = signal<Set<string>>(new Set());
 
@@ -207,8 +204,8 @@ export class Help {
       items: [
         {
           id: 'g1',
-          question: '¿Cómo cambio el tema de color de la aplicación?',
-          answer:   'En la pantalla de inicio de sesión o en el selector de abajo de esta página encontrarás 3 temas: negro, naranja y morado. El tema se guarda automáticamente en tu navegador.',
+          question: '¿Puedo cambiar el color de la aplicación?',
+          answer:   'No. El color de METRIX se asigna solo según tu rol, para que cada perfil se distinga de un vistazo y la identidad visual sea consistente en toda la cadena. Antes existía un selector de tema; se retiró.',
         },
         {
           id: 'g2',
@@ -246,7 +243,4 @@ export class Help {
     return this.openIds().has(id);
   }
 
-  setTheme(id: ThemeId): void {
-    this.themeSvc.set(id);
-  }
 }
