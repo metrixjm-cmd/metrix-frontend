@@ -36,6 +36,12 @@ export class Login {
   readonly currentYear  = new Date().getFullYear();
   readonly appVersion   = APP_VERSION;
 
+  constructor() {
+    if (this.route.snapshot.queryParamMap.get('sessionExpired') === '1') {
+      this.errorMessage.set('Tu sesión expiró. Vuelve a iniciar sesión para continuar.');
+    }
+  }
+
   togglePassword(): void {
     this.showPassword.update(v => !v);
   }
