@@ -91,6 +91,7 @@ function buildTraining(overrides: Partial<TrainingResponse> = {}): TrainingRespo
     createdBy:       'GER001',
     createdAt:       new Date().toISOString(),
     updatedAt:       new Date().toISOString(),
+    retryGranted:    false,
     ...overrides,
   };
 }
