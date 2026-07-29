@@ -13,7 +13,8 @@ import { PALETTE, ensureChartsRegistered, glowPlugin, withAlpha } from './chart-
  * controla el tooltip por separado (por defecto sigue a {@code showAxis}),
  * para poder mostrar el valor al pasar el cursor sin ocupar espacio con el
  * eje en tarjetas pequeñas. {@code unit} se agrega como sufijo del valor
- * en el tooltip (ej. "%").
+ * en el tooltip (ej. "%"). {@code xAxisLabel}/{@code yAxisLabel} rotulan
+ * cada eje directamente en el gráfico (vacío = sin rótulo, como antes).
  */
 @Component({
   selector: 'app-trend-line',
@@ -29,6 +30,8 @@ export class TrendLine {
   readonly showAxis = input(false);
   readonly showTooltip = input<boolean | null>(null);
   readonly unit = input('');
+  readonly xAxisLabel = input('');
+  readonly yAxisLabel = input('');
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
   private chart?: Chart;
@@ -46,6 +49,8 @@ export class TrendLine {
       const showAxis = this.showAxis();
       const showTooltip = this.showTooltip() ?? showAxis;
       const unit = this.unit();
+      const xAxisLabel = this.xAxisLabel();
+      const yAxisLabel = this.yAxisLabel();
 
       const ctx = el.getContext('2d');
       let fill: string | CanvasGradient = withAlpha(color, 0.15);
@@ -102,9 +107,24 @@ export class TrendLine {
             },
           },
           scales: {
-            x: { display: showAxis, grid: { display: false }, border: { display: false },
-                 ticks: { font: { size: 10 }, color: 'rgba(255,255,255,0.4)' } },
-            y: { display: false, beginAtZero: true },
+            x: {
+              display: showAxis, grid: { display: false }, border: { display: false },
+              ticks: { font: { size: 10 }, color: 'rgba(255,255,255,0.4)' },
+              title: {
+                display: !!xAxisLabel, text: xAxisLabel,
+                font: { size: 10, weight: 'normal' }, color: 'rgba(255,255,255,0.4)',
+                padding: { top: 4 },
+              },
+            },
+            y: {
+              display: !!yAxisLabel, beginAtZero: true,
+              grid: { display: false }, border: { display: false },
+              ticks: { font: { size: 9 }, color: 'rgba(255,255,255,0.35)', maxTicksLimit: 3 },
+              title: {
+                display: !!yAxisLabel, text: yAxisLabel,
+                font: { size: 10, weight: 'normal' }, color: 'rgba(255,255,255,0.4)',
+              },
+            },
           },
         },
       });

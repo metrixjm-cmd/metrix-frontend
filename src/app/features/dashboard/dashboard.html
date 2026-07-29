@@ -64,14 +64,15 @@
                 [data]="kpi.data"
                 [labels]="kpiChartLabels()[idx]"
                 [color]="kpi.color"
-                [size]="36"
+                [size]="64"
+                [showAxis]="true"
                 [showTooltip]="true"
                 [unit]="kpi.label === 'On-Time Rate' ? '%' : ''"
+                xAxisLabel="Tareas cerradas (antigua → reciente)"
+                [yAxisLabel]="kpi.label === 'On-Time Rate' ? '% a tiempo' : 'Índice'"
               />
             </div>
-            <p class="text-[10px] text-white/30 mt-1">
-              Últimas {{ kpi.data.length }} tareas cerradas, de más antigua a más reciente · pasa el cursor para ver el valor
-            </p>
+            <p class="text-[10px] text-white/30 mt-1">Pasa el cursor sobre un punto para ver el valor exacto</p>
           } @else {
             <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
           }
