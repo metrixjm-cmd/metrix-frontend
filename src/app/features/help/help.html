@@ -83,47 +83,6 @@
     </section>
   }
 
-  <!-- ── SELECTOR DE TEMA ────────────────────────────────── -->
-  <section class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
-    <div class="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] bg-white/[0.02]">
-      <div class="w-7 h-7 bg-cyan-500/10 rounded-lg flex items-center justify-center shrink-0">
-        <svg class="w-3.5 h-3.5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
-            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-        </svg>
-      </div>
-      <h2 class="text-sm font-bold text-white">Tema de color</h2>
-    </div>
-
-    <div class="px-5 py-5">
-      <p class="text-sm text-white/50 mb-4">
-        Personaliza el color principal de la aplicación. El tema se guarda en tu navegador y persiste entre sesiones.
-      </p>
-      <div class="flex flex-wrap gap-4">
-        @for (theme of themeSvc.themes; track theme.id) {
-          <button
-            (click)="setTheme(theme.id)"
-            class="flex items-center justify-center p-2 rounded-xl border-2 transition-all duration-200 focus:outline-none group"
-            [class]="themeSvc.current() === theme.id
-              ? 'border-cyan-400 bg-cyan-500/[0.05]'
-              : 'border-white/10 hover:border-white/[0.15] hover:bg-white/[0.04]'"
-          >
-            <span
-              class="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
-              [style.background-color]="theme.color"
-            >
-              @if (themeSvc.current() === theme.id) {
-                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
-              }
-            </span>
-          </button>
-        }
-      </div>
-    </div>
-  </section>
-
   <!-- ── FOOTER INFO ─────────────────────────────────────── -->
   <div class="text-center pb-4">
     <p class="text-xs text-white/40">
