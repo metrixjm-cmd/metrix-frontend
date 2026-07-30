@@ -13,6 +13,14 @@ import { TrendLine } from '../../shared/components/charts/trend-line';
 import { RadialGauge } from '../../shared/components/charts/radial-gauge';
 import { APP_VERSION } from '../../../environments/app-version';
 
+/**
+ * Cómo se representa el valor de una tarjeta KPI.
+ * - `trend`   → línea de tendencia sobre las últimas tareas cerradas.
+ * - `gauge`   → tacómetro (métricas de tasa sin histórico por tarea).
+ * - `counter` → contador digital (conteos absolutos, no porcentajes).
+ */
+export type KpiViz = 'trend' | 'gauge' | 'counter';
+
 export interface KpiCard {
   label:    string;
   value:    string;
@@ -22,6 +30,7 @@ export interface KpiCard {
   data:     number[];
   /** Título de la tarea en cada punto de `data` (mismo índice), para el tooltip. */
   taskTitles?: string[];
+  viz:      KpiViz;
   color:    string;
   accentBg: string;
 }

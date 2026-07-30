@@ -37,7 +37,7 @@
   } @else {
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       @for (kpi of kpis(); track kpi.label; let idx = $index) {
-        <div class="ds-card p-4">
+        <div class="ds-card p-4 flex flex-col">
           <div class="flex items-start justify-between mb-3">
             <p class="text-xs font-semibold text-white/40 uppercase tracking-wide leading-tight">{{ kpi.label }}</p>
             @if (kpi.delta) {
@@ -56,46 +56,57 @@
               </span>
             }
           </div>
-          @if (kpi.label === 'Críticas Pend.') {
-            <div class="kpi-counter mb-0.5" [attr.data-digits]="kpi.value.length">
-              <span class="kpi-counter__value">{{ kpi.value }}</span>
-            </div>
-          } @else if (kpi.label !== 'Re-trabajo') {
-            <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
-          }
-          @if (kpi.label !== 'Re-trabajo') {
-            <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
-          }
-          @if (kpi.label === 'Re-trabajo') {
+          @switch (kpi.viz) {
+
+            <!-- Contador digital: conteo absoluto, centrado en la tarjeta. -->
+            @case ('counter') {
+              <div class="flex-1 flex flex-col items-center justify-center gap-2.5 py-2">
+                <div class="kpi-counter">
+                  <span class="kpi-counter__value">{{ kpi.value }}</span>
+                </div>
+                <p class="text-[11px] text-white/40 text-center">{{ kpi.sub }}</p>
+              </div>
+            }
+
             <!-- Tacómetro: entre menos re-trabajo, mejor — el umbral de color se
-                 invierte con higherIsBetter=false (0% = verde, 100% = rojo). -->
-            <div class="mt-1 flex justify-center">
-              <app-radial-gauge
-                [value]="kpi.data[0]"
-                [color]="kpi.color"
-                [higherIsBetter]="false"
-                [caption]="kpi.sub"
-                [size]="120"
-              />
-            </div>
-          } @else if (kpi.data.length > 1) {
-            <div class="mt-4">
-              <app-trend-line
-                [data]="kpi.data"
-                [labels]="kpiChartLabels()[idx]"
-                [taskTitles]="kpi.taskTitles ?? []"
-                [color]="kpi.color"
-                [size]="130"
-                [showAxis]="true"
-                [showTooltip]="true"
-                [unit]="kpi.label === 'On-Time Rate' ? '%' : ''"
-                xAxisLabel="Tareas cerradas (antigua → reciente)"
-                [yAxisLabel]="kpi.label === 'On-Time Rate' ? '% a tiempo' : '% tareas t'"
-              />
-            </div>
-            <p class="text-[10px] text-white/30 mt-2">Pasa el cursor sobre la línea (no sobre los números de abajo) para ver la tarea y su valor exacto</p>
-          } @else {
-            <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
+                 invierte con higherIsBetter=false (0% = verde, 100% = rojo).
+                 El subtítulo va debajo, no dentro del aro: adentro chocaba con
+                 el número y con el arco. -->
+            @case ('gauge') {
+              <div class="flex-1 flex flex-col items-center justify-center gap-1.5">
+                <app-radial-gauge
+                  [value]="kpi.data[0]"
+                  [color]="kpi.color"
+                  [higherIsBetter]="false"
+                  [size]="132"
+                />
+                <p class="text-[11px] text-white/40 text-center">{{ kpi.sub }}</p>
+              </div>
+            }
+
+            @default {
+              <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
+              <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
+              @if (kpi.data.length > 1) {
+                <div class="mt-4">
+                  <app-trend-line
+                    [data]="kpi.data"
+                    [labels]="kpiChartLabels()[idx]"
+                    [taskTitles]="kpi.taskTitles ?? []"
+                    [color]="kpi.color"
+                    [size]="130"
+                    [showAxis]="true"
+                    [showTooltip]="true"
+                    [unit]="kpi.label === 'On-Time Rate' ? '%' : ''"
+                    xAxisLabel="Tareas cerradas (antigua → reciente)"
+                    [yAxisLabel]="kpi.label === 'On-Time Rate' ? '% a tiempo' : '% tareas t'"
+                  />
+                </div>
+                <p class="text-[10px] text-white/30 mt-2">Pasa el cursor sobre la línea (no sobre los números de abajo) para ver la tarea y su valor exacto</p>
+              } @else {
+                <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
+              }
+            }
           }
           @if (kpi.label === 'Over-all') {
             @if (kpiSvc.igeoAnalytics(); as igeo) {
