@@ -1,81 +1,35 @@
 <div class="gamif-page p-4 md:p-5 lg:p-6">
 
   <!-- ══════════════════════════════════════════════════════════
-       BARRA SUPERIOR: Título + Métricas
+       BARRA SUPERIOR: Título y período
   ════════════════════════════════════════════════════════════ -->
-  <div class="flex flex-col xl:flex-row xl:items-start gap-4 mb-5">
+  <div class="mb-5">
+    <h1 class="text-[22px] font-bold text-white tracking-tight leading-tight">
+      {{ pageTitle() }}
+    </h1>
+    <p class="text-sm text-white/35 mt-0.5">
+      {{ pageSubtitle() }}
+    </p>
 
-    <!-- Título y tabs -->
-    <div class="shrink-0">
-      <h1 class="text-[22px] font-bold text-white tracking-tight leading-tight">
-        {{ pageTitle() }}
-      </h1>
-      <p class="text-sm text-white/35 mt-0.5">
-        {{ pageSubtitle() }}
-      </p>
-
-      <!-- Period tabs -->
-      <div class="flex gap-2 mt-4" role="group" aria-label="Período del ranking">
-        <button
-          class="gamif-tab"
-          [class]="period() === 'weekly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
-          (click)="selectPeriod('weekly')"
-          aria-label="Ver ranking de esta semana"
-        >
-          Esta semana
-        </button>
-        <button
-          class="gamif-tab"
-          [class]="period() === 'monthly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
-          (click)="selectPeriod('monthly')"
-          aria-label="Ver ranking de este mes"
-        >
-          Este mes
-        </button>
-      </div>
+    <!-- Period tabs -->
+    <div class="flex gap-2 mt-4" role="group" aria-label="Período del ranking">
+      <button
+        class="gamif-tab"
+        [class]="period() === 'weekly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+        (click)="selectPeriod('weekly')"
+        aria-label="Ver ranking de esta semana"
+      >
+        Esta semana
+      </button>
+      <button
+        class="gamif-tab"
+        [class]="period() === 'monthly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+        (click)="selectPeriod('monthly')"
+        aria-label="Ver ranking de este mes"
+      >
+        Este mes
+      </button>
     </div>
-
-    <!-- Metric cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:ml-auto xl:max-w-[660px] w-full">
-      @for (m of metrics; track m.label) {
-        <div class="gamif-metric-card p-4 flex flex-col gap-2.5">
-
-          <!-- Icon + Label -->
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" [class]="m.iconBg">
-              <svg class="w-[18px] h-[18px]" [class]="m.iconColor"
-                   fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="m.iconPath" />
-              </svg>
-            </div>
-            <span class="text-[9px] font-bold uppercase tracking-widest text-white/35 leading-tight">
-              {{ m.label }}
-            </span>
-          </div>
-
-          <!-- Valor principal -->
-          <p class="text-[26px] font-extrabold text-white leading-none tracking-tight">
-            {{ m.value }}
-          </p>
-
-          <!-- Sub-texto -->
-          <p class="text-[11px] leading-snug" [class]="m.subHighlight ? 'text-emerald-400' : 'text-white/30'">
-            {{ m.sub }}
-          </p>
-
-          <!-- Barra de progreso -->
-          <div class="gamif-progress-bar mt-0.5">
-            <div
-              class="gamif-progress-fill"
-              [style.width]="m.barWidth + '%'"
-              [style.background]="m.barGradient"
-            ></div>
-          </div>
-
-        </div>
-      }
-    </div>
-
   </div>
 
   <!-- ── Loading ──────────────────────────────────────────────── -->
@@ -107,7 +61,7 @@
       }
     </div>
 
-  } @else if (effectiveRows().length === 0) {
+  } @else if (rows().length === 0) {
     <!-- Empty -->
     <div class="gamif-top3-panel p-14 text-center">
       <div class="text-5xl mb-3">🏆</div>
@@ -134,7 +88,7 @@
       <div class="flex items-start justify-center gap-2 md:gap-5">
 
         <!-- 2do lugar (izquierda) -->
-        @if (effectivePodium()[0]; as p2) {
+        @if (podium()[0]; as p2) {
           <div class="gamif-podium-card gamif-podium-card--silver p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px]"
                style="padding-top: 28px; padding-bottom: 20px;">
 
@@ -184,7 +138,7 @@
         }
 
         <!-- 1er lugar (centro — más grande) -->
-        @if (effectivePodium()[1]; as p1) {
+        @if (podium()[1]; as p1) {
           <div class="gamif-podium-card gamif-podium-card--gold p-3 md:p-7 flex-1 min-w-0 max-w-[240px] md:max-w-[270px] -mt-4"
                style="padding-top: 32px; padding-bottom: 22px;">
 
@@ -236,7 +190,7 @@
         }
 
         <!-- 3er lugar (derecha) -->
-        @if (effectivePodium()[2]; as p3) {
+        @if (podium()[2]; as p3) {
           <div class="gamif-podium-card gamif-podium-card--bronze p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px] mt-6"
                style="padding-top: 28px; padding-bottom: 20px;">
 
@@ -351,7 +305,7 @@
       </div>
 
       <!-- Rows -->
-      @for (entry of effectiveRows(); track entry.userId) {
+      @for (entry of rows(); track entry.userId) {
 
         <!-- Desktop row -->
         <div
