@@ -138,6 +138,7 @@
             <app-trend-line
               [data]="g.trend"
               [labels]="trendLabels()"
+              [taskTitles]="g.taskTitles"
               [color]="igeoHex"
               [showAxis]="true"
               [size]="180"
@@ -145,7 +146,7 @@
               yAxisLabel="Índice"
             />
             @if (g.trend.length > 1) {
-              <p class="text-[10px] text-white/30 mt-1.5">Pasa el cursor sobre un punto para ver el valor exacto</p>
+              <p class="text-[10px] text-white/30 mt-1.5">Pasa el cursor sobre un punto para ver la tarea y su valor exacto</p>
             }
           </div>
         </div>

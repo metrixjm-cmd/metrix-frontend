@@ -15,6 +15,8 @@ import { PALETTE, ensureChartsRegistered, glowPlugin, withAlpha } from './chart-
  * eje en tarjetas pequeñas. {@code unit} se agrega como sufijo del valor
  * en el tooltip (ej. "%"). {@code xAxisLabel}/{@code yAxisLabel} rotulan
  * cada eje directamente en el gráfico (vacío = sin rótulo, como antes).
+ * {@code taskTitles}, si se provee (mismo índice que {@code data}), reemplaza
+ * el título del tooltip por el nombre real de la tarea en ese punto.
  */
 @Component({
   selector: 'app-trend-line',
@@ -32,9 +34,14 @@ export class TrendLine {
   readonly unit = input('');
   readonly xAxisLabel = input('');
   readonly yAxisLabel = input('');
+  readonly taskTitles = input<string[]>([]);
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
   private chart?: Chart;
+  // Leído por el callback del tooltip en cada actualización — el callback se
+  // registra una sola vez al crear el chart, así que no puede cerrar sobre el
+  // valor de `taskTitles()` de una corrida futura del effect.
+  private currentTaskTitles: string[] = [];
 
   constructor() {
     ensureChartsRegistered();
@@ -51,6 +58,7 @@ export class TrendLine {
       const unit = this.unit();
       const xAxisLabel = this.xAxisLabel();
       const yAxisLabel = this.yAxisLabel();
+      this.currentTaskTitles = this.taskTitles();
 
       const ctx = el.getContext('2d');
       let fill: string | CanvasGradient = withAlpha(color, 0.15);
@@ -103,6 +111,11 @@ export class TrendLine {
             tooltip: {
               enabled: showTooltip,
               callbacks: {
+                title: items => {
+                  const idx = items[0]?.dataIndex;
+                  const taskTitle = idx != null ? this.currentTaskTitles[idx] : undefined;
+                  return taskTitle ? taskTitle : (items[0]?.label ?? '');
+                },
                 label: ctx => unit ? `${ctx.formattedValue}${unit}` : ctx.formattedValue,
               },
             },

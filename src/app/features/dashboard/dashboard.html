@@ -69,6 +69,7 @@
               <app-trend-line
                 [data]="kpi.data"
                 [labels]="kpiChartLabels()[idx]"
+                [taskTitles]="kpi.taskTitles ?? []"
                 [color]="kpi.color"
                 [size]="130"
                 [showAxis]="true"
@@ -78,7 +79,7 @@
                 [yAxisLabel]="kpi.label === 'On-Time Rate' ? '% a tiempo' : '% tareas t'"
               />
             </div>
-            <p class="text-[10px] text-white/30 mt-2">Pasa el cursor sobre un punto para ver el valor exacto</p>
+            <p class="text-[10px] text-white/30 mt-2">Pasa el cursor sobre un punto para ver la tarea y su valor exacto</p>
           } @else {
             <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
           }

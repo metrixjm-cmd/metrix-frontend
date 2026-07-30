@@ -92,6 +92,7 @@ export interface KpiSummary {
   pipelineFailed: number;
   sparklineOnTime: number[];
   sparklineIgeo: number[];
+  sparklineTaskTitles: string[];
 }
 
 export interface StoreRankingEntry {
