@@ -44,10 +44,10 @@ xl:  1280px  ← Desktop grande
 ```html
 <!-- 2 columnas en móvil, 4 en desktop -->
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:ml-auto">
-  <div class="gamif-metric-card">...</div>
-  <div class="gamif-metric-card">...</div>
-  <div class="gamif-metric-card">...</div>
-  <div class="gamif-metric-card">...</div>
+  <div class="ds-card">...</div>
+  <div class="ds-card">...</div>
+  <div class="ds-card">...</div>
+  <div class="ds-card">...</div>
 </div>
 ```
 

@@ -3,20 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { AuthService }         from '../../auth/services/auth.service';
 import { GamificationService } from '../services/gamification.service';
-import { RhService }           from '../../rh/services/rh.service';
 import { LeaderboardEntry }    from '../gamification.models';
-
-export interface MetricCard {
-  label:       string;
-  value:       string;
-  sub:         string;
-  subHighlight?: boolean;
-  iconPath:    string;
-  iconBg:      string;
-  iconColor:   string;
-  barGradient: string;
-  barWidth:    number;
-}
 
 @Component({
   selector: 'app-leaderboard',
@@ -28,7 +15,6 @@ export interface MetricCard {
 export class Leaderboard implements OnInit {
   private readonly authSvc  = inject(AuthService);
   readonly gamifSvc         = inject(GamificationService);
-  readonly rhSvc            = inject(RhService);
 
   readonly loading  = this.gamifSvc.loading;
   readonly error    = this.gamifSvc.error;
@@ -64,144 +50,21 @@ export class Leaderboard implements OnInit {
     return this.showingGerentes() ? (entry.teamAvgIgeo ?? -1) : entry.igeo;
   }
 
-  // ── Mock data (fallback when API devuelve vacío) ─────────────────────────
-  readonly mockLeaderboard: LeaderboardEntry[] = [
-    {
-      rank: 1, userId: 'mock-1', nombre: 'ejecutadores de carlos',
-      puesto: 'Ejecutador', turno: 'VESPERTINO',
-      igeo: 34.2, igeoChange: 2, totalTasks: 25, completedTasks: 17, onTimeRate: 68.0,
-      badges: [
-        { type: 'PUNTUAL_ELITE',  title: 'Puntual Elite',  description: '', icon: '⏱️', earnedAt: '' },
-        { type: 'VELOCIDAD_RAYO', title: 'Velocidad Rayo', description: '', icon: '⚡', earnedAt: '' },
-      ],
-    },
-    {
-      rank: 2, userId: 'mock-2', nombre: 'Carlos gerente',
-      puesto: 'Gerente', turno: 'MATUTINO',
-      igeo: 30.0, igeoChange: 1, totalTasks: 20, completedTasks: 12, onTimeRate: 60.0,
-      badges: [
-        { type: 'PUNTUAL_ELITE',   title: 'Puntual Elite',   description: '', icon: '⏱️', earnedAt: '' },
-        { type: 'COLABORADOR_MES', title: 'Colaborador Mes', description: '', icon: '🥇', earnedAt: '' },
-      ],
-    },
-    {
-      rank: 3, userId: 'mock-3', nombre: 'Administrador',
-      puesto: 'Admin', turno: 'ADMIN',
-      igeo: 26.1, igeoChange: -1, totalTasks: 10, completedTasks: 6, onTimeRate: 54.0,
-      badges: [
-        { type: 'CERO_RETRABAJOS', title: 'Cero Retrabajos', description: '', icon: '✅', earnedAt: '' },
-      ],
-    },
-    {
-      rank: 4, userId: 'mock-4', nombre: 'Luis Amaral',
-      puesto: 'Ejecutador', turno: 'Suc. San Pablo',
-      igeo: 22.8, igeoChange: 2, totalTasks: 8, completedTasks: 5, onTimeRate: 50.0,
-      badges: [
-        { type: 'RACHA_7', title: 'Racha de 7', description: '', icon: '🔥', earnedAt: '' },
-      ],
-    },
-    {
-      rank: 5, userId: 'mock-5', nombre: 'Lidia Sánchez',
-      puesto: 'Ejecutador', turno: 'Suc. Central',
-      igeo: 21.4, igeoChange: -1, totalTasks: 12, completedTasks: 6, onTimeRate: 48.0,
-      badges: [
-        { type: 'CERO_RETRABAJOS', title: 'Cero Retrabajos', description: '', icon: '✅', earnedAt: '' },
-      ],
-    },
-  ];
+  // ── Filas del ranking ────────────────────────────────────────────────────
 
-  // ── Metric cards (datos mock — sin endpoint aún) ─────────────────────────
-  readonly metrics: MetricCard[] = [
-    {
-      label: 'PARTICIPACIÓN',
-      value: '82%',
-      sub: '21 / 25 colaboradores',
-      iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-      iconBg:    'icon-bg-blue',
-      iconColor: 'icon-blue',
-      barGradient: 'linear-gradient(90deg,#3b82f6,#06b6d4)',
-      barWidth: 82,
-    },
-    {
-      label: 'CUMPLIMIENTO',
-      value: '29.3%',
-      sub: 'Índice global de ejecución',
-      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-      iconBg:    'icon-bg-cyan',
-      iconColor: 'icon-cyan',
-      barGradient: 'linear-gradient(90deg,#06b6d4,#22d3ee)',
-      barWidth: 29,
-    },
-    {
-      label: 'INSIGNIAS GANADAS',
-      value: '18',
-      sub: '+3 vs. semana anterior',
-      subHighlight: true,
-      iconPath: 'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z',
-      iconBg:    'icon-bg-amber',
-      iconColor: 'icon-amber',
-      barGradient: 'linear-gradient(90deg,#f59e0b,#fbbf24)',
-      barWidth: 72,
-    },
-    {
-      label: 'RACHA ACTIVA',
-      value: '5 días',
-      sub: '¡Sigue así!',
-      subHighlight: true,
-      iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
-      iconBg:    'icon-bg-orange',
-      iconColor: 'icon-orange',
-      barGradient: 'linear-gradient(90deg,#f97316,#fb923c)',
-      barWidth: 50,
-    },
-  ];
+  /**
+   * El backend ya entrega el conjunto correcto y numerado para cada rol: al
+   * ADMIN los gerentes de toda la cadena, al GERENTE sólo los ejecutadores a su
+   * cargo. No hay nada que filtrar ni renumerar aquí, y no hay datos de relleno:
+   * si la sucursal no tiene actividad en el período, la vista queda vacía.
+   */
+  readonly rows = computed((): LeaderboardEntry[] =>
+    this.loading() ? [] : this.gamifSvc.leaderboard());
 
-  // ── Computed: filas reales ────────────────────────────────────────────────
-  readonly gerenteRows = computed((): LeaderboardEntry[] => {
-    const users = this.rhSvc.users();
-    const board = this.gamifSvc.leaderboard();
-    const ejecutadorIds = new Set(users.filter(u => u.roles?.includes('EJECUTADOR')).map(u => u.id));
-    // El backend rankea sobre toda la sucursal (gerentes incluidos). Al quedarnos
-    // sólo con ejecutadores hay que renumerar, o la tabla muestra huecos como "#4"
-    // en la primera fila y contradice al podio.
-    return board
-      .filter(e => ejecutadorIds.has(e.userId))
-      .map((e, i) => ({ ...e, rank: i + 1 }));
-  });
-
-  readonly ejecutadorRows = computed(() => this.gamifSvc.leaderboard());
-
-  readonly tableRows = computed((): LeaderboardEntry[] => {
-    if (this.isAdmin()) return this.gamifSvc.leaderboard();
-    return this.isGerente() ? this.gerenteRows() : this.ejecutadorRows();
-  });
-
-  readonly top3Podium = computed(() => {
-    const rows = this.tableRows();
-    const podium: (LeaderboardEntry | null)[] = [null, null, null];
-    if (rows[0]) podium[1] = rows[0];
-    if (rows[1]) podium[0] = rows[1];
-    if (rows[2]) podium[2] = rows[2];
-    return podium;
-  });
-
-  // ── Efectivos con fallback a mock ─────────────────────────────────────────
-  readonly effectiveRows = computed((): LeaderboardEntry[] => {
-    if (this.loading()) return [];
-    const real = this.tableRows();
-    if (real.length > 0) return real;
-    // Sin fallback en la vista gerencial: mostrar colaboradores ficticios como si
-    // fueran gerentes daría una lectura falsa al ADMIN. Mejor el estado vacío.
-    return this.showingGerentes() ? [] : this.mockLeaderboard;
-  });
-
-  readonly effectivePodium = computed(() => {
-    const rows = this.effectiveRows();
-    const podium: (LeaderboardEntry | null)[] = [null, null, null];
-    if (rows[0]) podium[1] = rows[0]; // 1er lugar: centro
-    if (rows[1]) podium[0] = rows[1]; // 2do lugar: izquierda
-    if (rows[2]) podium[2] = rows[2]; // 3er lugar: derecha
-    return podium;
+  /** Orden visual del podio: 2º a la izquierda, 1º al centro, 3º a la derecha. */
+  readonly podium = computed((): (LeaderboardEntry | null)[] => {
+    const r = this.rows();
+    return [r[1] ?? null, r[0] ?? null, r[2] ?? null];
   });
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
@@ -227,7 +90,6 @@ export class Leaderboard implements OnInit {
     if (!storeId) return;
 
     this.gamifSvc.loadLeaderboard(storeId, period);
-    if (this.isGerente()) this.rhSvc.loadUsersByStore(storeId);
   }
 
   // ── Helpers visuales ─────────────────────────────────────────────────────

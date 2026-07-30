@@ -14,32 +14,6 @@
   color: #fff;
 }
 
-// ── Metric cards ───────────────────────────────────────────────
-.gamif-metric-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  backdrop-filter: blur(8px);
-  transition: background 0.2s ease, border-color 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.14);
-  }
-}
-
-// Icon container backgrounds
-.icon-bg-blue   { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); }
-.icon-bg-cyan   { background: rgba(6, 182, 212, 0.15);  border: 1px solid rgba(6, 182, 212, 0.3);  }
-.icon-bg-amber  { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
-.icon-bg-orange { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); }
-
-// Icon colors
-.icon-blue   { color: #60a5fa; }
-.icon-cyan   { color: #22d3ee; }
-.icon-amber  { color: #fbbf24; }
-.icon-orange { color: #fb923c; }
-
 // ── Progress bar ───────────────────────────────────────────────
 .gamif-progress-bar {
   height: 3px;
