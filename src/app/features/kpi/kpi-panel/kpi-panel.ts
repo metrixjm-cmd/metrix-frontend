@@ -163,6 +163,7 @@ export class KpiPanel implements OnInit {
       onTime:  s.onTimeRate,
       rework:  s.reworkRate,
       trend:   s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [s.igeo >= 0 ? s.igeo : 0],
+      taskTitles: s.sparklineIgeo.length > 0 ? s.sparklineTaskTitles : [],
     };
   });
 

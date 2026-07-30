@@ -19,6 +19,8 @@ export interface KpiCard {
   deltaUp:  boolean;
   sub:      string;
   data:     number[];
+  /** Título de la tarea en cada punto de `data` (mismo índice), para el tooltip. */
+  taskTitles?: string[];
   color:    string;
   accentBg: string;
 }
