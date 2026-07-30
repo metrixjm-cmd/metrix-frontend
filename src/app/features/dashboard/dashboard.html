@@ -60,11 +60,25 @@
             <div class="kpi-counter mb-0.5" [attr.data-digits]="kpi.value.length">
               <span class="kpi-counter__value">{{ kpi.value }}</span>
             </div>
-          } @else {
+          } @else if (kpi.label !== 'Re-trabajo') {
             <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
           }
-          <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
-          @if (kpi.data.length > 1) {
+          @if (kpi.label !== 'Re-trabajo') {
+            <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
+          }
+          @if (kpi.label === 'Re-trabajo') {
+            <!-- Tacómetro: entre menos re-trabajo, mejor — el umbral de color se
+                 invierte con higherIsBetter=false (0% = verde, 100% = rojo). -->
+            <div class="mt-1 flex justify-center">
+              <app-radial-gauge
+                [value]="kpi.data[0]"
+                [color]="kpi.color"
+                [higherIsBetter]="false"
+                [caption]="kpi.sub"
+                [size]="120"
+              />
+            </div>
+          } @else if (kpi.data.length > 1) {
             <div class="mt-4">
               <app-trend-line
                 [data]="kpi.data"

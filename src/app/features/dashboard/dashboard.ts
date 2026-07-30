@@ -10,6 +10,7 @@ import { GamificationService } from '../gamification/services/gamification.servi
 import { IncidentService } from '../incidents/services/incident.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { TrendLine } from '../../shared/components/charts/trend-line';
+import { RadialGauge } from '../../shared/components/charts/radial-gauge';
 import { APP_VERSION } from '../../../environments/app-version';
 
 export interface KpiCard {
@@ -47,7 +48,7 @@ export interface LiveEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, TrendLine, AppDatePipe, TimeFormatPipe],
+  imports: [RouterLink, StatusBadgeComponent, TrendLine, RadialGauge, AppDatePipe, TimeFormatPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
