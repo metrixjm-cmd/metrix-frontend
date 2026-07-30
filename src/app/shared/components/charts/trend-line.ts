@@ -97,6 +97,9 @@ export class TrendLine {
             tension: 0.4,
             pointRadius: pointRadii,
             pointHoverRadius: 5,
+            // El punto visible mide 2-5px; sin esto solo se dispara el tooltip
+            // si el cursor cae exactamente sobre esos pocos píxeles.
+            pointHitRadius: 20,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
             pointBorderWidth: 1,
@@ -106,6 +109,10 @@ export class TrendLine {
           responsive: true,
           maintainAspectRatio: false,
           layout: { padding: { top: 10, right: 6, bottom: 2, left: 2 } },
+          // mode:'index' + intersect:false: el tooltip aparece con el cursor en
+          // cualquier punto de esa columna (incluida el área del eje X), no
+          // solo al acertar sobre el punto exacto de la línea.
+          interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: { display: false },
             tooltip: {
