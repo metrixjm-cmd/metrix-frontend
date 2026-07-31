@@ -55,6 +55,26 @@
                     class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
         </div>
 
+        <!-- SINGLE_SELECT — opciones editables, una sola correcta -->
+        @if (isSingleSelect) {
+          <div class="space-y-2">
+            <p class="text-xs text-white/50">Escribe las opciones y marca la única respuesta correcta</p>
+            @for (optCtrl of options.controls; track $index) {
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="setCorrect($index)"
+                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
+                        [class]="isCorrect($index) ? 'border-emerald-500 bg-emerald-500' : 'border-white/[0.15] hover:border-indigo-400'">
+                  @if (isCorrect($index)) {
+                    <span class="w-2 h-2 bg-white rounded-full"></span>
+                  }
+                </button>
+                <input [formControl]="$any(optCtrl)" type="text" placeholder="Opción {{ $index + 1 }}"
+                       class="flex-1 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white bg-white/[0.05] placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
+              </div>
+            }
+          </div>
+        }
+
         <!-- TRUE_FALSE — opciones fijas, seleccionar correcta -->
         @if (isTrueFalse) {
           <div class="space-y-2">

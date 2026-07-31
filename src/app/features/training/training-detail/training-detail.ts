@@ -102,6 +102,15 @@ export class TrainingDetail implements OnInit, OnDestroy {
     if (!training) return false;
     return training.status === 'COMPLETADA';
   });
+  /**
+   * El operador arranca la capacitación explícitamente.
+   * Se evalúa contra el status crudo — no `resolvedStatus()` — porque es el que
+   * valida el backend: una capacitación vencida sigue aceptando PROGRAMADA→EN_CURSO
+   * y bloquear el botón dejaría al operador sin ninguna acción posible.
+   */
+  readonly canStartAsLearner = computed(() =>
+    this.isLearnerView() && this.training()?.status === 'PROGRAMADA'
+  );
   readonly nowMs = signal(Date.now());
   readonly remainingMs = computed(() => {
     const dueAt = this.training()?.dueAt;

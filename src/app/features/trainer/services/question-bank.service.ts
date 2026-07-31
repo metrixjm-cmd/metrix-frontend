@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { BankQuestion, CreateBankQuestionRequest } from '../trainer.models';
+import { BankQuestion, BankQuestionPage, CreateBankQuestionRequest } from '../trainer.models';
 
 @Injectable({ providedIn: 'root' })
 export class QuestionBankService {
@@ -30,8 +30,11 @@ export class QuestionBankService {
     if (filters?.tag)        params = params.set('tag',        filters.tag);
     if (filters?.storeId)    params = params.set('storeId',    filters.storeId);
 
-    this.http.get<BankQuestion[]>(this.apiUrl, { params }).subscribe({
-      next:  q  => { this._questions.set(q); this._loading.set(false); },
+    this.http.get<BankQuestionPage>(this.apiUrl, { params }).subscribe({
+      next:  page => {
+        this._questions.set(page?.content ?? []);
+        this._loading.set(false);
+      },
       error: () => this._loading.set(false),
     });
   }

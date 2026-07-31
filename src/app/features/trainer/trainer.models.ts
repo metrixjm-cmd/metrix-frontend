@@ -209,6 +209,15 @@ export interface BankQuestion {
   usageCount: number;
 }
 
+/** GET /question-bank responde paginado, no un array plano. */
+export interface BankQuestionPage {
+  content:       BankQuestion[];
+  totalElements: number;
+  totalPages:    number;
+  number:        number;
+  size:          number;
+}
+
 // ── Plantillas de examen ───────────────────────────────────────────────────
 
 export interface ExamTemplateSummary {
