@@ -28,7 +28,7 @@ export class BancoPreguntasComponent implements OnInit {
   readonly typeLabels  = QUESTION_TYPE_LABELS;
   readonly diffLabels: Record<string, string> = DIFFICULTY_LABELS;
   readonly diffColors: Record<string, string> = DIFFICULTY_COLORS;
-  readonly questionTypes: QuestionType[]      = ['MULTI_SELECT', 'TRUE_FALSE'];
+  readonly questionTypes: QuestionType[]      = ['SINGLE_SELECT', 'MULTI_SELECT', 'TRUE_FALSE'];
   readonly difficulties: QuestionDifficulty[] = ['EASY', 'MEDIUM', 'HARD'];
 
   readonly filterType   = signal<string>('');
@@ -51,7 +51,7 @@ export class BancoPreguntasComponent implements OnInit {
 
   readonly form = this.fb.group({
     questionText:         ['', [Validators.required, Validators.maxLength(400)]],
-    type:                 ['MULTI_SELECT' as QuestionType, Validators.required],
+    type:                 ['SINGLE_SELECT' as QuestionType, Validators.required],
     options:              this.fb.array([
       this.fb.control('', Validators.required),
       this.fb.control('', Validators.required),
@@ -68,8 +68,9 @@ export class BancoPreguntasComponent implements OnInit {
 
   get options(): FormArray { return this.form.get('options') as FormArray; }
   get currentType(): QuestionType { return this.form.get('type')!.value as QuestionType; }
-  get isMultiSelect(): boolean { return this.currentType === 'MULTI_SELECT'; }
-  get isTrueFalse():   boolean { return this.currentType === 'TRUE_FALSE'; }
+  get isMultiSelect():  boolean { return this.currentType === 'MULTI_SELECT'; }
+  get isTrueFalse():    boolean { return this.currentType === 'TRUE_FALSE'; }
+  get isSingleSelect(): boolean { return this.currentType === 'SINGLE_SELECT'; }
 
   onTypeChange(type: QuestionType): void {
     this.form.get('type')!.setValue(type);
@@ -102,7 +103,7 @@ export class BancoPreguntasComponent implements OnInit {
     this.showForm.update(v => !v);
     this.error.set('');
     if (!this.showForm()) {
-      this.form.reset({ type: 'MULTI_SELECT', points: 1, difficulty: 'MEDIUM', correctOptionIndex: 0, correctOptionIndexes: [] });
+      this.form.reset({ type: 'SINGLE_SELECT', points: 1, difficulty: 'MEDIUM', correctOptionIndex: 0, correctOptionIndexes: [] });
     }
   }
 
@@ -123,11 +124,10 @@ export class BancoPreguntasComponent implements OnInit {
       tags:         fv.tags ? (fv.tags as string).split(',').map((t: string) => t.trim()).filter(Boolean) : [],
       storeId:      this.auth.currentUser()?.storeId,
     };
-    if (type === 'TRUE_FALSE') {
-      req.options = opts;
+    req.options = opts;
+    if (type === 'TRUE_FALSE' || type === 'SINGLE_SELECT') {
       req.correctOptionIndex = fv.correctOptionIndex ?? 0;
     } else {
-      req.options = opts;
       req.correctOptionIndexes = fv.correctOptionIndexes ?? [];
     }
     try {
