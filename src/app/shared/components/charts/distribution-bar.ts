@@ -87,6 +87,13 @@ export class DistributionBar {
             : { x: catAxis, y: valueAxis },
         },
       });
+      // El ancho debe seguir siendo fluido (w-full), así que no se puede fijar
+      // como en category-donut/radial-gauge. Chart.js mide el contenedor al
+      // construirse y, si el layout (tabs con @if, flex/grid) no había
+      // asentado aún, cae a su tamaño por defecto hasta el primer resize
+      // disparado por el usuario. Forzar un resize en el próximo frame lo
+      // corrige sin esperar esa interacción (2026-08-01, reporte del cliente).
+      requestAnimationFrame(() => this.chart?.resize());
     });
   }
 

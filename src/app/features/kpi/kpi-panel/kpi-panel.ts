@@ -219,6 +219,22 @@ export class KpiPanel implements OnInit {
   });
 
   /**
+   * Nota por turno cuando la barra en 0% no significa "0% de cumplimiento":
+   * puede ser un turno sin ninguna tarea o con tareas que aún no cierran.
+   * Sin esto ambos casos se ven idénticos a un turno con mal desempeño real
+   * (2026-08-01, reporte del cliente sobre el turno vespertino).
+   */
+  readonly shiftEmptyNotes = computed(() => {
+    if (this.breakdownDimension() !== 'shift') return [];
+    return this.shiftBreakdown()
+      .filter(s => s.onTimeRate < 0)
+      .map(s => ({
+        shift: s.shift,
+        note: s.totalTasks === 0 ? 'sin tareas en el período' : 'sin cierres aún (S/D)',
+      }));
+  });
+
+  /**
    * Máximo fijo del eje para el desglose — sin esto, cuando casi todos los
    * valores son 0 (ej. rework=0 en la mayoría), Chart.js auto-escala a un
    * máximo diminuto y las barras se ven "rotas"/invisibles.
