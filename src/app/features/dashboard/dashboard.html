@@ -109,10 +109,11 @@
             }
           }
           @if (kpi.label === 'Over-all') {
-            @if (kpiSvc.igeoAnalytics(); as igeo) {
-              <!-- Desglose por pilar del Over-all analítico (Sprint 17) -->
+            @if (igeoPillarArray().length > 0) {
+              <!-- Desglose por pilar del Over-all analítico (Sprint 17), acotado
+                   al alcance del usuario: cadena para ADMIN, sucursal para GERENTE -->
               <div class="mt-2 pt-2 border-t border-white/[0.06] space-y-1.5">
-                @for (p of igeoPillarArray(igeo); track p.n) {
+                @for (p of igeoPillarArray(); track p.n) {
                   <div class="flex items-center gap-1.5">
                     <span class="text-[9px] text-white/30 w-10 shrink-0">{{p.n}}</span>
                     <div class="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
