@@ -3,8 +3,9 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
 
 import { environment } from '../../../../environments/environment';
-import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IncidentKpi, KpiSummary, StoreRankingEntry, TrainingKpi, UserResponsibilityEntry } from '../kpi.models';
+import { CorrectionSpeedData, ExamKpi, IgeoAnalyticsResponse, IgeoGlobalResult, IncidentKpi, KpiSummary, StoreRankingEntry, TrainingKpi, UserResponsibilityEntry } from '../kpi.models';
 import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
+import { AuthService } from '../../auth/services/auth.service';
 
 /**
  * Servicio de KPIs para METRIX (Sprint 7 — KPI & Analytics).
@@ -17,6 +18,7 @@ import { KpiCard, StoreRanking } from '../../dashboard/dashboard';
 export class KpiService {
   private readonly http       = inject(HttpClient);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth       = inject(AuthService);
   private readonly apiUrl     = `${environment.apiUrl}/kpis`;
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
@@ -44,12 +46,45 @@ export class KpiService {
 
   // ── Computed signals para el dashboard ──────────────────────────────────
 
+  /**
+   * Over-all analítico ya acotado al alcance del usuario.
+   * <p>
+   * El endpoint devuelve {@code data.global} (toda la cadena) y
+   * {@code data.by_store[]}. Antes se usaba siempre el global, así que un
+   * GERENTE veía el número de la cadena entera mezclado con el resto de sus
+   * tarjetas, que sí son de su sucursal (auditoría 2026-08-01).
+   * <p>
+   * Devuelve null si no hay analytics o si el usuario no es ADMIN y su sucursal
+   * no viene en la respuesta: en ese caso el llamador cae a la fórmula de
+   * respaldo del summary, que sí está correctamente acotada.
+   */
+  private readonly scopedAnalyticsIgeo = computed((): IgeoGlobalResult | null => {
+    const analytics = this._igeoAnalytics();
+    if (analytics == null) return null;
+    if (this.auth.hasRole('ADMIN')) return analytics.data.global;
+    const storeId = this.auth.currentUser()?.storeId;
+    if (!storeId) return null;
+    return analytics.data.by_store.find(s => s.store_id === storeId) ?? null;
+  });
+
+  /** Pilares del Over-all analítico en el alcance del usuario; null si no aplica. */
+  readonly igeoPillars = computed(() => this.scopedAnalyticsIgeo()?.pillar_scores ?? null);
+
+  /**
+   * Over-all analítico del alcance del usuario; null si el analytics-service no
+   * respondió o su sucursal no viene en la respuesta. Cuando es null, la UI debe
+   * usar el `igeo` del summary (fórmula de respaldo) y decirlo.
+   */
+  readonly analyticsIgeoValue = computed(() => this.scopedAnalyticsIgeo()?.igeo ?? null);
+
   readonly kpiCards = computed((): KpiCard[] | null => {
     const s        = this._summary();
     if (!s) return null;
-    const analytics  = this._igeoAnalytics();
-    const igeoValue  = analytics != null ? analytics.data.global.igeo : s.igeo;
-    const igeoSource = analytics != null ? 'Analítico (4 pilares)' : 'Índice Global Ejecución';
+    const scoped     = this.scopedAnalyticsIgeo();
+    const igeoValue  = scoped != null ? scoped.igeo : s.igeo;
+    const igeoSource = scoped != null
+      ? 'Analítico · 4 pilares'
+      : 'Respaldo · on-time, re-trabajo y calidad';
     return [
       {
         label:    'Over-all',
@@ -57,7 +92,10 @@ export class KpiService {
         delta:    '',
         deltaUp:  true,
         sub:      igeoSource,
-        data:     s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [50],
+        // Sin histórico se manda vacío, no un 50 de relleno: la tarjeta ya
+        // muestra "sin histórico" cuando hay <2 puntos, y un valor inventado
+        // aquí solo confunde a quien lea el código (auditoría 2026-08-01).
+        data:     s.sparklineIgeo,
         taskTitles: s.sparklineIgeo.length > 0 ? s.sparklineTaskTitles : [],
         viz:      'trend',
         color:    '#005a9c',
@@ -68,8 +106,10 @@ export class KpiService {
         value:    s.onTimeRate >= 0 ? `${s.onTimeRate.toFixed(1)}%` : 'S/D',
         delta:    '',
         deltaUp:  true,
-        sub:      'Tareas completadas a tiempo',
-        data:     s.sparklineOnTime.length > 0 ? s.sparklineOnTime : [50],
+        // El denominador son las tareas cerradas (completadas + fallidas), no
+        // solo las completadas — ver KpiServiceImpl.computeOnTimeRate.
+        sub:      'Tareas cerradas dentro de plazo',
+        data:     s.sparklineOnTime,
         taskTitles: s.sparklineOnTime.length > 0 ? s.sparklineTaskTitles : [],
         viz:      'trend',
         color:    '#10b981',
@@ -93,7 +133,9 @@ export class KpiService {
         value:    `${s.criticalPending}`,
         delta:    '',
         deltaUp:  false,
-        sub:      'Sin ejecutar este turno',
+        // No está acotado al turno: cuenta todas las críticas sin completar del
+        // alcance (sucursal o global). El rótulo anterior decía "este turno".
+        sub:      'Críticas sin completar',
         data:     [s.criticalPending],
         viz:      'counter',
         color:    '#ef4444',

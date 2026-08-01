@@ -49,8 +49,9 @@
             <div class="flex-1 min-w-0">
               <p class="text-xs text-white/50">Desempeño general</p>
               @if (igeoDelta(); as d) {
-                <p class="text-xs font-semibold mt-0.5" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'">
-                  {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp vs ayer
+                <p class="text-xs font-semibold mt-0.5" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'"
+                   title="Diferencia respecto al Over-all sin contar la última tarea cerrada. No es una comparación diaria.">
+                  {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp con la última tarea cerrada
                 </p>
               }
               <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
@@ -87,18 +88,19 @@
               <span class="text-[10px] font-semibold uppercase tracking-wide text-white/50 truncate">{{ m.label }}</span>
             </div>
             <p class="text-xl font-bold tracking-tight" [style.color]="metricHex(m)">
-              {{ m.format(m.getValue(summary()!)) }}<span class="text-xs font-normal text-white/40">{{ m.unit }}</span>
+              {{ m.format(metricCardValue(m)) }}<span class="text-xs font-normal text-white/40">{{ m.unit }}</span>
             </p>
-            <p class="text-[10px] text-white/35 mt-0.5 md:truncate">{{ m.desc }}</p>
+            <p class="text-[10px] text-white/35 mt-0.5 md:truncate" [title]="metricDesc(m)">{{ metricDesc(m) }}</p>
             <div class="mt-2 h-1 bg-white/[0.06] rounded-full overflow-hidden">
               <div class="h-full rounded-full transition-all duration-500"
-                   [style.width.%]="barWidth(m.getValue(summary()!), m)"
+                   [style.width.%]="barWidth(metricCardValue(m), m)"
                    [style.background]="metricHex(m)"
                    [style.boxShadow]="'0 0 6px ' + metricHex(m)"></div>
             </div>
             @if (m.key === 'igeo' && igeoDelta(); as d) {
-              <p class="text-[10px] mt-1 font-medium" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'">
-                {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp vs ayer
+              <p class="text-[10px] mt-1 font-medium" [class]="d >= 0 ? 'text-emerald-400' : 'text-red-400'"
+                 title="Diferencia respecto al Over-all sin contar la última tarea cerrada. No es una comparación diaria.">
+                {{ d >= 0 ? '↑' : '↓' }} {{ absVal(d) }}pp última tarea
               </p>
             }
           </button>
@@ -139,9 +141,11 @@
             }
           </div>
 
-          <!-- Evolución del Índice Global -->
+          <!-- Over-all acumulado sobre las últimas tareas cerradas.
+               No es una serie temporal: cada punto es una tarea, no un día. -->
           <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
-            <p class="text-sm font-semibold text-white mb-3">Evolución del Índice Global</p>
+            <p class="text-sm font-semibold text-white">Over-all acumulado</p>
+            <p class="text-[10px] text-white/35 mb-3">Últimas tareas cerradas, de la más antigua a la más reciente — no es una evolución por fecha</p>
             <app-trend-line
               [data]="g.trend"
               [labels]="trendLabels()"

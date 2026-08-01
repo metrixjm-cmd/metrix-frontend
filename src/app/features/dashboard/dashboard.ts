@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { TimeFormatPipe } from '../../shared/pipes/time-format.pipe';
 import { AuthService } from '../auth/services/auth.service';
-import { IgeoAnalyticsResponse } from '../kpi/kpi.models';
 import { TaskService } from '../tasks/services/task.service';
 import { KpiService } from '../kpi/services/kpi.service';
 import { GamificationService } from '../gamification/services/gamification.service';
@@ -263,8 +262,16 @@ export class Dashboard implements OnInit {
 
   // ── Over-all analítico helpers ─────────────────────────────────────────────────
 
-  igeoPillarArray(igeo: IgeoAnalyticsResponse): { n: string; v: number }[] {
-    const p = igeo.data.global.pillar_scores;
+  /**
+   * Pilares del Over-all ya acotados al alcance del usuario: la cadena para
+   * ADMIN, su propia sucursal para GERENTE. Antes leía siempre
+   * {@code data.global}, así que a un gerente le mostraba los pilares de toda
+   * la cadena junto a tarjetas que sí eran de su sucursal (auditoría
+   * 2026-08-01). Devuelve [] si no hay datos en su alcance.
+   */
+  igeoPillarArray(): { n: string; v: number }[] {
+    const p = this.kpiSvc.igeoPillars();
+    if (!p) return [];
     return [
       { n: 'Cumpl.',   v: p.cumplimiento },
       { n: 'Tiempo',   v: p.tiempo },
