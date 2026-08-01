@@ -92,6 +92,9 @@ export class TrendLine {
           },
         },
       });
+      // Ancho fluido (w-full): no se puede fijar como category-donut/radial-gauge.
+      // Ver el mismo comentario en distribution-bar.ts.
+      requestAnimationFrame(() => this.chart?.resize());
     });
   }
 }

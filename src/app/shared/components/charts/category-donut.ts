@@ -65,6 +65,17 @@ export class CategoryDonut {
       const colors = items.map(d => d.color!);
       const labels = items.map(d => d.label);
 
+      // Tamaño fijo por DPR, igual que radial-gauge: con responsive:true,
+      // Chart.js medía el contenedor antes de que el binding [style.width.px]
+      // aplicara el tamaño real, caía al default 300×150 y solo se corregía
+      // en el primer resize/click (2026-08-01, reporte del cliente).
+      const size = this.size();
+      const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.width = Math.round(size * dpr);
+      el.height = Math.round(size * dpr);
+
       if (this.chart) {
         this.chart.data.labels = labels;
         this.chart.data.datasets[0].data = values;
@@ -77,7 +88,7 @@ export class CategoryDonut {
         type: 'doughnut',
         data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, borderRadius: 3, spacing: 2 }] },
         options: {
-          responsive: true,
+          responsive: false,
           maintainAspectRatio: false,
           cutout: '70%',
           animation: { animateRotate: true, duration: 600 },

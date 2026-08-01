@@ -125,6 +125,13 @@
             </div>
             @if (breakdownChartData().length > 0) {
               <app-distribution-bar [data]="breakdownChartData()" [horizontal]="true" [size]="180" [max]="breakdownMax()" />
+              @if (shiftEmptyNotes().length > 0) {
+                <ul class="mt-2 space-y-0.5">
+                  @for (n of shiftEmptyNotes(); track n.shift) {
+                    <li class="text-[11px] text-white/35">{{ n.shift }}: {{ n.note }}</li>
+                  }
+                </ul>
+              }
             } @else {
               <div class="flex-1 flex items-center justify-center py-8">
                 <p class="text-xs text-white/35">Sin datos para esta combinación.</p>
@@ -208,7 +215,8 @@
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4">
           <p class="text-sm font-semibold text-white mb-3">Resumen de Incidencias</p>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <app-radial-gauge [value]="i.resolutionRate" [color]="rateHex" [arc]="270" [size]="120" [decimals]="1" />
+            <app-radial-gauge [value]="i.resolutionRate" [color]="rateHex" [arc]="270" [size]="120" [decimals]="1"
+                               [caption]="i.cerradas === 0 ? 'Sin cierres aún' : ''" />
             <div class="flex-1 min-w-0">
               <p class="text-xs text-white/50">Tasa de resolución</p>
               <ul class="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-4">
