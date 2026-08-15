@@ -66,6 +66,12 @@ export const routes: Routes = [
           import('./features/trainer/trainer.routes').then(m => m.TRAINER_ROUTES),
       },
       {
+        path: 'licencias',
+        canActivate: [roleGuard('ADMIN')],
+        loadChildren: () =>
+          import('./features/licensing/licensing.routes').then(m => m.LICENSING_ROUTES),
+      },
+      {
         path: 'help',
         loadChildren: () =>
           import('./features/help/help.routes').then(m => m.HELP_ROUTES),
