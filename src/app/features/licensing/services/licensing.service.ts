@@ -1,23 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
-import { LicensePackage, LICENSE_PACKAGES_SEED } from '../licensing.models';
+import { environment } from '../../../../environments/environment';
+import { LicensePackage } from '../licensing.models';
 
-const STORAGE_KEY = 'metrix.licencias.v1';
-
-/** Latencia simulada para que se vea el estado de carga como en el resto de la app. */
-const FAKE_DELAY_MS = 250;
-
-/**
- * Servicio del módulo Licencias — **plantilla, sin backend**.
- *
- * Mantiene la misma superficie que el resto de servicios del proyecto
- * (signals de solo lectura + Promise en las mutaciones) para que el día que
- * exista `/api/v1/licenses` solo haya que sustituir el cuerpo de los métodos
- * por llamadas HttpClient; los componentes no cambian.
- */
 @Injectable({ providedIn: 'root' })
 export class LicensingService {
-  // ── Estado reactivo ───────────────────────────────────────────────────────
+  private readonly http   = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/license-packages`;
+
   private readonly _packages = signal<LicensePackage[]>([]);
   private readonly _loading  = signal(false);
   private readonly _saving   = signal(false);
@@ -28,92 +20,135 @@ export class LicensingService {
   readonly saving   = this._saving.asReadonly();
   readonly error    = this._error.asReadonly();
 
-  // ── Lectura ───────────────────────────────────────────────────────────────
-
   loadAll(): void {
     this._loading.set(true);
     this._error.set(null);
-    setTimeout(() => {
-      this._packages.set(this.readStorage());
-      this._loading.set(false);
-    }, FAKE_DELAY_MS);
-  }
-
-  /** Búsqueda síncrona; si el estado aún está vacío lee de localStorage. */
-  findById(id: string): LicensePackage | null {
-    const enMemoria = this._packages().find(p => p.id === id);
-    if (enMemoria) return enMemoria;
-    return this.readStorage().find(p => p.id === id) ?? null;
-  }
-
-  // ── Mutaciones ────────────────────────────────────────────────────────────
-
-  update(id: string, cambios: Partial<LicensePackage>): Promise<LicensePackage> {
-    this._saving.set(true);
-    this._error.set(null);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const actual = this._packages().length ? this._packages() : this.readStorage();
-        const previo = actual.find(p => p.id === id);
-        if (!previo) {
-          this._error.set('El paquete ya no existe');
-          this._saving.set(false);
-          reject(new Error('paquete inexistente'));
-          return;
-        }
-
-        const actualizado: LicensePackage = { ...previo, ...cambios, id: previo.id };
-        // Solo puede haber un paquete destacado a la vez.
-        const lista = actual.map(p => {
-          if (p.id === id) return actualizado;
-          return actualizado.destacado ? { ...p, destacado: false } : p;
-        });
-
-        this.persist(lista);
-        this._saving.set(false);
-        resolve(actualizado);
-      }, FAKE_DELAY_MS);
+    this.http.get<LicensePackage[]>(this.apiUrl).subscribe({
+      next:  data => {
+        this._packages.set(data.map(pkg => this.normalize(pkg)));
+        this._loading.set(false);
+      },
+      error: err => {
+        this._error.set(this.extractMessage(err));
+        this._loading.set(false);
+      },
     });
   }
 
+  findById(id: string): LicensePackage | null {
+    return this._packages().find(p => p.id === id) ?? null;
+  }
+
+  loadById(id: string): Promise<LicensePackage> {
+    this._loading.set(true);
+    this._error.set(null);
+    return firstValueFrom(this.http.get<LicensePackage>(`${this.apiUrl}/${id}`))
+      .then(pkg => {
+        const normalized = this.normalize(pkg);
+        this._packages.update(list => {
+          const idx = list.findIndex(p => p.id === id);
+          if (idx === -1) return [...list, normalized];
+          return list.map(p => (p.id === id ? normalized : p));
+        });
+        this._loading.set(false);
+        return normalized;
+      })
+      .catch(err => {
+        this._error.set(this.extractMessage(err));
+        this._loading.set(false);
+        throw err;
+      });
+  }
+
+  update(id: string, cambios: Partial<LicensePackage>): Promise<LicensePackage> {
+    const previo = this.findById(id);
+    if (!previo) {
+      return Promise.reject(new Error('paquete inexistente'));
+    }
+
+    const payload: LicensePackage = {
+      ...previo,
+      ...cambios,
+      id: previo.id,
+      funciones: cambios.funciones ?? previo.funciones,
+    };
+
+    this._saving.set(true);
+    this._error.set(null);
+    return firstValueFrom(this.http.put<LicensePackage>(`${this.apiUrl}/${id}`, payload))
+      .then(saved => {
+        const normalized = this.normalize(saved);
+        this._packages.update(list => list.map(p => (p.id === id ? normalized : p)));
+        this._saving.set(false);
+        return normalized;
+      })
+      .catch(err => {
+        this._error.set(this.extractMessage(err));
+        this._saving.set(false);
+        throw err;
+      });
+  }
+
   toggleActivo(id: string): void {
-    const lista = this._packages().map(p =>
-      p.id === id ? { ...p, activo: !p.activo, destacado: p.activo ? false : p.destacado } : p
-    );
-    this.persist(lista);
+    this.http.patch<LicensePackage>(`${this.apiUrl}/${id}/activo`, null).subscribe({
+      next:  saved => this.patchLocal(saved),
+      error: err => this._error.set(this.extractMessage(err)),
+    });
   }
 
-  /** Marca uno como destacado y desmarca el resto. */
   setDestacado(id: string): void {
-    const lista = this._packages().map(p => ({ ...p, destacado: p.id === id ? !p.destacado : false }));
-    this.persist(lista);
+    this.http.patch<LicensePackage>(`${this.apiUrl}/${id}/destacado`, null).subscribe({
+      next:  saved => this.refreshAfterDestacado(saved),
+      error: err => this._error.set(this.extractMessage(err)),
+    });
   }
 
-  /** Devuelve los 4 paquetes a los valores de la plantilla. */
-  resetDefaults(): void {
-    this.persist(structuredClone(LICENSE_PACKAGES_SEED));
+  resetDefaults(): Promise<LicensePackage[]> {
+    this._saving.set(true);
+    this._error.set(null);
+    return firstValueFrom(this.http.post<LicensePackage[]>(`${this.apiUrl}/reset-defaults`, null))
+      .then(list => {
+        const normalized = list.map(pkg => this.normalize(pkg));
+        this._packages.set(normalized);
+        this._saving.set(false);
+        return normalized;
+      })
+      .catch(err => {
+        this._error.set(this.extractMessage(err));
+        this._saving.set(false);
+        throw err;
+      });
   }
 
-  // ── Persistencia local ────────────────────────────────────────────────────
+  private patchLocal(saved: LicensePackage): void {
+    const normalized = this.normalize(saved);
+    this._packages.update(list => list.map(p => (p.id === normalized.id ? normalized : p)));
+  }
 
-  private persist(lista: LicensePackage[]): void {
-    this._packages.set(lista);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-    } catch {
-      // Modo privado o cuota llena: el estado en memoria sigue siendo válido.
+  private refreshAfterDestacado(saved: LicensePackage): void {
+    this.loadAll();
+  }
+
+  private normalize(pkg: LicensePackage): LicensePackage {
+    return {
+      ...pkg,
+      precioMensual: Number(pkg.precioMensual ?? 0),
+      precioAnual: Number(pkg.precioAnual ?? 0),
+      precioImplementacion: Number(pkg.precioImplementacion ?? 0),
+    };
+  }
+
+  private extractMessage(err: unknown): string {
+    if (err && typeof err === 'object' && 'error' in err) {
+      const body = (err as { error?: { error?: string; message?: string; details?: Record<string, string> } }).error;
+      if (typeof body === 'string') return body;
+      if (body?.details) {
+        const first = Object.values(body.details)[0];
+        if (first) return first;
+      }
+      if (body?.error) return body.error;
+      if (body?.message) return body.message;
     }
-  }
-
-  private readStorage(): LicensePackage[] {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return structuredClone(LICENSE_PACKAGES_SEED);
-      const parsed = JSON.parse(raw) as LicensePackage[];
-      if (!Array.isArray(parsed) || parsed.length === 0) return structuredClone(LICENSE_PACKAGES_SEED);
-      return parsed;
-    } catch {
-      return structuredClone(LICENSE_PACKAGES_SEED);
-    }
+    return 'Error al procesar la solicitud de licencias.';
   }
 }

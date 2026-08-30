@@ -1,17 +1,13 @@
 /**
- * Modelos del módulo Licencias (plantilla / solo frontend).
- *
- * No hay backend todavía: `LicensingService` trabaja sobre estos tipos en memoria
- * y persiste en localStorage. Cuando exista el endpoint, basta con cambiar el
- * servicio — estos contratos ya están pensados para viajar por HTTP.
+ * Modelos del módulo Licencias — sincronizados con el backend METRIX.
  */
 
 export type Moneda = 'MXN' | 'USD';
 
-/** Ciclo con el que se muestran los precios en la lista. */
 export type CicloFacturacion = 'MENSUAL' | 'ANUAL';
 
-/** Paleta de acento de cada paquete. Las clases se escriben literales para que Tailwind las detecte. */
+export type LicensePricingModel = 'PER_BRANCH' | 'FLAT_MONTHLY' | 'PER_USER';
+
 export type LicenseAccent = 'slate' | 'cyan' | 'violet' | 'amber';
 
 export interface LicenseFeature {
@@ -22,19 +18,19 @@ export interface LicenseFeature {
 export interface LicensePackage {
   id:          string;
   nombre:      string;
-  /** Etiqueta corta bajo el nombre: "1 sucursal", "Cadena mediana"… */
   etiqueta:    string;
   descripcion: string;
 
   moneda:        Moneda;
+  pricingModel:  LicensePricingModel;
   precioMensual: number;
   precioAnual:   number;
-  /** Cuando es true se ignoran los precios y se muestra "A cotizar". */
+  precioImplementacion: number;
   precioPersonalizado: boolean;
 
-  /** null = ilimitado */
+  minUsuarios:   number | null;
   maxUsuarios:   number | null;
-  /** null = ilimitado */
+  minSucursales: number | null;
   maxSucursales: number | null;
 
   soporte:   string;
@@ -44,6 +40,18 @@ export interface LicensePackage {
   destacado: boolean;
   activo:    boolean;
 }
+
+export const LICENSE_PRICING_MODELS: readonly LicensePricingModel[] = [
+  'PER_BRANCH',
+  'FLAT_MONTHLY',
+  'PER_USER',
+] as const;
+
+export const LICENSE_PRICING_LABELS: Record<LicensePricingModel, string> = {
+  PER_BRANCH:   'Por sucursal / mes',
+  FLAT_MONTHLY: 'Precio fijo / mes',
+  PER_USER:     'Por usuario / mes',
+};
 
 /** Clases Tailwind por acento. Literales a propósito: Tailwind escanea los .ts. */
 export const LICENSE_ACCENTS: Record<LicenseAccent, {
@@ -92,10 +100,6 @@ export const MONEDAS: readonly Moneda[] = ['MXN', 'USD'] as const;
 
 export const ACCENTS_DISPONIBLES: readonly LicenseAccent[] = ['slate', 'cyan', 'violet', 'amber'] as const;
 
-/**
- * Catálogo base de funciones. Todos los paquetes arrancan con estas mismas
- * filas (cambia el `incluido`), lo que permite la tabla comparativa.
- */
 export const CATALOGO_FUNCIONES: readonly string[] = [
   'Tareas y checklists operativos',
   'Panel de métricas (KPIs)',
@@ -103,84 +107,17 @@ export const CATALOGO_FUNCIONES: readonly string[] = [
   'Capacitaciones y exámenes',
   'Gamificación y ranking',
   'Reportes PDF automáticos',
-  'Notificaciones en tiempo real',
+  'Notificaciones en tiempo real - tareas realizadas y pendientes',
+  'Notificaciones en tiempo real - todas -',
   'API de integración',
   'Gerente de cuenta dedicado',
 ] as const;
 
-/** Construye la lista de funciones marcando como incluidas las primeras `n`. */
-function funcionesHasta(n: number): LicenseFeature[] {
-  return CATALOGO_FUNCIONES.map((label, i) => ({ label, incluido: i < n }));
+export function sufijoPrecio(model: LicensePricingModel, ciclo: CicloFacturacion): string {
+  if (ciclo === 'ANUAL') return '/año';
+  switch (model) {
+    case 'PER_BRANCH':   return '/ mes · por sucursal';
+    case 'PER_USER':     return '/ usuario / mes';
+    default:             return '/ mes';
+  }
 }
-
-/** Los 4 paquetes de arranque. Editables desde la UI. */
-export const LICENSE_PACKAGES_SEED: LicensePackage[] = [
-  {
-    id:          'esencial',
-    nombre:      'Esencial',
-    etiqueta:    'Una sucursal',
-    descripcion: 'Lo mínimo para operar un punto de venta: tareas del turno, incidencias y el tablero de métricas básico.',
-    moneda:        'MXN',
-    precioMensual: 1499,
-    precioAnual:   14990,
-    precioPersonalizado: false,
-    maxUsuarios:   15,
-    maxSucursales: 1,
-    soporte:       'Correo, respuesta en 48 h',
-    funciones:     funcionesHasta(3),
-    accent:        'slate',
-    destacado:     false,
-    activo:        true,
-  },
-  {
-    id:          'profesional',
-    nombre:      'Profesional',
-    etiqueta:    'Hasta 5 sucursales',
-    descripcion: 'El paquete para cadenas en crecimiento: suma capacitaciones, exámenes y el módulo de gamificación.',
-    moneda:        'MXN',
-    precioMensual: 3499,
-    precioAnual:   34990,
-    precioPersonalizado: false,
-    maxUsuarios:   60,
-    maxSucursales: 5,
-    soporte:       'Correo y chat, respuesta en 24 h',
-    funciones:     funcionesHasta(5),
-    accent:        'cyan',
-    destacado:     true,
-    activo:        true,
-  },
-  {
-    id:          'corporativo',
-    nombre:      'Corporativo',
-    etiqueta:    'Hasta 20 sucursales',
-    descripcion: 'Operación multi-sucursal con reportes automáticos, alertas en tiempo real y consolidado por región.',
-    moneda:        'MXN',
-    precioMensual: 6999,
-    precioAnual:   69990,
-    precioPersonalizado: false,
-    maxUsuarios:   250,
-    maxSucursales: 20,
-    soporte:       'Chat prioritario, respuesta en 8 h',
-    funciones:     funcionesHasta(7),
-    accent:        'violet',
-    destacado:     false,
-    activo:        true,
-  },
-  {
-    id:          'enterprise',
-    nombre:      'Enterprise',
-    etiqueta:    'Sucursales ilimitadas',
-    descripcion: 'Para cadenas nacionales: integración con sistemas propios, SLA por contrato y acompañamiento dedicado.',
-    moneda:        'MXN',
-    precioMensual: 0,
-    precioAnual:   0,
-    precioPersonalizado: true,
-    maxUsuarios:   null,
-    maxSucursales: null,
-    soporte:       'SLA dedicado 24/7',
-    funciones:     funcionesHasta(9),
-    accent:        'amber',
-    destacado:     false,
-    activo:        true,
-  },
-];

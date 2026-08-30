@@ -7,6 +7,7 @@ import {
   CicloFacturacion,
   LICENSE_ACCENTS,
   LicensePackage,
+  sufijoPrecio,
 } from '../licensing.models';
 
 @Component({
@@ -20,15 +21,14 @@ export class LicenseList implements OnInit {
 
   readonly loading  = this.licensingSvc.loading;
   readonly packages = this.licensingSvc.packages;
+  readonly error    = this.licensingSvc.error;
 
-  /** Mensual / anual: cambia el precio mostrado en las tarjetas. */
   readonly ciclo = signal<CicloFacturacion>('MENSUAL');
 
-  /** Filas de la tabla comparativa (catálogo base + funciones añadidas a mano). */
   readonly filasComparativa = computed(() => {
     const extra = this.packages()
       .flatMap(p => p.funciones.map(f => f.label))
-      .filter(label => !CATALOGO_FUNCIONES.includes(label));
+      .filter(label => !CATALOGO_FUNCIONES.includes(label as typeof CATALOGO_FUNCIONES[number]));
     return [...CATALOGO_FUNCIONES, ...new Set(extra)];
   });
 
@@ -36,7 +36,6 @@ export class LicenseList implements OnInit {
 
   readonly destacado = computed(() => this.packages().find(p => p.destacado)?.nombre ?? '—');
 
-  /** Rango de precios sobre los paquetes activos con precio fijo. */
   readonly rangoPrecios = computed(() => {
     const cobrables = this.packages().filter(p => p.activo && !p.precioPersonalizado);
     if (cobrables.length === 0) return '—';
@@ -52,8 +51,6 @@ export class LicenseList implements OnInit {
     this.licensingSvc.loadAll();
   }
 
-  // ── Ciclo ───────────────────────────────────────────────────────────────
-
   setCiclo(c: CicloFacturacion): void {
     this.ciclo.set(c);
   }
@@ -62,19 +59,16 @@ export class LicenseList implements OnInit {
     return this.ciclo() === 'ANUAL' ? p.precioAnual : p.precioMensual;
   }
 
-  sufijoCiclo(): string {
-    return this.ciclo() === 'ANUAL' ? '/año' : '/mes';
+  sufijoCiclo(p: LicensePackage): string {
+    return sufijoPrecio(p.pricingModel, this.ciclo());
   }
 
-  /** Meses gratis equivalentes al pagar anual. 0 si no aplica. */
   ahorroAnual(p: LicensePackage): number {
     if (p.precioPersonalizado || p.precioMensual <= 0 || p.precioAnual <= 0) return 0;
     const anualizado = p.precioMensual * 12;
     if (p.precioAnual >= anualizado) return 0;
     return Math.round(((anualizado - p.precioAnual) / anualizado) * 100);
   }
-
-  // ── Formato ─────────────────────────────────────────────────────────────
 
   formatPrecio(valor: number, moneda: string): string {
     return new Intl.NumberFormat('es-MX', {
@@ -89,7 +83,6 @@ export class LicenseList implements OnInit {
     return this.formatPrecio(this.precioDelCiclo(p), p.moneda);
   }
 
-  /** `ilimitado` viene completo desde la plantilla porque el género cambia ("ilimitados" / "ilimitadas"). */
   limiteTexto(valor: number | null, singular: string, plural: string, ilimitado: string): string {
     if (valor === null) return ilimitado;
     return `${valor} ${valor === 1 ? singular : plural}`;
@@ -107,8 +100,6 @@ export class LicenseList implements OnInit {
     return p.funciones.filter(f => f.incluido);
   }
 
-  // ── Acciones ────────────────────────────────────────────────────────────
-
   toggleActivo(p: LicensePackage, event: Event): void {
     event.stopPropagation();
     this.licensingSvc.toggleActivo(p.id);
@@ -117,11 +108,5 @@ export class LicenseList implements OnInit {
   toggleDestacado(p: LicensePackage, event: Event): void {
     event.stopPropagation();
     this.licensingSvc.setDestacado(p.id);
-  }
-
-  restablecer(): void {
-    if (confirm('Se descartarán los cambios y los 4 paquetes volverán a los valores de la plantilla. ¿Continuar?')) {
-      this.licensingSvc.resetDefaults();
-    }
   }
 }

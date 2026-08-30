@@ -61,7 +61,7 @@
 
           <div>
             <label for="descripcion" class="block text-xs font-medium text-white/60 mb-1.5">Descripción *</label>
-            <textarea id="descripcion" formControlName="descripcion" rows="3" maxlength="280"
+            <textarea id="descripcion" formControlName="descripcion" rows="3" maxlength="500"
                       class="w-full px-3 py-2 bg-white/[0.05] border rounded-lg text-sm text-white leading-relaxed
                              placeholder-white/25 focus:outline-none focus:border-brand-500 transition-colors resize-y"
                       [class]="campoInvalido('descripcion') ? 'border-red-500/50' : 'border-white/10'"
@@ -72,7 +72,7 @@
               } @else {
                 <p class="text-xs text-white/30">Aparece completa en la tarjeta del paquete</p>
               }
-              <p class="text-xs text-white/30 shrink-0 pl-3">{{ 280 - descripcionRestante() }}/280</p>
+              <p class="text-xs text-white/30 shrink-0 pl-3">{{ descripcionRestante() }}/500</p>
             </div>
           </div>
 
@@ -113,7 +113,18 @@
             </span>
           </label>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" [class.opacity-40]="vista().precioPersonalizado">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" [class.opacity-40]="vista().precioPersonalizado">
+            <div class="sm:col-span-2">
+              <label for="pricingModel" class="block text-xs font-medium text-white/60 mb-1.5">Modelo de cobro</label>
+              <select id="pricingModel" formControlName="pricingModel"
+                      class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white
+                             focus:outline-none focus:border-brand-500 transition-colors">
+                @for (m of pricingModels; track m) {
+                  <option [value]="m" class="bg-[#0e1628]">{{ pricingLabels[m] }}</option>
+                }
+              </select>
+            </div>
+
             <div>
               <label for="moneda" class="block text-xs font-medium text-white/60 mb-1.5">Moneda</label>
               <select id="moneda" formControlName="moneda"
@@ -126,16 +137,24 @@
             </div>
 
             <div>
-              <label for="precioMensual" class="block text-xs font-medium text-white/60 mb-1.5">Precio mensual</label>
+              <label for="precioImplementacion" class="block text-xs font-medium text-white/60 mb-1.5">Implementación (pago único)</label>
+              <input id="precioImplementacion" type="number" min="0" step="1" formControlName="precioImplementacion"
+                     class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white
+                            focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+
+            <div>
+              <label for="precioMensual" class="block text-xs font-medium text-white/60 mb-1.5">Precio recurrente</label>
               <input id="precioMensual" type="number" min="0" step="1" formControlName="precioMensual"
                      class="w-full px-3 py-2 bg-white/[0.05] border rounded-lg text-sm text-white
                             focus:outline-none focus:border-brand-500 transition-colors
                             disabled:cursor-not-allowed"
                      [class]="campoInvalido('precioMensual') ? 'border-red-500/50' : 'border-white/10'">
+              <p class="text-xs text-white/30 mt-1">{{ previewSufijo() }}</p>
             </div>
 
             <div>
-              <label for="precioAnual" class="block text-xs font-medium text-white/60 mb-1.5">Precio anual</label>
+              <label for="precioAnual" class="block text-xs font-medium text-white/60 mb-1.5">Precio anual (opcional)</label>
               <input id="precioAnual" type="number" min="0" step="1" formControlName="precioAnual"
                      class="w-full px-3 py-2 bg-white/[0.05] border rounded-lg text-sm text-white
                             focus:outline-none focus:border-brand-500 transition-colors

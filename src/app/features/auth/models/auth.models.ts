@@ -16,6 +16,9 @@ export interface AuthResponse {
   storeName:     string;
   turno:         string;
   roles:         string[];
+  platformAdmin?: boolean;
+  databaseName?: string;
+  instanceId?:    string;
 }
 
 /**
@@ -29,6 +32,9 @@ export interface CurrentUser {
   storeName:     string;
   turno:         string;
   roles:         string[];
+  platformAdmin?: boolean;
+  databaseName?: string;
+  instanceId?:    string;
 }
 
 /** Roles disponibles en METRIX (deben coincidir con el enum Role del backend). */

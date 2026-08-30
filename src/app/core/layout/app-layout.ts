@@ -14,6 +14,8 @@ export interface NavItem {
   badge?:   number;
   /** Roles que pueden ver este item. undefined = todos */
   roles?:   string[];
+  /** Solo Admin 0 (plataforma). */
+  platformAdminOnly?: boolean;
 }
 
 // Re-exportado del modelo de notificaciones para uso en la plantilla
@@ -122,7 +124,16 @@ export class AppLayout implements OnInit, OnDestroy {
       route: '/licencias',
       exact: false,
       roles: ['ADMIN'],
+      platformAdminOnly: true,
       iconPath: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+    },
+    {
+      label: 'Clientes METRIX',
+      route: '/platform',
+      exact: false,
+      roles: ['ADMIN'],
+      platformAdminOnly: true,
+      iconPath: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
     },
     {
       label: 'Ayuda',
@@ -134,12 +145,15 @@ export class AppLayout implements OnInit, OnDestroy {
 
   /** Nav items filtrados por el rol del usuario actual */
   readonly navItems = computed(() => {
-    const roles = this.auth.currentUser()?.roles ?? [];
+    const user = this.auth.currentUser();
+    const roles = user?.roles ?? [];
+    const isPlatformAdmin = user?.platformAdmin === true;
     const isGerenteOnly = roles.includes('GERENTE') && !roles.includes('ADMIN');
 
     return this.allNavItems.filter(item => {
-      if (!item.roles) return true;                       // sin restricción → todos ven
-      return item.roles.some(r => roles.includes(r));     // al menos un rol coincide
+      if (item.platformAdminOnly && !isPlatformAdmin) return false;
+      if (!item.roles) return true;
+      return item.roles.some(r => roles.includes(r));
     }).map(item => {
       if (item.route === '/trainer' && isGerenteOnly) {
         return { ...item, label: 'Mis Exámenes' };
