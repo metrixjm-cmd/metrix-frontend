@@ -20,18 +20,21 @@
                class="input-field w-44" />
       </div>
 
-      <!-- Sucursal (ADMIN puede editar, otros solo ven) -->
+      <!-- Sucursal (ADMIN elige, otros ven la suya) -->
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Sucursal</label>
         @if (isAdmin()) {
-          <input type="text"
-                 placeholder="ID de sucursal"
-                 [ngModel]="storeId()"
-                 (ngModelChange)="storeId.set($event)"
-                 class="input-field w-44" />
+          <select [ngModel]="storeId()"
+                  (ngModelChange)="storeId.set($event)"
+                  class="input-field w-56">
+            <option value="" disabled>Selecciona sucursal</option>
+            @for (s of activeStores(); track s.id) {
+              <option [value]="s.id">{{ s.nombre }}</option>
+            }
+          </select>
         } @else {
-          <div class="input-field w-44 bg-white/[0.02] text-white/60 select-none">
-            {{ storeId() || '—' }}
+          <div class="input-field w-56 bg-white/[0.02] text-white/60 select-none">
+            {{ storeLabel() }}
           </div>
         }
       </div>
@@ -102,6 +105,12 @@
 
   <!-- ── Preview del reporte ── -->
   @if (!loading() && reportData(); as report) {
+
+    <div class="mb-4 text-sm text-white/50">
+      <span class="font-medium text-white/70">{{ report.storeName || storeLabel() }}</span>
+      <span class="mx-2">·</span>
+      <span>{{ report.reportDate }}</span>
+    </div>
 
     <!-- Resumen general -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

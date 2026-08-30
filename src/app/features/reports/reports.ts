@@ -1,7 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../auth/services/auth.service';
+import { SettingsService } from '../settings/services/settings.service';
 import { ReportService } from './services/report.service';
 import { DailyReportResponse, UserResponsibilityEntry } from '../kpi/kpi.models';
 
@@ -14,6 +15,7 @@ import { DailyReportResponse, UserResponsibilityEntry } from '../kpi/kpi.models'
 export class Reports implements OnInit {
   private readonly auth       = inject(AuthService);
   private readonly reportSvc  = inject(ReportService);
+  readonly settingsSvc        = inject(SettingsService);
 
   storeId      = signal('');
   selectedDate = signal('');
@@ -24,12 +26,36 @@ export class Reports implements OnInit {
 
   readonly isAdmin = () => this.auth.currentUser()?.roles?.includes('ADMIN') ?? false;
 
+  readonly activeStores = computed(() => this.settingsSvc.stores().filter(s => s.activo));
+
+  readonly storeLabel = computed(() => {
+    const id = this.storeId();
+    if (!id) return '—';
+
+    const report = this.reportData();
+    if (report?.storeId === id && report.storeName) return report.storeName;
+
+    const fromCatalog = this.settingsSvc.stores().find(s => s.id === id)?.nombre;
+    if (fromCatalog) return fromCatalog;
+
+    const user = this.auth.currentUser();
+    if (user?.storeId === id && user.storeName) return user.storeName;
+
+    return id;
+  });
+
   ngOnInit(): void {
     const today = new Date().toISOString().split('T')[0];
     this.selectedDate.set(today);
 
     const user = this.auth.currentUser();
     if (user?.storeId) this.storeId.set(user.storeId);
+
+    if (this.isAdmin()) {
+      this.settingsSvc.loadAll();
+    } else if (this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
   }
 
   loadPreview(): void {
@@ -100,8 +126,12 @@ export class Reports implements OnInit {
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const body = (err as { error?: { error?: string; message?: string } }).error;
+      const body = (err as { error?: { error?: string; message?: string; details?: Record<string, string> } }).error;
       if (typeof body === 'string') return body;
+      if (body?.details) {
+        const first = Object.values(body.details)[0];
+        if (first) return first;
+      }
       if (body?.error) return body.error;
       if (body?.message) return body.message;
     }

@@ -42,7 +42,7 @@
             Catálogo global
           </span>
         } @else {
-          <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Sucursal {{ currentExam.storeId }}</span>
+          <span class="rounded-full border border-white/10 bg-black/10 px-3 py-1">Sucursal {{ storeName(currentExam.storeId ?? '') }}</span>
         }
         @if (targetAudience()) {
           <span class="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-cyan-200">

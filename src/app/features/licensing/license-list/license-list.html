@@ -1,43 +1,18 @@
 <div class="p-4 sm:p-6 space-y-5">
 
   <!-- ── Encabezado ──────────────────────────────────────────────────────── -->
-  <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-    <div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <h1 class="text-xl sm:text-2xl font-bold text-white">Licencias</h1>
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide
-                     bg-amber-500/15 text-amber-300 border border-amber-400/25">
-          Plantilla
-        </span>
-      </div>
-      <p class="text-sm text-white/50 mt-0.5">Precios, descripción y contenido de los 4 paquetes comerciales</p>
+  <div>
+    <div class="flex items-center gap-2 flex-wrap">
+      <h1 class="text-xl sm:text-2xl font-bold text-white">Licencias</h1>
     </div>
-
-    <button
-      type="button"
-      (click)="restablecer()"
-      class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/[0.05] border border-white/10
-             text-white/70 text-sm font-medium rounded-lg hover:bg-white/10 hover:text-white
-             transition-colors shrink-0 self-start">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-      </svg>
-      Restablecer plantilla
-    </button>
+    <p class="text-sm text-white/50 mt-0.5">Catálogo comercial METRIX — precios, implementación y funciones por paquete</p>
   </div>
 
-  <!-- ── Aviso: módulo sin backend ───────────────────────────────────────── -->
-  <div class="flex items-start gap-3 p-3 sm:p-4 bg-amber-500/[0.08] border border-amber-400/20 rounded-xl text-amber-200/90 text-xs sm:text-sm">
-    <svg class="w-5 h-5 shrink-0 mt-0.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <span>
-      Módulo de demostración: todavía no existe endpoint de licencias, así que los cambios
-      se guardan solo en este navegador y no afectan a ningún cliente.
-    </span>
-  </div>
+  @if (error()) {
+    <div class="flex items-start gap-3 p-3 sm:p-4 bg-red-500/10 border border-red-500/25 rounded-xl text-red-300 text-xs sm:text-sm">
+      {{ error() }}
+    </div>
+  }
 
   <!-- ── Loading skeleton ────────────────────────────────────────────────── -->
   @if (loading()) {
@@ -121,9 +96,15 @@
             <div class="mt-3 flex items-baseline gap-1.5 flex-wrap">
               <span class="text-2xl font-bold" [class]="accent(p).price">{{ precioVisible(p) }}</span>
               @if (!p.precioPersonalizado) {
-                <span class="text-xs text-white/40">{{ sufijoCiclo() }}</span>
+                <span class="text-xs text-white/40">{{ sufijoCiclo(p) }}</span>
               }
             </div>
+
+            @if (!p.precioPersonalizado && p.precioImplementacion > 0) {
+              <p class="mt-1 text-[11px] text-white/45">
+                Implementación: {{ formatPrecio(p.precioImplementacion, p.moneda) }} (pago único)
+              </p>
+            }
 
             @if (ciclo() === 'ANUAL' && ahorroAnual(p) > 0) {
               <p class="mt-1 text-[11px] font-medium text-emerald-300">
