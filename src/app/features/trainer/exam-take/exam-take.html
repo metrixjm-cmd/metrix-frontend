@@ -90,8 +90,8 @@
                 <div class="flex-1 space-y-2">
                   <p class="text-sm font-medium text-white/80">{{ qr.questionText }}</p>
 
-                  <!-- TRUE_FALSE -->
-                  @if (qr.type === 'TRUE_FALSE') {
+                  <!-- TRUE_FALSE / SINGLE_SELECT — misma forma: selectedIndex + correctIndex -->
+                  @if (qr.type === 'TRUE_FALSE' || qr.type === 'SINGLE_SELECT') {
                     <div class="space-y-1">
                       @for (opt of qr.options; track $index) {
                         <div class="flex items-center gap-2 text-xs rounded-lg px-3 py-1.5"
@@ -184,12 +184,14 @@
                 <p class="text-sm font-medium text-white/80 leading-relaxed">{{ q.questionText }}</p>
                 @if (q.type === 'MULTI_SELECT') {
                   <p class="text-xs text-indigo-400 mt-1">Selecciona todas las opciones correctas</p>
+                } @else {
+                  <p class="text-xs text-white/40 mt-1">Selecciona una sola opción</p>
                 }
               </div>
             </div>
 
-            <!-- TRUE_FALSE — radio -->
-            @if (q.type === 'TRUE_FALSE') {
+            <!-- TRUE_FALSE / SINGLE_SELECT — radio: una sola opción -->
+            @if (q.type === 'TRUE_FALSE' || q.type === 'SINGLE_SELECT') {
               <div class="space-y-2 pl-9">
                 @for (opt of q.options; track $index; let optIdx = $index) {
                   <button type="button" (click)="selectAnswer(qIdx, optIdx)"

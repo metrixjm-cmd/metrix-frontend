@@ -72,9 +72,10 @@ export interface ExamKpi {
 
 export interface ShiftBreakdown {
   shift: string;
-  onTimeRate: number;
+  onTimeRate: number;   // -1 = sin datos de on-time (turno vacío o sin tareas cerradas)
   totalClosed: number;
   onTimeCount: number;
+  totalTasks: number;   // total asignadas al turno, cualquier estado
 }
 
 export interface KpiSummary {
@@ -92,6 +93,7 @@ export interface KpiSummary {
   pipelineFailed: number;
   sparklineOnTime: number[];
   sparklineIgeo: number[];
+  sparklineTaskTitles: string[];
 }
 
 export interface StoreRankingEntry {

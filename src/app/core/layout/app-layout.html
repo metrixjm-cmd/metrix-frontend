@@ -213,8 +213,12 @@
                   <p class="text-xs text-white/30 text-center py-8">Sin alertas recientes</p>
                 }
                 @for (n of notifications(); track n.id) {
-                  <div
-                    class="flex gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors"
+                  <button
+                    type="button"
+                    (click)="openNotification(n)"
+                    [disabled]="n.read"
+                    [attr.aria-label]="n.read ? n.title : 'Marcar como leída: ' + n.title"
+                    class="w-full text-left flex gap-3 px-4 py-3 hover:bg-white/[0.04] transition-colors disabled:cursor-default"
                     [class.opacity-40]="n.read"
                   >
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" [class]="notifColorClass(n.severity)">
@@ -230,7 +234,7 @@
                     @if (!n.read) {
                       <div class="w-2 h-2 bg-cyan-400 rounded-full shrink-0 mt-2 shadow-[0_0_6px_rgba(34,211,238,0.6)]"></div>
                     }
-                  </div>
+                  </button>
                 }
               </div>
             </div>

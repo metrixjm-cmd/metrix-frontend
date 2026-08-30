@@ -64,12 +64,17 @@ export class AuthService {
   /**
    * Cierra la sesión: limpia localStorage, resetea el signal y
    * redirige al login.
+   *
+   * @param options.sessionExpired marca la redirección para que el login
+   * muestre "tu sesión expiró" en vez de un login silencioso.
    */
-  logout(): void {
+  logout(options?: { sessionExpired?: boolean }): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     this._user.set(null);
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/auth/login'], {
+      queryParams: options?.sessionExpired ? { sessionExpired: '1' } : undefined,
+    });
   }
 
   // ── Helpers de consulta ──────────────────────────────────────────────

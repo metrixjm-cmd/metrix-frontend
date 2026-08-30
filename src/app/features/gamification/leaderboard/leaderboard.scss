@@ -14,32 +14,6 @@
   color: #fff;
 }
 
-// ── Metric cards ───────────────────────────────────────────────
-.gamif-metric-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  backdrop-filter: blur(8px);
-  transition: background 0.2s ease, border-color 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.07);
-    border-color: rgba(255, 255, 255, 0.14);
-  }
-}
-
-// Icon container backgrounds
-.icon-bg-blue   { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); }
-.icon-bg-cyan   { background: rgba(6, 182, 212, 0.15);  border: 1px solid rgba(6, 182, 212, 0.3);  }
-.icon-bg-amber  { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
-.icon-bg-orange { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); }
-
-// Icon colors
-.icon-blue   { color: #60a5fa; }
-.icon-cyan   { color: #22d3ee; }
-.icon-amber  { color: #fbbf24; }
-.icon-orange { color: #fb923c; }
-
 // ── Progress bar ───────────────────────────────────────────────
 .gamif-progress-bar {
   height: 3px;
@@ -267,13 +241,50 @@
 .gamif-row {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.15s ease;
+  position: relative;
 
   &:hover { background: rgba(255, 255, 255, 0.04); }
   &:last-child { border-bottom: none; }
 
-  &--gold   { border-left: 2px solid rgba(251, 191, 36, 0.55); }
-  &--silver { border-left: 2px solid rgba(148, 163, 184, 0.4); }
-  &--bronze { border-left: 2px solid rgba(168, 85, 247, 0.45); }
+  // Top 3: entrada con "pop" + brillo respirando en loop para que resalten
+  // en la lista sin depender solo del borde de color.
+  &--gold {
+    border-left: 2px solid rgba(251, 191, 36, 0.55);
+    animation: gamif-row-pop 0.45s ease-out both,
+               gamif-row-glow-gold 2.6s ease-in-out 0.45s infinite;
+  }
+
+  &--silver {
+    border-left: 2px solid rgba(148, 163, 184, 0.4);
+    animation: gamif-row-pop 0.45s ease-out 0.08s both,
+               gamif-row-glow-silver 2.6s ease-in-out 0.53s infinite;
+  }
+
+  &--bronze {
+    border-left: 2px solid rgba(168, 85, 247, 0.45);
+    animation: gamif-row-pop 0.45s ease-out 0.16s both,
+               gamif-row-glow-bronze 2.6s ease-in-out 0.61s infinite;
+  }
+}
+
+@keyframes gamif-row-pop {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gamif-row-glow-gold {
+  0%, 100% { background: rgba(251, 191, 36, 0.015); box-shadow: none; }
+  50%      { background: rgba(251, 191, 36, 0.06); box-shadow: inset 0 0 24px -8px rgba(251, 191, 36, 0.4); }
+}
+
+@keyframes gamif-row-glow-silver {
+  0%, 100% { background: rgba(59, 130, 246, 0.01); box-shadow: none; }
+  50%      { background: rgba(59, 130, 246, 0.045); box-shadow: inset 0 0 20px -8px rgba(59, 130, 246, 0.3); }
+}
+
+@keyframes gamif-row-glow-bronze {
+  0%, 100% { background: rgba(168, 85, 247, 0.015); box-shadow: none; }
+  50%      { background: rgba(168, 85, 247, 0.05); box-shadow: inset 0 0 20px -8px rgba(168, 85, 247, 0.35); }
 }
 
 // ── Avatares de la tabla ───────────────────────────────────────
@@ -294,6 +305,16 @@
   &--silver  { background: linear-gradient(135deg, #475569, #3b82f6); }
   &--bronze  { background: linear-gradient(135deg, #6d28d9, #a855f7); }
   &--default { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.2); color: rgba(255, 255, 255, 0.55); }
+}
+
+// Brillo pulsante en la medalla del 1er lugar del podio
+.gamif-medal-shine {
+  animation: gamif-medal-shine 2.6s ease-in-out infinite;
+}
+
+@keyframes gamif-medal-shine {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(34, 211, 238, 0)); }
+  50%      { filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.75)); }
 }
 
 // ── Shield badges ──────────────────────────────────────────────

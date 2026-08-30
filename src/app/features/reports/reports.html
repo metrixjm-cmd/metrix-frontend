@@ -1,43 +1,94 @@
-<!-- ── Página de Reportes de Cierre Diario ─────────────────────── -->
-<div class="min-h-screen bg-white/[0.02] p-6">
+<!-- ── Página de Reportes ───────────────────────────────────────── -->
+<div class="min-h-screen bg-white/[0.02] p-4 md:p-5 lg:p-6">
 
   <!-- Encabezado -->
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-white">Reportes de Cierre Diario</h1>
-    <p class="mt-1 text-sm text-white/50">Genera y descarga reportes PDF y Excel por sucursal y fecha.</p>
+  <div class="mb-5">
+    <h1 class="text-xl md:text-2xl font-bold text-white">Reportes</h1>
+    <p class="mt-1 text-sm text-white/50">{{ pageSubtitle() }}</p>
+  </div>
+
+  <!-- ── Selector de tipo de reporte ── -->
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button (click)="selectType('daily')"
+            [class]="reportType() === 'daily'
+              ? 'px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white'
+              : 'px-4 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:text-white/90 transition-colors'">
+      Cierre Diario
+    </button>
+
+    @if (isAdmin()) {
+      <button (click)="selectType('managers')"
+              [class]="reportType() === 'managers'
+                ? 'px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white'
+                : 'px-4 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:text-white/90 transition-colors'">
+        Ranking Gerencial
+      </button>
+    }
+
+    <button (click)="selectType('employees')"
+            [class]="reportType() === 'employees'
+              ? 'px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white'
+              : 'px-4 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:text-white/90 transition-colors'">
+      Colaboradores
+    </button>
   </div>
 
   <!-- ── Filtros ── -->
-  <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 mb-6">
-    <div class="flex flex-wrap items-end gap-4">
+  <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5 mb-5">
+    <div class="flex flex-wrap items-end gap-3 md:gap-4">
 
-      <!-- Fecha -->
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Fecha</label>
-        <input type="date"
-               [ngModel]="selectedDate()"
-               (ngModelChange)="selectedDate.set($event)"
-               class="input-field w-44" />
-      </div>
+      <!-- Fecha (sólo cierre diario) -->
+      @if (needsDate()) {
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Fecha</label>
+          <input type="date"
+                 [ngModel]="selectedDate()"
+                 (ngModelChange)="selectedDate.set($event)"
+                 class="input-field w-44" />
+        </div>
+      }
 
-      <!-- Sucursal (ADMIN elige, otros ven la suya) -->
-      <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Sucursal</label>
-        @if (isAdmin()) {
-          <select [ngModel]="storeId()"
-                  (ngModelChange)="storeId.set($event)"
-                  class="input-field w-56">
-            <option value="" disabled>Selecciona sucursal</option>
-            @for (s of activeStores(); track s.id) {
-              <option [value]="s.id">{{ s.nombre }}</option>
-            }
-          </select>
-        } @else {
-          <div class="input-field w-56 bg-white/[0.02] text-white/60 select-none">
-            {{ storeLabel() }}
+      <!-- Período (sólo rankings) -->
+      @if (needsPeriod()) {
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Período</label>
+          <div class="flex gap-1.5">
+            <button (click)="selectPeriod('weekly')"
+                    [class]="period() === 'weekly'
+                      ? 'px-3 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white'
+                      : 'px-3 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:text-white/90 transition-colors'">
+              7 días
+            </button>
+            <button (click)="selectPeriod('monthly')"
+                    [class]="period() === 'monthly'
+                      ? 'px-3 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white'
+                      : 'px-3 py-2 rounded-lg text-sm font-medium bg-white/[0.04] border border-white/10 text-white/60 hover:text-white/90 transition-colors'">
+              30 días
+            </button>
           </div>
-        }
-      </div>
+        </div>
+      }
+
+      <!-- Sucursal: el ADMIN elige de la lista, el resto ve el nombre -->
+      @if (needsStore()) {
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Sucursal</label>
+          @if (isAdmin()) {
+            <select [ngModel]="storeId()"
+                    (ngModelChange)="storeId.set($event)"
+                    class="input-field w-56">
+              <option value="" disabled>Selecciona sucursal</option>
+              @for (s of activeStores(); track s.id) {
+                <option [value]="s.id">{{ s.nombre }}</option>
+              }
+            </select>
+          } @else {
+            <div class="input-field w-56 bg-white/[0.02] text-white/60 select-none">
+              {{ storeLabel() }}
+            </div>
+          }
+        </div>
+      }
 
       <!-- Acciones -->
       <div class="flex flex-wrap gap-2 pb-0.5">
@@ -62,16 +113,6 @@
           </svg>
           Descargar PDF
         </button>
-
-        <button (click)="downloadExcel()"
-                [disabled]="downloading()"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-emerald-600 text-emerald-400 text-sm font-medium hover:bg-emerald-50 disabled:opacity-50 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          Descargar Excel
-        </button>
       </div>
     </div>
 
@@ -89,7 +130,7 @@
 
   <!-- ── Loading skeleton ── -->
   @if (loading()) {
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       @for (_ of [1,2,3,4]; track $index) {
         <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 animate-pulse">
           <div class="h-4 bg-white/[0.08] rounded w-1/3 mb-4"></div>
@@ -103,8 +144,144 @@
     </div>
   }
 
-  <!-- ── Preview del reporte ── -->
-  @if (!loading() && reportData(); as report) {
+  <!-- ════════════════ RANKING GERENCIAL ════════════════ -->
+  @if (!loading() && reportType() === 'managers' && managersReport(); as report) {
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mb-5">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
+        <p class="text-xl md:text-2xl font-bold text-white">{{ report.totalManagers }}</p>
+        <p class="text-xs text-white/50 mt-1">Gerentes evaluados</p>
+      </div>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
+        <p class="text-xl md:text-2xl font-bold text-cyan-400">{{ periodLabel(report.period) }}</p>
+        <p class="text-xs text-white/50 mt-1">Ventana cubierta</p>
+      </div>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center col-span-2 sm:col-span-1">
+        <p class="text-sm font-semibold text-white/80">{{ report.periodStart }} → {{ report.periodEnd }}</p>
+        <p class="text-xs text-white/50 mt-1">Rango de fechas</p>
+      </div>
+    </div>
+
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5">
+      <h2 class="text-sm font-semibold text-white/70 mb-4">
+        Ranking Gerencial
+        <span class="text-xs font-normal text-white/40">— ordenado por Over-all de equipo</span>
+      </h2>
+
+      @if (report.managers.length > 0) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[720px]">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">#</th>
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">Gerente</th>
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">Sucursal</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Colab.</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Over-all Equipo</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Over-all Propio</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Insignias</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of report.managers; track m.userId) {
+                <tr class="border-b border-white/[0.06] hover:bg-white/[0.04] transition-colors">
+                  <td class="py-2 px-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
+                          [class]="m.rank === 1 ? 'bg-cyan-500/10 text-cyan-300' :
+                                   m.rank === 2 ? 'bg-white/[0.05] text-white/60' :
+                                   'bg-white/[0.02] text-white/40'">
+                      {{ m.rank }}
+                    </span>
+                  </td>
+                  <td class="py-2 px-3 font-medium text-white/80">{{ m.nombre }}</td>
+                  <td class="py-2 px-3 text-white/50">{{ m.storeName || '—' }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ m.colaboradorCount ?? 0 }}</td>
+                  <td class="py-2 px-3 text-right font-semibold text-cyan-400">{{ fmtTeamIgeo(m) }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ fmtKpi(m.igeo) }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ m.badges.length }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="text-sm text-white/40 italic">Sin gerentes registrados.</p>
+      }
+    </div>
+  }
+
+  <!-- ════════════════ RANKING DE COLABORADORES ════════════════ -->
+  @if (!loading() && reportType() === 'employees' && employeesReport(); as report) {
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mb-5">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
+        <p class="text-xl md:text-2xl font-bold text-white">{{ report.totalEmployees }}</p>
+        <p class="text-xs text-white/50 mt-1">Colaboradores</p>
+      </div>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
+        <p class="text-xl md:text-2xl font-bold text-cyan-400">{{ periodLabel(report.period) }}</p>
+        <p class="text-xs text-white/50 mt-1">Ventana cubierta</p>
+      </div>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center col-span-2 sm:col-span-1">
+        <p class="text-sm font-semibold text-white/80 truncate">{{ report.storeName }}</p>
+        <p class="text-xs text-white/50 mt-1">Sucursal</p>
+      </div>
+    </div>
+
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5">
+      <h2 class="text-sm font-semibold text-white/70 mb-4">
+        Ranking de Colaboradores
+        <span class="text-xs font-normal text-white/40">— ordenado por Over-all</span>
+      </h2>
+
+      @if (report.employees.length > 0) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[760px]">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">#</th>
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">Colaborador</th>
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">Puesto</th>
+                <th class="text-left  py-2 px-3 text-xs font-semibold text-white/50 uppercase">Turno</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Total</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Complet.</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">On-Time%</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Over-all</th>
+                <th class="text-right py-2 px-3 text-xs font-semibold text-white/50 uppercase">Insignias</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of report.employees; track e.userId) {
+                <tr class="border-b border-white/[0.06] hover:bg-white/[0.04] transition-colors">
+                  <td class="py-2 px-3">
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
+                          [class]="e.rank === 1 ? 'bg-cyan-500/10 text-cyan-300' :
+                                   e.rank === 2 ? 'bg-white/[0.05] text-white/60' :
+                                   'bg-white/[0.02] text-white/40'">
+                      {{ e.rank }}
+                    </span>
+                  </td>
+                  <td class="py-2 px-3 font-medium text-white/80">{{ e.nombre }}</td>
+                  <td class="py-2 px-3 text-white/50">{{ e.puesto || '—' }}</td>
+                  <td class="py-2 px-3 text-white/50">{{ e.turno || '—' }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ e.totalTasks }}</td>
+                  <td class="py-2 px-3 text-right text-emerald-400">{{ e.completedTasks }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ fmtPct(e.onTimeRate) }}</td>
+                  <td class="py-2 px-3 text-right font-semibold text-cyan-400">{{ fmtKpi(e.igeo) }}</td>
+                  <td class="py-2 px-3 text-right text-white/70">{{ e.badges.length }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="text-sm text-white/40 italic">Sin colaboradores con actividad en el período.</p>
+      }
+    </div>
+  }
+
+  <!-- ════════════════ CIERRE DIARIO ════════════════ -->
+  @if (!loading() && reportType() === 'daily' && reportData(); as report) {
 
     <div class="mb-4 text-sm text-white/50">
       <span class="font-medium text-white/70">{{ report.storeName || storeLabel() }}</span>
@@ -113,30 +290,30 @@
     </div>
 
     <!-- Resumen general -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-5">
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
-        <p class="text-2xl font-bold text-white">{{ report.totalAssigned }}</p>
+        <p class="text-xl md:text-2xl font-bold text-white">{{ report.totalAssigned }}</p>
         <p class="text-xs text-white/50 mt-1">Total asignadas</p>
       </div>
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
-        <p class="text-2xl font-bold text-emerald-600">{{ report.totalCompleted }}</p>
+        <p class="text-xl md:text-2xl font-bold text-emerald-600">{{ report.totalCompleted }}</p>
         <p class="text-xs text-white/50 mt-1">Completadas</p>
       </div>
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
-        <p class="text-2xl font-bold text-red-600">{{ report.totalFailed }}</p>
+        <p class="text-xl md:text-2xl font-bold text-red-600">{{ report.totalFailed }}</p>
         <p class="text-xs text-white/50 mt-1">Fallidas</p>
       </div>
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
-        <p class="text-2xl font-bold text-cyan-400">{{ report.totalPending }}</p>
+        <p class="text-xl md:text-2xl font-bold text-cyan-400">{{ report.totalPending }}</p>
         <p class="text-xs text-white/50 mt-1">Pendientes</p>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-5">
 
       <!-- KPI Summary -->
-      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
-        <h2 class="text-sm font-semibold text-white/70 mb-4">Resumen de KPIs</h2>
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5">
+        <h2 class="text-sm font-semibold text-white/70 mb-4">Resumen de KPIs del día</h2>
         @if (report.kpiSummary; as kpi) {
           <div class="space-y-2">
             <div class="flex justify-between text-sm">
@@ -160,7 +337,7 @@
       </div>
 
       <!-- KPI #9 — Velocidad Corrección -->
-      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5">
+      <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5">
         <h2 class="text-sm font-semibold text-white/70 mb-4">
           Velocidad de Corrección <span class="text-xs font-normal text-white/40">(KPI #9)</span>
         </h2>
@@ -192,13 +369,13 @@
     </div>
 
     <!-- KPI #7 — Ranking de Colaboradores -->
-    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-5 mb-6">
+    <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 md:p-5 mb-5">
       <h2 class="text-sm font-semibold text-white/70 mb-4">
         Ranking de Colaboradores <span class="text-xs font-normal text-white/40">(KPI #7)</span>
       </h2>
       @if (report.userRanking && report.userRanking.length > 0) {
         <div class="overflow-x-auto">
-          <table class="w-full text-sm">
+          <table class="w-full text-sm min-w-[680px]">
             <thead>
               <tr class="border-b border-white/10">
                 <th class="text-left py-2 px-3 text-xs font-semibold text-white/50 uppercase">#</th>
@@ -240,13 +417,15 @@
   }
 
   <!-- ── Empty state (sin cargar aún) ── -->
-  @if (!loading() && !reportData()) {
+  @if (!loading() && !hasData()) {
     <div class="flex flex-col items-center justify-center py-20 text-center">
       <svg class="w-12 h-12 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
               d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
       </svg>
-      <p class="text-white/50 text-sm">Selecciona una fecha y haz clic en <strong>Ver Preview</strong> para cargar el reporte.</p>
+      <p class="text-white/50 text-sm">
+        Ajusta los filtros y haz clic en <strong>Ver Preview</strong> para cargar el reporte.
+      </p>
     </div>
   }
 

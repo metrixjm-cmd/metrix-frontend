@@ -21,7 +21,7 @@
        KPI CARDS CON SPARKLINES — comunes a todos los roles
   ══════════════════════════════════════════════ -->
   @if (kpisLoading()) {
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       @for (i of [1,2,3,4]; track i) {
         <div class="ds-skeleton h-28 rounded-xl"></div>
       }
@@ -35,9 +35,9 @@
       Sin datos de KPIs disponibles. Asigna tareas para generar métricas.
     </div>
   } @else {
-    <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
       @for (kpi of kpis(); track kpi.label; let idx = $index) {
-        <div class="ds-card p-4">
+        <div class="ds-card p-4 flex flex-col">
           <div class="flex items-start justify-between mb-3">
             <p class="text-xs font-semibold text-white/40 uppercase tracking-wide leading-tight">{{ kpi.label }}</p>
             @if (kpi.delta) {
@@ -56,26 +56,64 @@
               </span>
             }
           </div>
-          <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
-          <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
-          <div class="mt-3">
-            <svg viewBox="0 0 120 36" class="w-full h-9" preserveAspectRatio="none">
-              <defs>
-                <linearGradient [id]="'grad-' + kpi.accentBg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" [attr.stop-color]="kpi.color" stop-opacity="0.2" />
-                  <stop offset="100%" [attr.stop-color]="kpi.color" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-              <path [attr.d]="kpiSparklines()[idx]?.fill" [attr.fill]="'url(#grad-' + kpi.accentBg + ')'" />
-              <path [attr.d]="kpiSparklines()[idx]?.path" [attr.stroke]="kpi.color"
-                    stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </div>
+          @switch (kpi.viz) {
+
+            <!-- Contador digital: conteo absoluto, centrado en la tarjeta. -->
+            @case ('counter') {
+              <div class="flex-1 flex flex-col items-center justify-center gap-2.5 py-2">
+                <div class="kpi-counter">
+                  <span class="kpi-counter__value">{{ kpi.value }}</span>
+                </div>
+                <p class="text-[11px] text-white/40 text-center">{{ kpi.sub }}</p>
+              </div>
+            }
+
+            <!-- Tacómetro: entre menos re-trabajo, mejor — el umbral de color se
+                 invierte con higherIsBetter=false (0% = verde, 100% = rojo).
+                 El subtítulo va debajo, no dentro del aro: adentro chocaba con
+                 el número y con el arco. -->
+            @case ('gauge') {
+              <div class="flex-1 flex flex-col items-center justify-center gap-1.5">
+                <app-radial-gauge
+                  [value]="kpi.data[0]"
+                  [color]="kpi.color"
+                  [higherIsBetter]="false"
+                  [size]="132"
+                />
+                <p class="text-[11px] text-white/40 text-center">{{ kpi.sub }}</p>
+              </div>
+            }
+
+            @default {
+              <p class="text-2xl font-bold text-white tracking-tight mb-0.5">{{ kpi.value }}</p>
+              <p class="text-[11px] text-white/40">{{ kpi.sub }}</p>
+              @if (kpi.data.length > 1) {
+                <div class="mt-4">
+                  <app-trend-line
+                    [data]="kpi.data"
+                    [labels]="kpiChartLabels()[idx]"
+                    [taskTitles]="kpi.taskTitles ?? []"
+                    [color]="kpi.color"
+                    [size]="130"
+                    [showAxis]="true"
+                    [showTooltip]="true"
+                    [unit]="kpi.label === 'On-Time Rate' ? '%' : ''"
+                    xAxisLabel="Tareas cerradas (antigua → reciente)"
+                    [yAxisLabel]="kpi.label === 'On-Time Rate' ? '% a tiempo' : '% tareas t'"
+                  />
+                </div>
+                <p class="text-[10px] text-white/30 mt-2">Pasa el cursor sobre la línea (no sobre los números de abajo) para ver la tarea y su valor exacto</p>
+              } @else {
+                <p class="text-[10px] text-white/30 mt-3">Sin histórico suficiente todavía · valor actual del turno</p>
+              }
+            }
+          }
           @if (kpi.label === 'Over-all') {
-            @if (kpiSvc.igeoAnalytics(); as igeo) {
-              <!-- Desglose por pilar del Over-all analítico (Sprint 17) -->
+            @if (igeoPillarArray().length > 0) {
+              <!-- Desglose por pilar del Over-all analítico (Sprint 17), acotado
+                   al alcance del usuario: cadena para ADMIN, sucursal para GERENTE -->
               <div class="mt-2 pt-2 border-t border-white/[0.06] space-y-1.5">
-                @for (p of igeoPillarArray(igeo); track p.n) {
+                @for (p of igeoPillarArray(); track p.n) {
                   <div class="flex items-center gap-1.5">
                     <span class="text-[9px] text-white/30 w-10 shrink-0">{{p.n}}</span>
                     <div class="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
@@ -99,10 +137,11 @@
   @if (isAdmin()) {
 
     <!-- Fila: Feed en vivo + Ranking inter-sucursal -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <!-- Ranking a 1.2fr (20% más ancho que el 1fr original) frente a 2fr del feed -->
+    <div class="grid grid-cols-1 xl:grid-cols-[2fr_1.2fr] gap-4">
 
       <!-- Feed en vivo -->
-      <div class="xl:col-span-2 bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+      <div class="bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
         <div class="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -163,7 +202,7 @@
                     <svg class="w-3 h-3" [class]="trendClass(store.trend)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="trendIcon(store.trend)" />
                     </svg>
-                    <span class="text-xs font-bold text-white">{{ store.igeo >= 0 ? store.igeo : 'S/D' }}</span>
+                    <span class="text-xs font-bold text-white">{{ store.igeo >= 0 ? store.igeo.toFixed(1) + '%' : 'S/D' }}</span>
                   </div>
                 </div>
                 <div class="mt-1.5 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
@@ -228,8 +267,8 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-white/80 truncate">{{ store.name }}</p>
                   <p class="text-xs text-white/40 mt-0.5">
-                    Over-all: <span class="text-red-400 font-semibold">{{ store.igeo }}%</span> ·
-                    On-Time: {{ store.onTime }}%
+                    Over-all: <span class="text-red-400 font-semibold">{{ store.igeo.toFixed(1) }}%</span> ·
+                    On-Time: {{ store.onTime.toFixed(1) }}%
                   </p>
                 </div>
                 <a routerLink="/reports"

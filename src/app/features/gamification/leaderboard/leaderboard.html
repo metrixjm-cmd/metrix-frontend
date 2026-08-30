@@ -1,81 +1,35 @@
 <div class="gamif-page p-4 md:p-5 lg:p-6">
 
   <!-- ══════════════════════════════════════════════════════════
-       BARRA SUPERIOR: Título + Métricas
+       BARRA SUPERIOR: Título y período
   ════════════════════════════════════════════════════════════ -->
-  <div class="flex flex-col xl:flex-row xl:items-start gap-4 mb-5">
+  <div class="mb-5">
+    <h1 class="text-[22px] font-bold text-white tracking-tight leading-tight">
+      {{ pageTitle() }}
+    </h1>
+    <p class="text-sm text-white/35 mt-0.5">
+      {{ pageSubtitle() }}
+    </p>
 
-    <!-- Título y tabs -->
-    <div class="shrink-0">
-      <h1 class="text-[22px] font-bold text-white tracking-tight leading-tight">
-        Ranking de Equipo
-      </h1>
-      <p class="text-sm text-white/35 mt-0.5">
-        Desempeño y gamificación de la sucursal
-      </p>
-
-      <!-- Period tabs -->
-      <div class="flex gap-2 mt-4" role="group" aria-label="Período del ranking">
-        <button
-          class="gamif-tab"
-          [class]="period() === 'weekly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
-          (click)="selectPeriod('weekly')"
-          aria-label="Ver ranking de esta semana"
-        >
-          Esta semana
-        </button>
-        <button
-          class="gamif-tab"
-          [class]="period() === 'monthly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
-          (click)="selectPeriod('monthly')"
-          aria-label="Ver ranking de este mes"
-        >
-          Este mes
-        </button>
-      </div>
+    <!-- Period tabs -->
+    <div class="flex gap-2 mt-4" role="group" aria-label="Período del ranking">
+      <button
+        class="gamif-tab"
+        [class]="period() === 'weekly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+        (click)="selectPeriod('weekly')"
+        aria-label="Ver ranking de esta semana"
+      >
+        Esta semana
+      </button>
+      <button
+        class="gamif-tab"
+        [class]="period() === 'monthly' ? 'gamif-tab--active' : 'gamif-tab--inactive'"
+        (click)="selectPeriod('monthly')"
+        aria-label="Ver ranking de este mes"
+      >
+        Este mes
+      </button>
     </div>
-
-    <!-- Metric cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 xl:ml-auto xl:max-w-[660px] w-full">
-      @for (m of metrics; track m.label) {
-        <div class="gamif-metric-card p-4 flex flex-col gap-2.5">
-
-          <!-- Icon + Label -->
-          <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" [class]="m.iconBg">
-              <svg class="w-[18px] h-[18px]" [class]="m.iconColor"
-                   fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" [attr.d]="m.iconPath" />
-              </svg>
-            </div>
-            <span class="text-[9px] font-bold uppercase tracking-widest text-white/35 leading-tight">
-              {{ m.label }}
-            </span>
-          </div>
-
-          <!-- Valor principal -->
-          <p class="text-[26px] font-extrabold text-white leading-none tracking-tight">
-            {{ m.value }}
-          </p>
-
-          <!-- Sub-texto -->
-          <p class="text-[11px] leading-snug" [class]="m.subHighlight ? 'text-emerald-400' : 'text-white/30'">
-            {{ m.sub }}
-          </p>
-
-          <!-- Barra de progreso -->
-          <div class="gamif-progress-bar mt-0.5">
-            <div
-              class="gamif-progress-fill"
-              [style.width]="m.barWidth + '%'"
-              [style.background]="m.barGradient"
-            ></div>
-          </div>
-
-        </div>
-      }
-    </div>
-
   </div>
 
   <!-- ── Loading ──────────────────────────────────────────────── -->
@@ -107,7 +61,7 @@
       }
     </div>
 
-  } @else if (effectiveRows().length === 0) {
+  } @else if (rows().length === 0) {
     <!-- Empty -->
     <div class="gamif-top3-panel p-14 text-center">
       <div class="text-5xl mb-3">🏆</div>
@@ -134,7 +88,7 @@
       <div class="flex items-start justify-center gap-2 md:gap-5">
 
         <!-- 2do lugar (izquierda) -->
-        @if (effectivePodium()[0]; as p2) {
+        @if (podium()[0]; as p2) {
           <div class="gamif-podium-card gamif-podium-card--silver p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px]"
                style="padding-top: 28px; padding-bottom: 20px;">
 
@@ -154,14 +108,25 @@
               {{ p2.nombre }}
             </p>
 
-            <!-- Score -->
+            <!-- Score: equipo si es vista gerencial, IGEO propio si no -->
             <p class="text-xl md:text-2xl font-extrabold text-blue-300 mt-2 mb-3 tracking-tight">
-              {{ p2.igeo.toFixed(1) }}<span class="text-base font-bold">%</span>
+              @if (headlineScore(p2) >= 0) {
+                {{ headlineScore(p2).toFixed(1) }}<span class="text-base font-bold">%</span>
+              } @else {
+                <span class="text-base font-bold text-white/30">sin datos</span>
+              }
             </p>
+            @if (showingGerentes()) {
+              <p class="text-[10px] text-white/30 -mt-2 mb-2 uppercase tracking-wide">Over-all equipo</p>
+            }
 
-            <!-- Badge icon -->
-            <svg class="w-6 h-6 shield-blue opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-6 h-6 shield-blue opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -173,7 +138,7 @@
         }
 
         <!-- 1er lugar (centro — más grande) -->
-        @if (effectivePodium()[1]; as p1) {
+        @if (podium()[1]; as p1) {
           <div class="gamif-podium-card gamif-podium-card--gold p-3 md:p-7 flex-1 min-w-0 max-w-[240px] md:max-w-[270px] -mt-4"
                style="padding-top: 32px; padding-bottom: 22px;">
 
@@ -195,14 +160,25 @@
               {{ p1.nombre }}
             </p>
 
-            <!-- Score -->
+            <!-- Score: equipo si es vista gerencial, IGEO propio si no -->
             <p class="text-2xl md:text-3xl font-extrabold text-cyan-400 mt-2 mb-4 tracking-tight">
-              {{ p1.igeo.toFixed(1) }}<span class="text-lg font-bold">%</span>
+              @if (headlineScore(p1) >= 0) {
+                {{ headlineScore(p1).toFixed(1) }}<span class="text-lg font-bold">%</span>
+              } @else {
+                <span class="text-lg font-bold text-white/30">sin datos</span>
+              }
             </p>
+            @if (showingGerentes()) {
+              <p class="text-[10px] text-white/30 -mt-3 mb-3 uppercase tracking-wide">Over-all equipo</p>
+            }
 
-            <!-- Badge icon -->
-            <svg class="w-7 h-7 shield-cyan opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-7 h-7 shield-cyan opacity-90 gamif-medal-shine" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -214,7 +190,7 @@
         }
 
         <!-- 3er lugar (derecha) -->
-        @if (effectivePodium()[2]; as p3) {
+        @if (podium()[2]; as p3) {
           <div class="gamif-podium-card gamif-podium-card--bronze p-3 md:p-6 flex-1 min-w-0 max-w-[200px] md:max-w-[230px] mt-6"
                style="padding-top: 28px; padding-bottom: 20px;">
 
@@ -234,14 +210,25 @@
               {{ p3.nombre }}
             </p>
 
-            <!-- Score -->
+            <!-- Score: equipo si es vista gerencial, IGEO propio si no -->
             <p class="text-xl md:text-2xl font-extrabold text-purple-300 mt-2 mb-3 tracking-tight">
-              {{ p3.igeo.toFixed(1) }}<span class="text-base font-bold">%</span>
+              @if (headlineScore(p3) >= 0) {
+                {{ headlineScore(p3).toFixed(1) }}<span class="text-base font-bold">%</span>
+              } @else {
+                <span class="text-base font-bold text-white/30">sin datos</span>
+              }
             </p>
+            @if (showingGerentes()) {
+              <p class="text-[10px] text-white/30 -mt-2 mb-2 uppercase tracking-wide">Over-all equipo</p>
+            }
 
-            <!-- Badge icon -->
-            <svg class="w-6 h-6 shield-purple opacity-80" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+            <!-- Medalla -->
+            <svg class="w-6 h-6 shield-purple opacity-90" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+              <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+              <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+              <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+              <circle cx="12" cy="15" r="2.4"/>
             </svg>
 
             <!-- Stage glow -->
@@ -262,16 +249,29 @@
 
       <!-- Header -->
       <div class="gamif-table-header hidden md:grid px-5 py-3"
-           style="grid-template-columns: 52px 1fr 130px 130px 120px 110px 130px; min-width: 760px;">
+           [style.grid-template-columns]="gridColumns()"
+           [style.min-width]="gridMinWidth()">
 
         <div class="text-[10px] font-bold text-white/25 uppercase tracking-widest">#</div>
 
         <div class="text-[10px] font-bold text-white/25 uppercase tracking-widest">
-          COLABORADOR
+          {{ showingGerentes() ? 'GERENTE' : 'COLABORADOR' }}
         </div>
 
+        @if (showingGerentes()) {
+          <div class="text-center">
+            <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">EQUIPO</span>
+            <svg class="w-3 h-3 text-white/20 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        }
+
         <div class="text-center">
-          <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">OVER-ALL</span>
+          <span class="text-[10px] font-bold text-white/25 uppercase tracking-widest">
+            {{ showingGerentes() ? 'OVER-ALL PROPIO' : 'OVER-ALL' }}
+          </span>
           <svg class="w-3 h-3 text-white/20 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -305,16 +305,26 @@
       </div>
 
       <!-- Rows -->
-      @for (entry of effectiveRows(); track entry.userId) {
+      @for (entry of rows(); track entry.userId) {
 
         <!-- Desktop row -->
         <div
           class="gamif-row hidden md:grid px-5 py-4 items-center"
           [class]="rankRowClass(entry.rank)"
-          style="grid-template-columns: 52px 1fr 130px 130px 120px 110px 130px; min-width: 760px;"
+          [style.grid-template-columns]="gridColumns()"
+          [style.min-width]="gridMinWidth()"
         >
           <!-- # Rank -->
-          <div class="text-sm font-bold" [class]="rankColor(entry.rank)">
+          <div class="flex items-center gap-1 text-sm font-bold" [class]="rankColor(entry.rank)">
+            @if (entry.rank <= 3) {
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+                <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+                <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+                <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                <circle cx="12" cy="15" r="2.4"/>
+              </svg>
+            }
             {{ entry.rank }}
           </div>
 
@@ -325,9 +335,31 @@
             </div>
             <div class="min-w-0">
               <p class="text-sm font-medium text-white truncate">{{ entry.nombre }}</p>
-              <p class="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">{{ entry.turno }}</p>
+              <p class="text-[10px] text-white/30 uppercase tracking-wide mt-0.5 truncate">
+                {{ showingGerentes() ? (entry.storeName || entry.turno) : entry.turno }}
+              </p>
             </div>
           </div>
+
+          <!-- Equipo (sólo vista gerencial) -->
+          @if (showingGerentes()) {
+            <div class="text-center px-2">
+              @if (entry.colaboradorCount) {
+                <p class="text-sm text-white/70">
+                  {{ entry.colaboradorCount }} colab.
+                </p>
+                @if (entry.teamAvgIgeo !== undefined && entry.teamAvgIgeo >= 0) {
+                  <p class="text-[11px] text-white/40 mt-0.5">
+                    Over-all {{ entry.teamAvgIgeo.toFixed(1) }}%
+                  </p>
+                } @else {
+                  <p class="text-[11px] text-white/20 mt-0.5">sin datos</p>
+                }
+              } @else {
+                <span class="text-white/20 text-xs">sin equipo</span>
+              }
+            </div>
+          }
 
           <!-- Over-all -->
           <div class="text-center px-2">
@@ -340,14 +372,18 @@
             </div>
           </div>
 
-          <!-- On-time -->
+          <!-- On-time — el backend usa -1 como "sin tareas cerradas" -->
           <div class="text-center px-2">
-            <p class="text-sm text-blue-300">{{ entry.onTimeRate.toFixed(1) }}%</p>
-            <div class="gamif-progress-bar mt-1.5">
-              <div class="gamif-progress-fill gamif-progress-fill--ontime"
-                   [style.width]="barWidth(entry.onTimeRate)">
+            @if (entry.onTimeRate >= 0) {
+              <p class="text-sm text-blue-300">{{ entry.onTimeRate.toFixed(1) }}%</p>
+              <div class="gamif-progress-bar mt-1.5">
+                <div class="gamif-progress-fill gamif-progress-fill--ontime"
+                     [style.width]="barWidth(entry.onTimeRate)">
+                </div>
               </div>
-            </div>
+            } @else {
+              <p class="text-sm text-white/25">—</p>
+            }
           </div>
 
           <!-- Completadas -->
@@ -398,7 +434,16 @@
         >
           <div class="flex items-center gap-3">
             <!-- rank -->
-            <span class="text-sm font-bold w-5 text-center shrink-0" [class]="rankColor(entry.rank)">
+            <span class="flex flex-col items-center gap-0.5 w-6 shrink-0 text-sm font-bold" [class]="rankColor(entry.rank)">
+              @if (entry.rank <= 3) {
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M9 2L6 9.5l2.8 1.1L11 4.2 9 2z"/>
+                  <path d="M15 2l3 7.5-2.8 1.1L13 4.2 15 2z"/>
+                  <circle cx="12" cy="15" r="6.2" opacity="0.18"/>
+                  <circle cx="12" cy="15" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  <circle cx="12" cy="15" r="2.4"/>
+                </svg>
+              }
               {{ entry.rank }}
             </span>
             <!-- avatar -->
@@ -408,7 +453,17 @@
             <!-- name + turno -->
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-white truncate">{{ entry.nombre }}</p>
-              <p class="text-[10px] text-white/30 uppercase">{{ entry.turno }}</p>
+              <p class="text-[10px] text-white/30 uppercase truncate">
+                {{ showingGerentes() ? (entry.storeName || entry.turno) : entry.turno }}
+              </p>
+              @if (showingGerentes()) {
+                <p class="text-[10px] text-white/40 mt-0.5">
+                  {{ entry.colaboradorCount || 0 }} colab.
+                  @if (entry.teamAvgIgeo !== undefined && entry.teamAvgIgeo >= 0) {
+                    · Over-all equipo {{ entry.teamAvgIgeo.toFixed(1) }}%
+                  }
+                </p>
+              }
             </div>
             <!-- score + delta -->
             <div class="text-right shrink-0">

@@ -3,13 +3,22 @@ import { RouterLink } from '@angular/router';
 import { AppDatePipe } from '../../shared/pipes/app-date.pipe';
 import { TimeFormatPipe } from '../../shared/pipes/time-format.pipe';
 import { AuthService } from '../auth/services/auth.service';
-import { IgeoAnalyticsResponse } from '../kpi/kpi.models';
 import { TaskService } from '../tasks/services/task.service';
 import { KpiService } from '../kpi/services/kpi.service';
 import { GamificationService } from '../gamification/services/gamification.service';
 import { IncidentService } from '../incidents/services/incident.service';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { TrendLine } from '../../shared/components/charts/trend-line';
+import { RadialGauge } from '../../shared/components/charts/radial-gauge';
 import { APP_VERSION } from '../../../environments/app-version';
+
+/**
+ * Cómo se representa el valor de una tarjeta KPI.
+ * - `trend`   → línea de tendencia sobre las últimas tareas cerradas.
+ * - `gauge`   → tacómetro (métricas de tasa sin histórico por tarea).
+ * - `counter` → contador digital (conteos absolutos, no porcentajes).
+ */
+export type KpiViz = 'trend' | 'gauge' | 'counter';
 
 export interface KpiCard {
   label:    string;
@@ -18,6 +27,9 @@ export interface KpiCard {
   deltaUp:  boolean;
   sub:      string;
   data:     number[];
+  /** Título de la tarea en cada punto de `data` (mismo índice), para el tooltip. */
+  taskTitles?: string[];
+  viz:      KpiViz;
   color:    string;
   accentBg: string;
 }
@@ -44,7 +56,7 @@ export interface LiveEvent {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, StatusBadgeComponent, AppDatePipe, TimeFormatPipe],
+  imports: [RouterLink, StatusBadgeComponent, TrendLine, RadialGauge, AppDatePipe, TimeFormatPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -83,13 +95,14 @@ export class Dashboard implements OnInit {
     ];
   });
 
-  // ── Sparklines pre-calculados (evita recálculo por change detection) ──────
-  readonly kpiSparklines = computed(() => {
+  // ── Sparklines: cada punto es una de las últimas tareas cerradas (orden
+  // cronológico, la más reciente a la derecha). Las etiquetas alimentan el
+  // eje X y el tooltip de app-trend-line para que quede claro qué representa
+  // cada punto — el valor exacto se ve al pasar el cursor.
+  readonly kpiChartLabels = computed(() => {
     const cards = this.kpis();
-    return cards.map(kpi => ({
-      path: this.sparklinePath(kpi.data),
-      fill: this.sparklineFill(kpi.data),
-    }));
+    return cards.map(kpi => kpi.data.map((_, i) =>
+      i === kpi.data.length - 1 ? 'Últ.' : `${i + 1}`));
   });
 
   // ── GERENTE: Tabla de equipo (KPI #7 top-5) ───────────────────────────────
@@ -179,21 +192,6 @@ export class Dashboard implements OnInit {
     }
   }
 
-  // ── Sparkline helpers ─────────────────────────────────────────────────────
-
-  sparklinePath(data: number[], w = 120, h = 36): string {
-    const min   = Math.min(...data);
-    const max   = Math.max(...data);
-    const range = max - min || 1;
-    const xs    = data.map((_, i) => (i / (data.length - 1)) * w);
-    const ys    = data.map(v => h - ((v - min) / range) * (h - 4) - 2);
-    return xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
-  }
-
-  sparklineFill(data: number[], w = 120, h = 36): string {
-    return `${this.sparklinePath(data, w, h)} L ${w},${h} L 0,${h} Z`;
-  }
-
   // ── Live feed helpers ─────────────────────────────────────────────────────
 
   actionLabel(action: LiveEvent['action']): string {
@@ -264,8 +262,16 @@ export class Dashboard implements OnInit {
 
   // ── Over-all analítico helpers ─────────────────────────────────────────────────
 
-  igeoPillarArray(igeo: IgeoAnalyticsResponse): { n: string; v: number }[] {
-    const p = igeo.data.global.pillar_scores;
+  /**
+   * Pilares del Over-all ya acotados al alcance del usuario: la cadena para
+   * ADMIN, su propia sucursal para GERENTE. Antes leía siempre
+   * {@code data.global}, así que a un gerente le mostraba los pilares de toda
+   * la cadena junto a tarjetas que sí eran de su sucursal (auditoría
+   * 2026-08-01). Devuelve [] si no hay datos en su alcance.
+   */
+  igeoPillarArray(): { n: string; v: number }[] {
+    const p = this.kpiSvc.igeoPillars();
+    if (!p) return [];
     return [
       { n: 'Cumpl.',   v: p.cumplimiento },
       { n: 'Tiempo',   v: p.tiempo },

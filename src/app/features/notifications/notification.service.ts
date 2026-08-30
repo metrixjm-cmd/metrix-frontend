@@ -34,13 +34,22 @@ export class NotificationService {
 
   private readonly _notifications = signal<AppNotification[]>([]);
   private readonly _connected     = signal(false);
+  /** Sin leer según la base. Sólo cuenta las persistidas. */
+  private readonly _serverUnread  = signal(0);
 
   readonly notifications = this._notifications.asReadonly();
   readonly connected     = this._connected.asReadonly();
 
-  /** Número de notificaciones no leídas. */
+  /**
+   * Número de notificaciones no leídas.
+   * <p>
+   * El grueso lo da el backend porque en memoria sólo hay las últimas 50: contando
+   * sobre la lista local, el badge se quedaba topado en 50 por muchas que hubiera.
+   * Las locales (`pushLocal`) no están en la base, así que se suman aparte.
+   */
   readonly unreadCount = computed(() =>
-    this._notifications().filter(n => !n.read).length,
+    this._serverUnread() +
+    this._notifications().filter(n => !n.read && n.id.startsWith('local-')).length,
   );
 
   // ── Conexión SSE ─────────────────────────────────────────────────────────
@@ -60,12 +69,14 @@ export class NotificationService {
     const user = this.extractSubject(token);
     if (user !== this.lastUser) {
       this._notifications.set([]);
+      this._serverUnread.set(0);
       this.lastUser = user;
     }
 
     // Historial persistido: cubre notificaciones enviadas mientras el usuario
     // no tenía el stream SSE conectado (antes se perdían para siempre).
     void this.loadRecent();
+    void this.loadUnreadCount();
 
     // Evita que Angular Service Worker intercepte SSE (rompe streams en producción)
     const url = `${environment.apiUrl}/notifications/stream?token=${encodeURIComponent(token)}&ngsw-bypass=true`;
@@ -88,6 +99,8 @@ export class NotificationService {
           };
           // Agrega al inicio, máximo 50 notificaciones en memoria
           this._notifications.update(list => [notification, ...list].slice(0, 50));
+          // El backend ya la guardó sin leer; reflejarlo sin ir a pedir el contador.
+          this._serverUnread.update(n => n + 1);
         });
       });
 
@@ -140,16 +153,36 @@ export class NotificationService {
     }
   }
 
+  /** Total sin leer según la base, que no está limitado a las 50 en memoria. */
+  async loadUnreadCount(): Promise<void> {
+    try {
+      const res = await firstValueFrom(
+        this.http.get<{ unread: number }>(`${this.apiUrl}/unread-count`),
+      );
+      this._serverUnread.set(res.unread);
+    } catch {
+      // Se mantiene el contador anterior; no vale la pena romper la campana.
+    }
+  }
+
   // ── Estado de lectura ─────────────────────────────────────────────────────
 
   markAllRead(): void {
     this._notifications.update(list => list.map(n => ({ ...n, read: true })));
-    firstValueFrom(this.http.post<void>(`${this.apiUrl}/read-all`, {})).catch(() => {});
+    this._serverUnread.set(0);
+    firstValueFrom(this.http.post<void>(`${this.apiUrl}/read-all`, {}))
+      .catch(() => { void this.loadUnreadCount(); });
   }
 
   markRead(id: string): void {
+    // Ya estaba leída: no descontar dos veces si se vuelve a hacer clic.
+    const wasUnread = this._notifications().some(n => n.id === id && !n.read);
+    if (!wasUnread) return;
+
     if (!id.startsWith('local-')) {
-      firstValueFrom(this.http.post<void>(`${this.apiUrl}/${id}/read`, {})).catch(() => {});
+      this._serverUnread.update(n => Math.max(0, n - 1));
+      firstValueFrom(this.http.post<void>(`${this.apiUrl}/${id}/read`, {}))
+        .catch(() => { void this.loadUnreadCount(); });
     }
     this._notifications.update(list =>
       list.map(n => n.id === id ? { ...n, read: true } : n),

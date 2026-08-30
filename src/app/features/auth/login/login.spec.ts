@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import { Login } from './login';
-import { ThemeService } from '../../../core/theme.service';
 import { AuthService } from '../services/auth.service';
 import type { AuthResponse } from '../models/auth.models';
 
@@ -45,7 +44,7 @@ class AuthServiceStub {
 describe('Login', () => {
   let router: RouterStub;
   let auth: AuthServiceStub;
-  let themeService: ThemeService;
+  let route: ActivatedRouteStub;
 
   const adminResponse: AuthResponse = {
     token: 'token-admin',
@@ -57,6 +56,15 @@ describe('Login', () => {
     roles: ['ADMIN'],
   };
 
+  /** Simula un login exitoso: publica el usuario y emite la respuesta. */
+  function stubSuccessfulLogin(): void {
+    auth.login.mockImplementationOnce(() => new Observable<AuthResponse>(subscriber => {
+      auth.setUser(adminResponse);
+      subscriber.next(adminResponse);
+      subscriber.complete();
+    }));
+  }
+
   beforeEach(async () => {
     localStorage.clear();
     router = new RouterStub();
@@ -65,42 +73,41 @@ describe('Login', () => {
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        ThemeService,
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useClass: ActivatedRouteStub },
         { provide: AuthService, useValue: auth },
       ],
     }).compileComponents();
 
-    themeService = TestBed.inject(ThemeService);
+    route = TestBed.inject(ActivatedRoute) as unknown as ActivatedRouteStub;
   });
 
-  it('keeps the manually selected login theme after signing in as admin', () => {
-    const fixture = TestBed.createComponent(Login);
-    const component = fixture.componentInstance;
-
-    themeService.set('orange');
-    TestBed.flushEffects();
+  it('redirects to the dashboard after signing in without returnUrl', () => {
+    const component = TestBed.createComponent(Login).componentInstance;
 
     component.form.patchValue({
       numeroUsuario: 'ADMIN001',
       password: 'Admin123456',
     });
-
-    auth.login.mockImplementationOnce(() => new Observable<AuthResponse>(subscriber => {
-      auth.setUser(adminResponse);
-      subscriber.next(adminResponse);
-      subscriber.complete();
-    }));
+    stubSuccessfulLogin();
 
     component.onSubmit();
-    TestBed.flushEffects();
 
-    expect(themeService.current()).toBe('orange');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('orange');
-
-    const preferences = JSON.parse(localStorage.getItem('metrix-theme-preferences') ?? '{}') as Record<string, string>;
-    expect(preferences['ADMIN001']).toBe('orange');
     expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
+  });
+
+  it('honours the returnUrl the guard preserved', () => {
+    route.snapshot.queryParamMap.get.mockReturnValue('/kpi');
+    const component = TestBed.createComponent(Login).componentInstance;
+
+    component.form.patchValue({
+      numeroUsuario: 'ADMIN001',
+      password: 'Admin123456',
+    });
+    stubSuccessfulLogin();
+
+    component.onSubmit();
+
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/kpi');
   });
 });

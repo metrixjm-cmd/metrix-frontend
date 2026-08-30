@@ -27,6 +27,7 @@ export class UserList implements OnInit {
   readonly copiedUserId = signal<string | null>(null);
 
   // ── Filtros ───────────────────────────────────────────────────────────────
+  search       = signal<string>('');
   filterTurno  = signal<string>('');
   filterRol    = signal<string>('');
   filterStore  = signal<string>('');
@@ -40,6 +41,7 @@ export class UserList implements OnInit {
     const turno = this.filterTurno();
     const rol   = this.filterRol();
     const store = this.filterStore();
+    const q     = this.search().trim().toLowerCase();
     if (this.isOnlyGerente()) {
       list = list.filter(u => u.roles.includes('EJECUTADOR') || u.roles.includes('ROLE_EJECUTADOR'));
     } else if (rol) {
@@ -47,8 +49,15 @@ export class UserList implements OnInit {
     }
     if (store) list = list.filter(u => u.storeId === store);
     if (turno) list = list.filter(u => u.turno === turno);
+    if (q) {
+      list = list.filter(u =>
+        [u.nombre, u.numeroUsuario, u.puesto].some(v => v?.toLowerCase().includes(q))
+      );
+    }
     return list;
   });
+
+  readonly totalUsers = computed(() => this.rhSvc.users().length);
 
   readonly isAdmin   = computed(() => this.authSvc.hasRole('ADMIN'));
   readonly isGerente = computed(() => this.authSvc.hasAnyRole('ADMIN', 'GERENTE'));

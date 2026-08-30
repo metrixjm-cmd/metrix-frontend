@@ -24,6 +24,20 @@
 
   <!-- ── Filtros ────────────────────────────────────────────────────────── -->
   <div class="flex flex-wrap gap-3">
+    <div class="relative flex-1 min-w-[220px]">
+      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none"
+           fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+      </svg>
+      <input type="search"
+             [ngModel]="search()"
+             (ngModelChange)="search.set($event)"
+             placeholder="Buscar por nombre, usuario o puesto"
+             aria-label="Buscar colaborador"
+             class="w-full text-sm border border-white/10 rounded-lg pl-9 pr-3 py-2 bg-white/[0.05] text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"/>
+    </div>
+
     @if (isAdmin()) {
       <select [(ngModel)]="filterStore"
               (ngModelChange)="filterStore.set($event)"
@@ -65,6 +79,9 @@
 
   <!-- ── Tabla de colaboradores ─────────────────────────────────────────── -->
   @if (!loading()) {
+    <p class="text-xs text-white/40">
+      Mostrando {{ filteredUsers().length }} de {{ totalUsers() }} colaboradores
+    </p>
     <div class="bg-white/[0.04] border border-white/10 rounded-xl overflow-hidden">
       @if (filteredUsers().length === 0) {
         <div class="py-16 text-center text-white/40">
@@ -72,8 +89,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
           </svg>
-          <p class="text-sm font-medium">Sin colaboradores</p>
-          <p class="text-xs mt-1">Ajusta los filtros o agrega un nuevo colaborador</p>
+          @if (search().trim()) {
+            <p class="text-sm font-medium">Sin resultados para «{{ search() }}»</p>
+            <p class="text-xs mt-1">Revisa la escritura o limpia el buscador</p>
+          } @else {
+            <p class="text-sm font-medium">Sin colaboradores</p>
+            <p class="text-xs mt-1">Ajusta los filtros o agrega un nuevo colaborador</p>
+          }
         </div>
       } @else {
         <div class="overflow-x-auto w-full">

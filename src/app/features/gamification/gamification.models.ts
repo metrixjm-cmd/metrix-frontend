@@ -22,6 +22,13 @@ export interface LeaderboardEntry {
   completedTasks: number;
   onTimeRate: number;
   badges: Badge[];
+
+  /** Sólo en el leaderboard gerencial (ADMIN). Ausente en el de sucursal. */
+  storeName?: string;
+  /** Ejecutadores a cargo del gerente. Sólo en el leaderboard gerencial. */
+  colaboradorCount?: number;
+  /** IGEO promedio del equipo. -1 si ningún miembro tiene datos. Sólo gerencial. */
+  teamAvgIgeo?: number;
 }
 
 export interface GamificationSummary {

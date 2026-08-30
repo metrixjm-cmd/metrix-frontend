@@ -85,7 +85,10 @@ export class KpiPanel implements OnInit {
     {
       key: 'ontime', label: 'On-Time Rate', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
       color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', unit: '%',
-      desc: 'Porcentaje de tareas completadas antes de su fecha límite.',
+      // El denominador son las tareas CERRADAS (completadas + fallidas), no solo
+      // las completadas: el rótulo anterior decía "completadas" y no coincidía
+      // con la fórmula (auditoría 2026-08-01).
+      desc: 'De las tareas cerradas (completadas o fallidas), cuántas terminaron dentro de plazo.',
       getValue: s => s.onTimeRate, format: v => v >= 0 ? v.toFixed(1) : 'S/D',
       getStoreValue: r => r.onTimeRate, getUserValue: u => u.onTimeRate,
     },
@@ -154,23 +157,59 @@ export class KpiPanel implements OnInit {
   readonly trainings = this.kpiSvc.trainings;
   readonly exams     = this.kpiSvc.exams;
 
+  /**
+   * Over-all mostrado: el analítico acotado a la sucursal del usuario si el
+   * analytics-service respondió, si no la fórmula de respaldo del summary.
+   * <p>
+   * Antes el panel llamaba a `loadAnalyticsIgeo()` pero nunca usaba el
+   * resultado: siempre pintaba el de respaldo, mientras el dashboard sí usaba
+   * el analítico. Los dos podían mostrar un Over-all distinto para el mismo
+   * usuario (auditoría 2026-08-01).
+   */
+  readonly overallValue = computed(() => {
+    const analytic = this.kpiSvc.analyticsIgeoValue();
+    if (analytic != null) return analytic;
+    return this.summary()?.igeo ?? -1;
+  });
+
+  /** true si el Over-all viene del analytics-service (4 pilares). */
+  readonly overallIsAnalytic = computed(() => this.kpiSvc.analyticsIgeoValue() != null);
+
   // ── Tareas: gauges y tendencia ────────────────────────────────────
   readonly taskGauges = computed(() => {
     const s = this.summary();
     if (!s) return null;
     return {
-      igeo:    s.igeo,
+      igeo:    this.overallValue(),
       onTime:  s.onTimeRate,
       rework:  s.reworkRate,
       trend:   s.sparklineIgeo.length > 0 ? s.sparklineIgeo : [s.igeo >= 0 ? s.igeo : 0],
+      taskTitles: s.sparklineIgeo.length > 0 ? s.sparklineTaskTitles : [],
     };
   });
 
-  /** Delta del Over-all vs el punto anterior del sparkline (≈ "vs ayer"). null si no hay ≥2 puntos. */
+  /**
+   * Cuánto movió el Over-all la última tarea cerrada.
+   * <p>
+   * El sparkline NO es una serie temporal: cada punto es el Over-all recalculado
+   * de forma acumulada sobre las últimas 10 tareas cerradas (ordenadas por fecha
+   * de creación). Así que este delta es "el efecto de la última tarea cerrada",
+   * no una comparación con ayer — antes se rotulaba "vs ayer", lo cual invitaba
+   * a leer una tendencia diaria que no existe (auditoría 2026-08-01).
+   * <p>
+   * null si no hay ≥2 puntos.
+   */
   readonly igeoDelta = computed(() => {
     const t = this.taskGauges()?.trend;
     if (!t || t.length < 2) return null;
     return Math.round((t[t.length - 1] - t[t.length - 2]) * 10) / 10;
+  });
+
+  /** Etiquetas del eje X del gráfico de evolución: posición de cada tarea en la
+   *  ventana de las últimas 10 tareas cerradas (más antigua → más reciente). */
+  readonly trendLabels = computed(() => {
+    const n = this.taskGauges()?.trend.length ?? 0;
+    return Array.from({ length: n }, (_, i) => i === n - 1 ? 'Últ.' : `${i + 1}`);
   });
 
   /** Leyenda del pipeline de tareas (para la tarjeta "Resumen de Ejecución"). */
@@ -208,6 +247,22 @@ export class KpiPanel implements OnInit {
       return this.storeBreakdown().slice(0, 8).map(s => ({ label: s.storeName, value: s.value, color }));
     }
     return this.userBreakdown().slice(0, 8).map(u => ({ label: u.name, value: u.value, color }));
+  });
+
+  /**
+   * Nota por turno cuando la barra en 0% no significa "0% de cumplimiento":
+   * puede ser un turno sin ninguna tarea o con tareas que aún no cierran.
+   * Sin esto ambos casos se ven idénticos a un turno con mal desempeño real
+   * (2026-08-01, reporte del cliente sobre el turno vespertino).
+   */
+  readonly shiftEmptyNotes = computed(() => {
+    if (this.breakdownDimension() !== 'shift') return [];
+    return this.shiftBreakdown()
+      .filter(s => s.onTimeRate < 0)
+      .map(s => ({
+        shift: s.shift,
+        note: s.totalTasks === 0 ? 'sin tareas en el período' : 'sin cierres aún (S/D)',
+      }));
   });
 
   /**
@@ -448,6 +503,27 @@ export class KpiPanel implements OnInit {
   }
 
   // ── Helpers de UI ─────────────────────────────────────────────────
+
+  /**
+   * Valor de la tarjeta. El Over-all es el único caso especial: puede venir del
+   * analytics-service en vez del summary — ver {@link overallValue}.
+   */
+  metricCardValue(m: MetricDef): number {
+    if (m.key === 'igeo') return this.overallValue();
+    return m.getValue(this.summary()!);
+  }
+
+  /**
+   * Descripción de la tarjeta. Para el Over-all describe la fórmula que se está
+   * usando de verdad: la de respaldo no tiene pilar de consistencia, así que
+   * anunciar siempre "4 pilares" era incorrecto (auditoría 2026-08-01).
+   */
+  metricDesc(m: MetricDef): string {
+    if (m.key !== 'igeo') return m.desc;
+    return this.overallIsAnalytic()
+      ? 'Índice Global de Ejecución Operativa — 4 pilares: cumplimiento, tiempo, calidad y consistencia.'
+      : 'Índice Global de Ejecución Operativa — fórmula de respaldo: on-time (50%), re-trabajo (30%) y calidad (20%). Sin pilar de consistencia.';
+  }
 
   barWidth(value: number, metric: MetricDef): number {
     if (metric.unit === '') return Math.min(value * 10, 100);
