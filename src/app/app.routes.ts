@@ -3,6 +3,13 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
+  // ── Productos (público, sin layout) ─────────────────────────────────
+  {
+    path: 'productos',
+    loadChildren: () =>
+      import('./features/productos/productos.routes').then(m => m.PRODUCTOS_ROUTES),
+  },
+
   // ── Auth (pública, sin layout) ──────────────────────────────────────
   {
     path: 'auth',
@@ -70,6 +77,12 @@ export const routes: Routes = [
         canActivate: [roleGuard('ADMIN')],
         loadChildren: () =>
           import('./features/licensing/licensing.routes').then(m => m.LICENSING_ROUTES),
+      },
+      {
+        path: 'platform',
+        canActivate: [roleGuard('ADMIN')],
+        loadChildren: () =>
+          import('./features/platform/platform.routes').then(m => m.PLATFORM_ROUTES),
       },
       {
         path: 'help',

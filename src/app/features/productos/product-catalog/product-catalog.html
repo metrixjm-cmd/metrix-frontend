@@ -1,0 +1,58 @@
+<div class="min-h-screen bg-[#0b1220] text-white">
+  <header class="border-b border-white/10 bg-[#0b1220]/90 backdrop-blur sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-widest text-brand-400 font-semibold">METRIX</p>
+        <h1 class="text-xl font-bold">Planes para tu restaurante</h1>
+      </div>
+      <a routerLink="/auth/login"
+         class="text-sm px-4 py-2 rounded-lg border border-white/15 hover:bg-white/5 transition-colors">
+        Ya tengo cuenta
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
+    <p class="text-white/60 max-w-2xl">
+      Elige el plan METRIX para tu operación. Contratación mensual, implementación única y tu propia instancia aislada.
+    </p>
+
+    @if (error()) {
+      <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-sm">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="h-80 rounded-xl bg-white/5 animate-pulse"></div>
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        @for (p of packages(); track p.id) {
+          <article class="flex flex-col rounded-xl border overflow-hidden"
+                   [class]="p.destacado ? accent(p).border + ' shadow-lg' : 'border-white/10'">
+            <div class="p-5 flex-1 space-y-3" [class]="accent(p).header">
+              @if (p.destacado) {
+                <span class="inline-block text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                      [class]="accent(p).chip">Recomendado</span>
+              }
+              <h2 class="text-lg font-bold">{{ p.nombre }}</h2>
+              <p class="text-sm text-white/60">{{ p.descripcion }}</p>
+              <p class="text-2xl font-bold" [class]="accent(p).price">{{ precioLabel(p) }}</p>
+              @if (p.precioImplementacion > 0) {
+                <p class="text-xs text-white/45">Implementación única: ${{ p.precioImplementacion.toLocaleString('es-MX') }}</p>
+              }
+            </div>
+            <div class="p-5 border-t border-white/10">
+              <a [routerLink]="['/productos/checkout', p.id]"
+                 class="block w-full text-center py-2.5 rounded-lg font-medium bg-brand-600 hover:bg-brand-500 transition-colors">
+                Elegir plan
+              </a>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </main>
+</div>

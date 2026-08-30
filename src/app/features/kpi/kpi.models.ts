@@ -136,6 +136,7 @@ export interface CorrectionSpeedData {
 /** Datos del reporte de cierre diario */
 export interface DailyReportResponse {
   storeId: string;
+  storeName: string;
   reportDate: string;
   kpiSummary: KpiSummary;
   tasks: any[];

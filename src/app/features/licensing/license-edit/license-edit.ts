@@ -7,11 +7,15 @@ import { LicensingService } from '../services/licensing.service';
 import {
   ACCENTS_DISPONIBLES,
   LICENSE_ACCENTS,
+  LICENSE_PRICING_LABELS,
+  LICENSE_PRICING_MODELS,
   LicenseAccent,
   LicenseFeature,
   LicensePackage,
+  LicensePricingModel,
   MONEDAS,
   Moneda,
+  sufijoPrecio,
 } from '../licensing.models';
 
 @Component({
@@ -32,26 +36,28 @@ export class LicenseEdit implements OnInit {
 
   readonly monedas = MONEDAS;
   readonly accents = ACCENTS_DISPONIBLES;
+  readonly pricingModels = LICENSE_PRICING_MODELS;
+  readonly pricingLabels = LICENSE_PRICING_LABELS;
 
-  /** Paquete original; null mientras se resuelve o si el id no existe. */
   readonly paquete = signal<LicensePackage | null>(null);
-
-  /** Funciones en edición (checkbox + añadir/quitar). */
   readonly funciones = signal<LicenseFeature[]>([]);
-
   readonly nuevaFuncion = signal('');
 
   readonly form = this.fb.group({
     nombre:      ['', [Validators.required, Validators.minLength(2)]],
     etiqueta:    [''],
-    descripcion: ['', [Validators.required, Validators.maxLength(280)]],
+    descripcion: ['', [Validators.required, Validators.maxLength(500)]],
     moneda:      ['MXN' as Moneda, Validators.required],
+    pricingModel: ['FLAT_MONTHLY' as LicensePricingModel, Validators.required],
     precioPersonalizado: [false],
     precioMensual: [0, [Validators.required, Validators.min(0)]],
     precioAnual:   [0, [Validators.required, Validators.min(0)]],
+    precioImplementacion: [0, [Validators.required, Validators.min(0)]],
     usuariosIlimitados:   [false],
+    minUsuarios:   [null as number | null],
     maxUsuarios:   [0, [Validators.min(1)]],
     sucursalesIlimitadas: [false],
+    minSucursales: [null as number | null],
     maxSucursales: [0, [Validators.min(1)]],
     soporte:   [''],
     accent:    ['cyan' as LicenseAccent, Validators.required],
@@ -59,12 +65,10 @@ export class LicenseEdit implements OnInit {
     activo:    [true],
   });
 
-  // ── Vista previa reactiva ─────────────────────────────────────────────────
   private readonly formValue = signal(this.form.getRawValue());
 
   readonly previewAccent = computed(() => LICENSE_ACCENTS[this.formValue().accent ?? 'cyan']);
 
-  /** Porcentaje de ahorro del plan anual frente a 12 mensualidades. */
   readonly ahorroAnual = computed(() => {
     const v = this.formValue();
     if (v.precioPersonalizado) return 0;
@@ -76,19 +80,31 @@ export class LicenseEdit implements OnInit {
     return Math.round(((anualizado - anual) / anualizado) * 100);
   });
 
-  readonly descripcionRestante = computed(() => 280 - (this.formValue().descripcion?.length ?? 0));
+  readonly descripcionRestante = computed(() => 500 - (this.formValue().descripcion?.length ?? 0));
 
   readonly incluidasCount = computed(() => this.funciones().filter(f => f.incluido).length);
 
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    const p  = id ? this.licensingSvc.findById(id) : null;
+  readonly previewSufijo = computed(() => {
+    const v = this.formValue();
+    return sufijoPrecio(v.pricingModel ?? 'FLAT_MONTHLY', 'MENSUAL');
+  });
 
-    if (!p) {
-      this.router.navigate(['/licencias']);
+  async ngOnInit(): Promise<void> {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      void this.router.navigate(['/licencias']);
       return;
     }
 
+    try {
+      const p = await this.licensingSvc.loadById(id);
+      this.bindPaquete(p);
+    } catch {
+      void this.router.navigate(['/licencias']);
+    }
+  }
+
+  private bindPaquete(p: LicensePackage): void {
     this.paquete.set(p);
     this.funciones.set(p.funciones.map(f => ({ ...f })));
 
@@ -97,12 +113,16 @@ export class LicenseEdit implements OnInit {
       etiqueta:    p.etiqueta,
       descripcion: p.descripcion,
       moneda:      p.moneda,
+      pricingModel: p.pricingModel,
       precioPersonalizado: p.precioPersonalizado,
       precioMensual: p.precioMensual,
       precioAnual:   p.precioAnual,
+      precioImplementacion: p.precioImplementacion,
       usuariosIlimitados:   p.maxUsuarios === null,
+      minUsuarios:          p.minUsuarios,
       maxUsuarios:          p.maxUsuarios ?? 10,
       sucursalesIlimitadas: p.maxSucursales === null,
+      minSucursales:        p.minSucursales,
       maxSucursales:        p.maxSucursales ?? 1,
       soporte:   p.soporte,
       accent:    p.accent,
@@ -121,46 +141,41 @@ export class LicenseEdit implements OnInit {
     this.syncCamposDependientes();
   }
 
-  /**
-   * Habilita/deshabilita los campos que dependen de un checkbox.
-   * Se hace sobre el control (no con `[attr.disabled]`) porque un control
-   * deshabilitado queda fuera de la validación: así `min(1)` en los límites no
-   * bloquea el guardado cuando el paquete es ilimitado.
-   */
   private syncCamposDependientes(): void {
     const v = this.form.getRawValue();
-    const opts = { emitEvent: false };
+    const personalizado = !!v.precioPersonalizado;
 
-    for (const campo of ['precioMensual', 'precioAnual', 'moneda']) {
-      const c = this.form.get(campo)!;
-      if (v.precioPersonalizado && c.enabled) c.disable(opts);
-      if (!v.precioPersonalizado && c.disabled) c.enable(opts);
+    const precioMensual = this.form.get('precioMensual');
+    const precioAnual = this.form.get('precioAnual');
+    const precioImplementacion = this.form.get('precioImplementacion');
+    if (personalizado) {
+      precioMensual?.disable({ emitEvent: false });
+      precioAnual?.disable({ emitEvent: false });
+    } else {
+      precioMensual?.enable({ emitEvent: false });
+      precioAnual?.enable({ emitEvent: false });
     }
+    precioImplementacion?.enable({ emitEvent: false });
 
-    const usuarios = this.form.get('maxUsuarios')!;
-    if (v.usuariosIlimitados && usuarios.enabled) usuarios.disable(opts);
-    if (!v.usuariosIlimitados && usuarios.disabled) usuarios.enable(opts);
+    const maxUsuarios = this.form.get('maxUsuarios');
+    if (v.usuariosIlimitados) maxUsuarios?.disable({ emitEvent: false });
+    else maxUsuarios?.enable({ emitEvent: false });
 
-    const sucursales = this.form.get('maxSucursales')!;
-    if (v.sucursalesIlimitadas && sucursales.enabled) sucursales.disable(opts);
-    if (!v.sucursalesIlimitadas && sucursales.disabled) sucursales.enable(opts);
+    const maxSucursales = this.form.get('maxSucursales');
+    if (v.sucursalesIlimitadas) maxSucursales?.disable({ emitEvent: false });
+    else maxSucursales?.enable({ emitEvent: false });
   }
-
-  // ── Funciones del paquete ────────────────────────────────────────────────
 
   toggleFuncion(label: string): void {
     this.funciones.update(list =>
-      list.map(f => f.label === label ? { ...f, incluido: !f.incluido } : f)
+      list.map(f => (f.label === label ? { ...f, incluido: !f.incluido } : f))
     );
   }
 
   agregarFuncion(): void {
     const label = this.nuevaFuncion().trim();
     if (!label) return;
-    if (this.funciones().some(f => f.label.toLowerCase() === label.toLowerCase())) {
-      this.nuevaFuncion.set('');
-      return;
-    }
+    if (this.funciones().some(f => f.label.toLowerCase() === label.toLowerCase())) return;
     this.funciones.update(list => [...list, { label, incluido: true }]);
     this.nuevaFuncion.set('');
   }
@@ -170,10 +185,9 @@ export class LicenseEdit implements OnInit {
   }
 
   onNuevaFuncionInput(event: Event): void {
-    this.nuevaFuncion.set((event.target as HTMLInputElement).value);
+    const target = event.target as HTMLInputElement;
+    this.nuevaFuncion.set(target.value);
   }
-
-  // ── Formato ──────────────────────────────────────────────────────────────
 
   formatPrecio(valor: number, moneda: string): string {
     return new Intl.NumberFormat('es-MX', {
@@ -199,8 +213,6 @@ export class LicenseEdit implements OnInit {
     return this.formValue();
   }
 
-  // ── Guardar ──────────────────────────────────────────────────────────────
-
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -218,10 +230,14 @@ export class LicenseEdit implements OnInit {
         etiqueta:    v.etiqueta?.trim() ?? '',
         descripcion: v.descripcion!.trim(),
         moneda:      v.moneda as Moneda,
+        pricingModel: v.pricingModel as LicensePricingModel,
         precioPersonalizado: !!v.precioPersonalizado,
         precioMensual: v.precioPersonalizado ? 0 : Number(v.precioMensual ?? 0),
         precioAnual:   v.precioPersonalizado ? 0 : Number(v.precioAnual ?? 0),
-        maxUsuarios:   v.usuariosIlimitados   ? null : Number(v.maxUsuarios ?? 0),
+        precioImplementacion: Number(v.precioImplementacion ?? 0),
+        minUsuarios:   v.usuariosIlimitados ? null : (v.minUsuarios ?? null),
+        maxUsuarios:   v.usuariosIlimitados ? null : Number(v.maxUsuarios ?? 0),
+        minSucursales: v.sucursalesIlimitadas ? null : (v.minSucursales ?? null),
         maxSucursales: v.sucursalesIlimitadas ? null : Number(v.maxSucursales ?? 0),
         soporte:   v.soporte?.trim() ?? '',
         accent:    v.accent as LicenseAccent,
@@ -229,7 +245,7 @@ export class LicenseEdit implements OnInit {
         activo:    !!v.activo,
         funciones: this.funciones(),
       });
-      this.router.navigate(['/licencias']);
+      void this.router.navigate(['/licencias']);
     } catch {
       // el error ya quedó en la signal del servicio
     }

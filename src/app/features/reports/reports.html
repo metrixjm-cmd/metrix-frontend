@@ -69,7 +69,7 @@
         </div>
       }
 
-      <!-- Sucursal: el ADMIN elige de la lista, el resto ve la suya fija -->
+      <!-- Sucursal: el ADMIN elige de la lista, el resto ve el nombre -->
       @if (needsStore()) {
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-white/50 uppercase tracking-wide">Sucursal</label>
@@ -77,14 +77,14 @@
             <select [ngModel]="storeId()"
                     (ngModelChange)="storeId.set($event)"
                     class="input-field w-56">
-              <option value="">Selecciona una sucursal…</option>
-              @for (s of stores(); track s.id) {
+              <option value="" disabled>Selecciona sucursal</option>
+              @for (s of activeStores(); track s.id) {
                 <option [value]="s.id">{{ s.nombre }}</option>
               }
             </select>
           } @else {
             <div class="input-field w-56 bg-white/[0.02] text-white/60 select-none">
-              {{ storeId() || '—' }}
+              {{ storeLabel() }}
             </div>
           }
         </div>
@@ -282,6 +282,12 @@
 
   <!-- ════════════════ CIERRE DIARIO ════════════════ -->
   @if (!loading() && reportType() === 'daily' && reportData(); as report) {
+
+    <div class="mb-4 text-sm text-white/50">
+      <span class="font-medium text-white/70">{{ report.storeName || storeLabel() }}</span>
+      <span class="mx-2">·</span>
+      <span>{{ report.reportDate }}</span>
+    </div>
 
     <!-- Resumen general -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mb-5">

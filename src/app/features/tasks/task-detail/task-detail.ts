@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { AuthService } from '../../auth/services/auth.service';
+import { SettingsService } from '../../settings/services/settings.service';
 import { TaskService } from '../services/task.service';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
@@ -20,6 +21,7 @@ import { EvidenceUpload } from '../evidence-upload/evidence-upload';
 export class TaskDetail implements OnInit {
   readonly auth    = inject(AuthService);
   readonly taskSvc = inject(TaskService);
+  private readonly settingsSvc = inject(SettingsService);
   readonly route   = inject(ActivatedRoute);
   readonly router  = inject(Router);
   readonly fb      = inject(FormBuilder);
@@ -48,6 +50,14 @@ export class TaskDetail implements OnInit {
 
   // ── Computed desde el servicio ───────────────────────────────────────
   readonly task = computed(() => this.taskSvc.selectedTask());
+
+  readonly storeLabel = computed(() => {
+    const storeId = this.task()?.storeId;
+    if (!storeId) return '—';
+    const user = this.auth.currentUser();
+    if (user?.storeId === storeId && user.storeName) return user.storeName;
+    return this.settingsSvc.stores().find(s => s.id === storeId)?.nombre ?? storeId;
+  });
 
   /** El usuario actual es el asignado de esta tarea */
   readonly isAssignee = computed(() => {
@@ -171,6 +181,9 @@ export class TaskDetail implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.taskSvc.loadTaskById(id);
   }

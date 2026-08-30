@@ -53,6 +53,9 @@ export class AuthService {
             storeName:     response.storeName,
             turno:         response.turno,
             roles:         response.roles,
+            platformAdmin: response.platformAdmin,
+            databaseName:  response.databaseName,
+            instanceId:    response.instanceId,
           });
         }),
       );
@@ -92,6 +95,11 @@ export class AuthService {
     return roles.some(r => userRoles.includes(r));
   }
 
+  /** Admin 0 — supervisión de la plataforma multi-cliente. */
+  isPlatformAdmin(): boolean {
+    return this._user()?.platformAdmin === true;
+  }
+
   // ── Persistencia ─────────────────────────────────────────────────────
 
   private persistSession(response: AuthResponse): void {
@@ -103,6 +111,9 @@ export class AuthService {
       storeName:     response.storeName,
       turno:         response.turno,
       roles:         response.roles,
+      platformAdmin: response.platformAdmin,
+      databaseName:  response.databaseName,
+      instanceId:    response.instanceId,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }

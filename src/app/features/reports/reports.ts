@@ -20,8 +20,8 @@ import {
   templateUrl: './reports.html',
 })
 export class Reports implements OnInit {
-  private readonly auth       = inject(AuthService);
-  private readonly reportSvc  = inject(ReportService);
+  private readonly auth        = inject(AuthService);
+  private readonly reportSvc   = inject(ReportService);
   private readonly settingsSvc = inject(SettingsService);
 
   reportType   = signal<ReportType>('daily');
@@ -39,8 +39,26 @@ export class Reports implements OnInit {
 
   readonly isAdmin = () => this.auth.currentUser()?.roles?.includes('ADMIN') ?? false;
 
-  /** Sucursales para el selector; sólo el ADMIN puede cambiar de sucursal. */
-  readonly stores = this.settingsSvc.stores;
+  readonly activeStores = computed(() => this.settingsSvc.stores().filter(s => s.activo));
+
+  readonly storeLabel = computed(() => {
+    const id = this.storeId();
+    if (!id) return '—';
+
+    const report = this.reportData();
+    if (report?.storeId === id && report.storeName) return report.storeName;
+
+    const employees = this.employeesReport();
+    if (employees?.storeId === id && employees.storeName) return employees.storeName;
+
+    const fromCatalog = this.settingsSvc.stores().find(s => s.id === id)?.nombre;
+    if (fromCatalog) return fromCatalog;
+
+    const user = this.auth.currentUser();
+    if (user?.storeId === id && user.storeName) return user.storeName;
+
+    return id;
+  });
 
   /** El ranking gerencial es de toda la cadena: no lleva filtro de sucursal. */
   readonly needsStore  = computed(() => this.reportType() !== 'managers');
@@ -72,8 +90,11 @@ export class Reports implements OnInit {
     const user = this.auth.currentUser();
     if (user?.storeId) this.storeId.set(user.storeId);
 
-    // El ADMIN no tiene sucursal asignada: necesita elegirla de la lista.
-    if (this.isAdmin()) this.settingsSvc.loadAll();
+    if (this.isAdmin()) {
+      this.settingsSvc.loadAll();
+    } else if (this.settingsSvc.stores().length === 0) {
+      this.settingsSvc.loadAll();
+    }
   }
 
   selectType(type: ReportType): void {
@@ -85,8 +106,6 @@ export class Reports implements OnInit {
   selectPeriod(p: ReportPeriod): void {
     if (this.period() === p) return;
     this.period.set(p);
-    // Recargar sólo si ya había un resultado visible: cambiar de período con la
-    // pantalla vacía no debería disparar una petición que el usuario no pidió.
     if (this.hasData()) this.loadPreview();
   }
 
@@ -151,8 +170,6 @@ export class Reports implements OnInit {
     }
   }
 
-  // ── Formatters ─────────────────────────────────────────────────────────
-
   fmtKpi(val: number): string {
     return val < 0 ? 'S/D' : val.toFixed(2);
   }
@@ -161,7 +178,6 @@ export class Reports implements OnInit {
     return val < 0 ? 'S/D' : `${val.toFixed(1)}%`;
   }
 
-  /** `teamAvgIgeo` llega en -1 cuando ningún miembro del equipo tiene datos. */
   fmtTeamIgeo(entry: LeaderboardEntry): string {
     if (entry.teamAvgIgeo === undefined || entry.teamAvgIgeo === null) return 'S/D';
     return this.fmtKpi(entry.teamAvgIgeo);
@@ -178,8 +194,6 @@ export class Reports implements OnInit {
   trackByUserId(_: number, e: LeaderboardEntry): string {
     return e.userId;
   }
-
-  // ── Internos ───────────────────────────────────────────────────────────
 
   private validate(): boolean {
     if (this.needsStore() && !this.storeId()) {
@@ -210,8 +224,12 @@ export class Reports implements OnInit {
 
   private extractMessage(err: unknown): string {
     if (err && typeof err === 'object' && 'error' in err) {
-      const body = (err as { error?: { error?: string; message?: string } }).error;
+      const body = (err as { error?: { error?: string; message?: string; details?: Record<string, string> } }).error;
       if (typeof body === 'string') return body;
+      if (body?.details) {
+        const first = Object.values(body.details)[0];
+        if (first) return first;
+      }
       if (body?.error) return body.error;
       if (body?.message) return body.message;
     }
