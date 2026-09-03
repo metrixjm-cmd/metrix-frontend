@@ -13,6 +13,9 @@
       <div class="rounded-xl border border-white/10 p-5 bg-white/[0.03]">
         <p class="text-sm text-white/50">Plan seleccionado</p>
         <p class="text-xl font-bold">{{ p.nombre }}</p>
+        @if (p.etiqueta) {
+          <p class="text-sm text-white/50 mt-1">{{ p.etiqueta }}</p>
+        }
       </div>
 
       @if (error()) {
@@ -22,17 +25,44 @@
       @if (step() === 'datos') {
         <form [formGroup]="empresaForm" (ngSubmit)="submitEmpresa()" class="space-y-4">
           <h2 class="font-semibold">Datos de tu empresa</h2>
-          <input formControlName="empresaNombre" placeholder="Nombre del restaurante / empresa"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          <input formControlName="contactoNombre" placeholder="Nombre de contacto"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          <input formControlName="contactoEmail" type="email" placeholder="Correo"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          <input formControlName="contactoTelefono" placeholder="Teléfono (opcional)"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          <input formControlName="sucursalesContratadas" type="number" min="1"
-                 placeholder="Sucursales a contratar"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Nombre del restaurante o empresa</span>
+            <input id="empresaNombre" formControlName="empresaNombre"
+                   placeholder="Ej. Taquería El Sol"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Nombre de la persona de contacto</span>
+            <input id="contactoNombre" formControlName="contactoNombre"
+                   placeholder="Ej. María López"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Correo de contacto</span>
+            <input id="contactoEmail" formControlName="contactoEmail" type="email"
+                   placeholder="Ej. maria@empresa.com"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Teléfono <span class="text-white/40">(opcional)</span></span>
+            <input id="contactoTelefono" formControlName="contactoTelefono"
+                   placeholder="Ej. 55 1234 5678"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Sucursales a contratar</span>
+            <input id="sucursalesContratadas" formControlName="sucursalesContratadas"
+                   type="number" [attr.min]="sucursalesMin()" [attr.max]="sucursalesMax()"
+                   placeholder="Cantidad de sucursales"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            <span class="block text-xs text-white/45">{{ sucursalesHint() }}</span>
+          </label>
+
           <button type="submit" [disabled]="empresaForm.invalid"
                   class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 font-medium disabled:opacity-40">
             Continuar al pago
@@ -44,18 +74,39 @@
         <form [formGroup]="paymentForm" (ngSubmit)="submitPago()" class="space-y-4">
           <h2 class="font-semibold">Pago simulado</h2>
           <p class="text-sm text-white/50">Pasarela en modo demo — cualquier tarjeta válida funciona. Termina en 0000 para simular rechazo.</p>
-          <input formControlName="cardholderName" placeholder="Titular de la tarjeta"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          <input formControlName="cardNumber" placeholder="Número de tarjeta"
-                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Nombre del titular de la tarjeta</span>
+            <input id="cardholderName" formControlName="cardholderName"
+                   placeholder="Como aparece en la tarjeta"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
+          <label class="block space-y-1.5">
+            <span class="text-sm text-white/70">Número de tarjeta</span>
+            <input id="cardNumber" formControlName="cardNumber"
+                   placeholder="16 dígitos, sin espacios"
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+          </label>
+
           <div class="grid grid-cols-3 gap-3">
-            <input formControlName="expiryMonth" placeholder="MM" maxlength="2"
-                   class="px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-            <input formControlName="expiryYear" placeholder="AAAA" maxlength="4"
-                   class="px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-            <input formControlName="cvv" placeholder="CVV" maxlength="4"
-                   class="px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            <label class="block space-y-1.5">
+              <span class="text-sm text-white/70">Mes de vencimiento</span>
+              <input id="expiryMonth" formControlName="expiryMonth" placeholder="MM" maxlength="2"
+                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            </label>
+            <label class="block space-y-1.5">
+              <span class="text-sm text-white/70">Año de vencimiento</span>
+              <input id="expiryYear" formControlName="expiryYear" placeholder="AAAA" maxlength="4"
+                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            </label>
+            <label class="block space-y-1.5">
+              <span class="text-sm text-white/70">CVV</span>
+              <input id="cvv" formControlName="cvv" placeholder="3 o 4 dígitos" maxlength="4"
+                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            </label>
           </div>
+
           <button type="submit" [disabled]="paymentForm.invalid || paying()"
                   class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-40">
             {{ paying() ? 'Procesando…' : 'Pagar ahora' }}
