@@ -113,6 +113,27 @@ export const CATALOGO_FUNCIONES: readonly string[] = [
   'Gerente de cuenta dedicado',
 ] as const;
 
+/** Clave comparable: minúsculas, sin acentos, singulariza variantes conocidas. */
+export function normalizeFuncionKey(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\bchecklists\b/g, 'checklist')
+    .replace(/\bnotificaciones\b/g, 'notificacion')
+    .replace(/[-–—]/g, '-')
+    .replace(/\s+/g, ' ')
+    .replace(/\s*-\s*/g, ' - ');
+}
+
+/** Mapea una etiqueta de paquete al nombre canónico del catálogo, si existe. */
+export function canonicalFuncionLabel(label: string): string {
+  const key = normalizeFuncionKey(label);
+  const found = CATALOGO_FUNCIONES.find(c => normalizeFuncionKey(c) === key);
+  return found ?? label.trim();
+}
+
 export function sufijoPrecio(model: LicensePricingModel, ciclo: CicloFacturacion): string {
   if (ciclo === 'ANUAL') return '/año';
   switch (model) {

@@ -4,9 +4,11 @@ import { RouterLink } from '@angular/router';
 import { LicensingService } from '../services/licensing.service';
 import {
   CATALOGO_FUNCIONES,
+  canonicalFuncionLabel,
   CicloFacturacion,
   LICENSE_ACCENTS,
   LicensePackage,
+  normalizeFuncionKey,
   sufijoPrecio,
 } from '../licensing.models';
 
@@ -26,10 +28,19 @@ export class LicenseList implements OnInit {
   readonly ciclo = signal<CicloFacturacion>('MENSUAL');
 
   readonly filasComparativa = computed(() => {
-    const extra = this.packages()
-      .flatMap(p => p.funciones.map(f => f.label))
-      .filter(label => !CATALOGO_FUNCIONES.includes(label as typeof CATALOGO_FUNCIONES[number]));
-    return [...CATALOGO_FUNCIONES, ...new Set(extra)];
+    const extras: string[] = [];
+    const extraKeys = new Set<string>();
+
+    for (const label of this.packages().flatMap(p => p.funciones.map(f => f.label))) {
+      const canonical = canonicalFuncionLabel(label);
+      if ((CATALOGO_FUNCIONES as readonly string[]).includes(canonical)) continue;
+      const key = normalizeFuncionKey(canonical);
+      if (extraKeys.has(key)) continue;
+      extraKeys.add(key);
+      extras.push(canonical);
+    }
+
+    return [...CATALOGO_FUNCIONES, ...extras];
   });
 
   readonly activos = computed(() => this.packages().filter(p => p.activo).length);
@@ -93,7 +104,12 @@ export class LicenseList implements OnInit {
   }
 
   incluye(p: LicensePackage, label: string): boolean {
-    return p.funciones.some(f => f.label === label && f.incluido);
+    const target = normalizeFuncionKey(label);
+    return p.funciones.some(f => f.incluido && normalizeFuncionKey(f.label) === target);
+  }
+
+  etiquetaFuncion(label: string): string {
+    return canonicalFuncionLabel(label);
   }
 
   funcionesIncluidas(p: LicensePackage) {
