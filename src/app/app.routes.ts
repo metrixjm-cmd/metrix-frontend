@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { platformAdminGuard } from './core/guards/platform-admin.guard';
 
 export const routes: Routes = [
   // ── Productos (público, sin layout) ─────────────────────────────────
@@ -74,13 +75,13 @@ export const routes: Routes = [
       },
       {
         path: 'licencias',
-        canActivate: [roleGuard('ADMIN')],
+        canActivate: [platformAdminGuard],
         loadChildren: () =>
           import('./features/licensing/licensing.routes').then(m => m.LICENSING_ROUTES),
       },
       {
         path: 'platform',
-        canActivate: [roleGuard('ADMIN')],
+        canActivate: [platformAdminGuard],
         loadChildren: () =>
           import('./features/platform/platform.routes').then(m => m.PLATFORM_ROUTES),
       },
