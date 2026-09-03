@@ -21,6 +21,9 @@ export interface AuthResponse {
   instanceId?:    string;
   /** null/omitido = sin restricción; [] = plan sin módulos premium */
   licensedFeatures?: string[] | null;
+  onTrial?: boolean;
+  trialEndsAt?: string | null;
+  orderId?: string | null;
 }
 
 /**
@@ -38,6 +41,9 @@ export interface CurrentUser {
   databaseName?: string;
   instanceId?:    string;
   licensedFeatures?: string[] | null;
+  onTrial?: boolean;
+  trialEndsAt?: string | null;
+  orderId?: string | null;
 }
 
 /** Roles disponibles en METRIX (deben coincidir con el enum Role del backend). */

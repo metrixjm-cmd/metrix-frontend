@@ -37,6 +37,10 @@ export class ProductosService {
     return this.http.post<ProductOrder>(`${this.base}/orders/${orderId}/pay`, body);
   }
 
+  startTrial(orderId: string): Observable<ProductOrder> {
+    return this.http.post<ProductOrder>(`${this.base}/orders/${orderId}/trial`, {});
+  }
+
   provision(orderId: string, body: ProvisionMetrixRequest): Observable<ProvisionMetrixResponse> {
     return this.http.post<ProvisionMetrixResponse>(`${this.base}/orders/${orderId}/provision`, body);
   }

@@ -53,11 +53,20 @@
                       [class]="i.status === 'ACTIVE' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'">
                   {{ i.status === 'ACTIVE' ? 'Activo' : 'Suspendido' }}
                 </span>
+                @if (i.onTrial && i.status === 'ACTIVE') {
+                  <p class="text-[11px] text-emerald-200/80 mt-1">En prueba</p>
+                }
+                @if (i.suspensionReason === 'TRIAL_EXPIRED') {
+                  <p class="text-[11px] text-amber-200/80 mt-1">Prueba vencida</p>
+                }
               </td>
               <td class="px-4 py-3 text-white/60 text-xs space-y-0.5">
                 <p>Alta: {{ i.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
                 @if (i.paidAt) {
                   <p>Pago: {{ i.paidAt | date:'dd/MM/yyyy' }}</p>
+                }
+                @if (i.trialEndsAt && i.onTrial) {
+                  <p>Prueba hasta: {{ i.trialEndsAt | date:'dd/MM/yyyy' }}</p>
                 }
               </td>
               <td class="px-4 py-3">

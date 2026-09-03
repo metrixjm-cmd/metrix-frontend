@@ -35,6 +35,8 @@ export interface LicensePackage {
 
   soporte:   string;
   funciones: LicenseFeature[];
+  /** Días de prueba; 0 = sin prueba. Default 7. */
+  diasPrueba?: number;
 
   accent:    LicenseAccent;
   destacado: boolean;
