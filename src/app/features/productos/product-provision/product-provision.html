@@ -16,14 +16,35 @@
       }
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4 rounded-xl border border-white/10 p-6 bg-white/[0.03]">
-        <input formControlName="numeroUsuario" placeholder="#Usuario (login)"
-               class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 uppercase" />
-        <input formControlName="adminNombre" placeholder="Nombre del administrador (opcional)"
-               class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-        <input formControlName="password" type="password" placeholder="Contraseña"
-               class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-        <input formControlName="confirmPassword" type="password" placeholder="Confirmar contraseña"
-               class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+        <label class="block space-y-1.5">
+          <span class="text-sm text-white/70">Usuario de acceso (#Usuario)</span>
+          <input id="numeroUsuario" formControlName="numeroUsuario"
+                 placeholder="Ej. ADMINRESTO"
+                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 uppercase" />
+          <span class="block text-xs text-white/45">Con este usuario iniciarás sesión en METRIX.</span>
+        </label>
+
+        <label class="block space-y-1.5">
+          <span class="text-sm text-white/70">Nombre del administrador <span class="text-white/40">(opcional)</span></span>
+          <input id="adminNombre" formControlName="adminNombre"
+                 placeholder="Ej. María López"
+                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+        </label>
+
+        <label class="block space-y-1.5">
+          <span class="text-sm text-white/70">Contraseña</span>
+          <input id="password" formControlName="password" type="password"
+                 placeholder="Mínimo 8 caracteres"
+                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+        </label>
+
+        <label class="block space-y-1.5">
+          <span class="text-sm text-white/70">Confirmar contraseña</span>
+          <input id="confirmPassword" formControlName="confirmPassword" type="password"
+                 placeholder="Repite la contraseña"
+                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+        </label>
+
         @if (form.hasError('passwordMismatch') && form.get('confirmPassword')?.touched) {
           <p class="text-xs text-red-400">Las contraseñas no coinciden.</p>
         }

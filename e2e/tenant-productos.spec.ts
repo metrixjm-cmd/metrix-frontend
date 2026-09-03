@@ -23,19 +23,19 @@ test.describe('Tenant — productos → provision', () => {
     await baseCard.getByRole('link', { name: /Elegir plan/i }).click();
     await expect(page).toHaveURL(/\/productos\/checkout\/base/);
 
-    await page.getByPlaceholder('Nombre del restaurante / empresa').fill(empresa);
-    await page.getByPlaceholder('Nombre de contacto').fill('Contacto E2E');
-    await page.getByPlaceholder('Correo').fill(`e2e${suffix}@metrix.test`);
-    await page.getByPlaceholder('Sucursales a contratar').fill('1');
+    await page.getByLabel(/Nombre del restaurante o empresa/i).fill(empresa);
+    await page.getByLabel(/Nombre de la persona de contacto/i).fill('Contacto E2E');
+    await page.getByLabel(/Correo de contacto/i).fill(`e2e${suffix}@metrix.test`);
+    await page.getByLabel(/Sucursales a contratar/i).fill('1');
     await page.getByRole('button', { name: /Continuar$/i }).click();
     await page.getByRole('button', { name: /Empezar prueba de 7 días/i }).click();
 
     await expect(page).toHaveURL(/\/productos\/provision\//, { timeout: 20_000 });
 
-    await page.getByPlaceholder('#Usuario (login)').fill(adminUser);
-    await page.getByPlaceholder('Nombre del administrador (opcional)').fill('Admin E2E');
-    await page.getByPlaceholder('Contraseña', { exact: true }).fill(password);
-    await page.getByPlaceholder('Confirmar contraseña').fill(password);
+    await page.getByLabel(/Usuario de acceso/i).fill(adminUser);
+    await page.getByLabel(/Nombre del administrador/i).fill('Admin E2E');
+    await page.getByLabel(/^Contraseña$/i).fill(password);
+    await page.getByLabel(/Confirmar contraseña/i).fill(password);
     await page.getByRole('button', { name: /Crear mi METRIX/i }).click();
 
     await expect(page.getByText(/Redirigiendo al login/i)).toBeVisible({ timeout: 30_000 });
