@@ -17,4 +17,7 @@ export interface MetrixInstance {
   sucursalesContratadas?: number | null;
   featureCodes?:        string[];
   paidAt?:              string | null;
+  onTrial?:             boolean;
+  trialEndsAt?:         string | null;
+  suspensionReason?:    'MANUAL' | 'TRIAL_EXPIRED' | null;
 }

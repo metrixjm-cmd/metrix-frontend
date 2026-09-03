@@ -105,6 +105,9 @@
                 Implementación: {{ formatPrecio(p.precioImplementacion, p.moneda) }} (pago único)
               </p>
             }
+            <p class="mt-1 text-[11px] text-emerald-300/80">
+              Prueba: {{ p.diasPrueba ?? 7 }} días
+            </p>
 
             @if (ciclo() === 'ANUAL' && ahorroAnual(p) > 0) {
               <p class="mt-1 text-[11px] font-medium text-emerald-300">

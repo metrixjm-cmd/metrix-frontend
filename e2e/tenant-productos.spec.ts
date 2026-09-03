@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { apiLogin, apiRequest, uiLogin, USERS } from './helpers/auth';
 
 /**
- * Flujo SaaS: /productos → checkout → pago → provision → login tenant vs Admin 0.
+ * Flujo SaaS: /productos → checkout → prueba 7 días → provision → login tenant vs Admin 0.
  * Requiere backend en :8080 y Mongo.
  */
 test.describe('Tenant — productos → provision', () => {
@@ -27,14 +27,8 @@ test.describe('Tenant — productos → provision', () => {
     await page.getByPlaceholder('Nombre de contacto').fill('Contacto E2E');
     await page.getByPlaceholder('Correo').fill(`e2e${suffix}@metrix.test`);
     await page.getByPlaceholder('Sucursales a contratar').fill('1');
-    await page.getByRole('button', { name: /Continuar al pago/i }).click();
-
-    await page.getByPlaceholder('Titular de la tarjeta').fill('E2E Card');
-    await page.getByPlaceholder('Número de tarjeta').fill('4242424242424242');
-    await page.getByPlaceholder('MM').fill('12');
-    await page.getByPlaceholder('AAAA').fill('2029');
-    await page.getByPlaceholder('CVV').fill('123');
-    await page.getByRole('button', { name: /Pagar ahora/i }).click();
+    await page.getByRole('button', { name: /Continuar$/i }).click();
+    await page.getByRole('button', { name: /Empezar prueba de 7 días/i }).click();
 
     await expect(page).toHaveURL(/\/productos\/provision\//, { timeout: 20_000 });
 
@@ -49,6 +43,7 @@ test.describe('Tenant — productos → provision', () => {
 
     await uiLogin(page, { numeroUsuario: adminUser, password });
     await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.getByText(/Periodo de prueba/i)).toBeVisible();
 
     const sidebar = page.locator('aside, [class*="sidebar"]').first();
     // Tenant ADMIN no ve paneles de plataforma

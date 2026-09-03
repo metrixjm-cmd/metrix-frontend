@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
@@ -19,10 +19,14 @@ export class ProductCheckout implements OnInit {
 
   readonly loading = signal(true);
   readonly paying = signal(false);
+  readonly startingTrial = signal(false);
   readonly error = signal('');
   readonly pkg = signal<LicensePackage | null>(null);
   readonly orderId = signal<string | null>(null);
-  readonly step = signal<'datos' | 'pago'>('datos');
+  readonly step = signal<'datos' | 'elige' | 'pago'>('datos');
+
+  readonly trialDays = computed(() => this.pkg()?.diasPrueba ?? 7);
+  readonly hasTrial = computed(() => this.trialDays() > 0);
 
   readonly empresaForm = this.fb.group({
     empresaNombre:         ['', Validators.required],
@@ -75,12 +79,32 @@ export class ProductCheckout implements OnInit {
     }).subscribe({
       next: order => {
         this.orderId.set(order.id);
-        this.step.set('pago');
+        this.step.set(this.hasTrial() ? 'elige' : 'pago');
       },
       error: err => {
         this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo crear la orden.');
       },
     });
+  }
+
+  startTrial(): void {
+    if (!this.orderId()) return;
+    this.startingTrial.set(true);
+    this.error.set('');
+    this.productosSvc.startTrial(this.orderId()!).subscribe({
+      next: () => {
+        void this.router.navigate(['/productos/provision', this.orderId()]);
+      },
+      error: err => {
+        this.startingTrial.set(false);
+        this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo iniciar la prueba.');
+      },
+    });
+  }
+
+  goToPago(): void {
+    this.error.set('');
+    this.step.set('pago');
   }
 
   submitPago(): void {

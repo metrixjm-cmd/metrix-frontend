@@ -57,6 +57,9 @@ export class AuthService {
             databaseName:  response.databaseName,
             instanceId:    response.instanceId,
             licensedFeatures: response.licensedFeatures,
+            onTrial:       response.onTrial,
+            trialEndsAt:   response.trialEndsAt,
+            orderId:       response.orderId,
           });
         }),
       );
@@ -118,6 +121,21 @@ export class AuthService {
     return codes.some(c => this.hasLicensedFeature(c));
   }
 
+  clearTrialState(): void {
+    const user = this._user();
+    if (!user) return;
+    const next = { ...user, onTrial: false, trialEndsAt: null };
+    this._user.set(next);
+    localStorage.setItem(USER_KEY, JSON.stringify(next));
+  }
+
+  trialDaysLeft(): number | null {
+    const user = this._user();
+    if (!user?.onTrial || !user.trialEndsAt) return null;
+    const ms = new Date(user.trialEndsAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(ms / 86_400_000));
+  }
+
   // ── Persistencia ─────────────────────────────────────────────────────
 
   private persistSession(response: AuthResponse): void {
@@ -133,6 +151,9 @@ export class AuthService {
       databaseName:  response.databaseName,
       instanceId:    response.instanceId,
       licensedFeatures: response.licensedFeatures,
+      onTrial:       response.onTrial,
+      trialEndsAt:   response.trialEndsAt,
+      orderId:       response.orderId,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
