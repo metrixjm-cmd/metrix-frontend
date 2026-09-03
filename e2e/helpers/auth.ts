@@ -10,6 +10,10 @@ export interface LoginResult {
   storeName: string;
   turno: string;
   roles: string[];
+  platformAdmin?: boolean;
+  databaseName?: string;
+  instanceId?: string;
+  licensedFeatures?: string[] | null;
 }
 
 /** Usuarios de prueba — coinciden con los seed del proyecto */
@@ -54,6 +58,10 @@ export async function injectSession(page: Page, user: { numeroUsuario: string; p
       storeName:     session.storeName,
       turno:         session.turno,
       roles:         session.roles,
+      platformAdmin: session.platformAdmin,
+      databaseName:  session.databaseName,
+      instanceId:    session.instanceId,
+      licensedFeatures: session.licensedFeatures,
     }));
   }, data);
   return data;
