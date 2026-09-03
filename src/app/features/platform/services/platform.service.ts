@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
-import { MetrixInstance } from '../platform.models';
+import { MetrixInstance, MetrixInstanceStatus } from '../platform.models';
 
 @Injectable({ providedIn: 'root' })
 export class PlatformService {
@@ -12,5 +12,9 @@ export class PlatformService {
 
   listInstances(): Observable<MetrixInstance[]> {
     return this.http.get<MetrixInstance[]>(`${this.base}/instances`);
+  }
+
+  updateStatus(id: string, status: MetrixInstanceStatus): Observable<MetrixInstance> {
+    return this.http.patch<MetrixInstance>(`${this.base}/instances/${id}/status`, { status });
   }
 }

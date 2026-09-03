@@ -1,11 +1,14 @@
 <div class="p-4 sm:p-6 space-y-5">
   <div>
     <h1 class="text-xl sm:text-2xl font-bold text-white">Clientes METRIX</h1>
-    <p class="text-sm text-white/50 mt-0.5">Admin 0 — restaurantes con instancia propia y administrador secundario</p>
+    <p class="text-sm text-white/50 mt-0.5">Admin 0 — instancias provisionadas (no incluye el demo operativo)</p>
   </div>
 
   @if (error()) {
     <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-sm">{{ error() }}</div>
+  }
+  @if (actionError()) {
+    <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-sm">{{ actionError() }}</div>
   }
 
   @if (loading()) {
@@ -13,6 +16,7 @@
   } @else if (instances().length === 0) {
     <div class="rounded-xl border border-white/10 p-8 text-center text-white/50">
       Aún no hay clientes provisionados desde /productos.
+      El demo local <code class="text-white/70">metrix_db</code> no aparece aquí.
     </div>
   } @else {
     <div class="overflow-x-auto rounded-xl border border-white/10">
@@ -20,10 +24,11 @@
         <thead class="bg-white/[0.04] text-white/50">
           <tr>
             <th class="text-left px-4 py-3 font-medium">Empresa</th>
-            <th class="text-left px-4 py-3 font-medium">Plan</th>
+            <th class="text-left px-4 py-3 font-medium">Plan / límites</th>
             <th class="text-left px-4 py-3 font-medium">Admin</th>
             <th class="text-left px-4 py-3 font-medium">Estado</th>
-            <th class="text-left px-4 py-3 font-medium">Alta</th>
+            <th class="text-left px-4 py-3 font-medium">Fechas</th>
+            <th class="text-left px-4 py-3 font-medium">Acción</th>
           </tr>
         </thead>
         <tbody>
@@ -32,8 +37,13 @@
               <td class="px-4 py-3">
                 <p class="font-medium text-white">{{ i.empresaNombre }}</p>
                 <p class="text-xs text-white/40">{{ i.contactoEmail }}</p>
+                <p class="text-[11px] text-white/30 mt-0.5 font-mono">{{ i.databaseName }}</p>
               </td>
-              <td class="px-4 py-3 text-white/80">{{ i.licensePackageNombre }}</td>
+              <td class="px-4 py-3">
+                <p class="text-white/90">{{ i.licensePackageNombre }}</p>
+                <p class="text-xs text-white/45 mt-0.5">{{ limitsLabel(i) }}</p>
+                <p class="text-[11px] text-white/35 mt-0.5">{{ modulesLabel(i) }}</p>
+              </td>
               <td class="px-4 py-3">
                 <p class="text-white">{{ i.adminNumeroUsuario }}</p>
                 <p class="text-xs text-white/40">{{ i.adminNombre }}</p>
@@ -44,7 +54,23 @@
                   {{ i.status === 'ACTIVE' ? 'Activo' : 'Suspendido' }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-white/60">{{ i.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-4 py-3 text-white/60 text-xs space-y-0.5">
+                <p>Alta: {{ i.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                @if (i.paidAt) {
+                  <p>Pago: {{ i.paidAt | date:'dd/MM/yyyy' }}</p>
+                }
+              </td>
+              <td class="px-4 py-3">
+                <button type="button"
+                        class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50"
+                        [class]="i.status === 'ACTIVE'
+                          ? 'border-amber-400/40 text-amber-200 hover:bg-amber-500/10'
+                          : 'border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/10'"
+                        [disabled]="busyId() === i.id"
+                        (click)="toggleStatus(i)">
+                  {{ busyId() === i.id ? '…' : (i.status === 'ACTIVE' ? 'Suspender' : 'Reactivar') }}
+                </button>
+              </td>
             </tr>
           }
         </tbody>
