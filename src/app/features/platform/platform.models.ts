@@ -12,4 +12,9 @@ export interface MetrixInstance {
   contactoEmail:        string;
   status:               MetrixInstanceStatus;
   createdAt:            string;
+  maxUsuarios?:         number | null;
+  maxSucursales?:       number | null;
+  sucursalesContratadas?: number | null;
+  featureCodes?:        string[];
+  paidAt?:              string | null;
 }
