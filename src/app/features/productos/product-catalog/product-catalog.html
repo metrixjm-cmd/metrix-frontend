@@ -14,7 +14,7 @@
 
   <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
     <p class="text-white/60 max-w-2xl">
-      Elige el plan METRIX para tu operación. Contratación mensual, implementación única y tu propia instancia aislada.
+      Elige el plan METRIX para tu operación. Cada plan incluye 7 días de prueba; el pago es simulado hasta conectar la pasarela real.
     </p>
 
     @if (error()) {
@@ -40,6 +40,9 @@
               <h2 class="text-lg font-bold">{{ p.nombre }}</h2>
               <p class="text-sm text-white/60">{{ p.descripcion }}</p>
               <p class="text-2xl font-bold" [class]="accent(p).price">{{ precioLabel(p) }}</p>
+              @if ((p.diasPrueba ?? 7) > 0) {
+                <p class="text-xs font-medium text-emerald-300">{{ p.diasPrueba ?? 7 }} días de prueba</p>
+              }
               @if (p.precioImplementacion > 0) {
                 <p class="text-xs text-white/45">Implementación única: ${{ p.precioImplementacion.toLocaleString('es-MX') }}</p>
               }

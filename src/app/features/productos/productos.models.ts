@@ -1,6 +1,6 @@
 import type { LicenseAccent, LicensePackage, LicensePricingModel } from '../licensing/licensing.models';
 
-export type ProductOrderStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'PAID' | 'PROVISIONED' | 'CANCELLED';
+export type ProductOrderStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'TRIAL' | 'PAID' | 'PROVISIONED' | 'CANCELLED';
 
 export interface ProductOrderPackageSnapshot {
   packageId:            string;
@@ -12,6 +12,7 @@ export interface ProductOrderPackageSnapshot {
   moneda:               string;
   maxUsuarios:          number | null;
   maxSucursales:        number | null;
+  diasPrueba?:          number;
   accent:               LicenseAccent;
 }
 
@@ -30,6 +31,8 @@ export interface ProductOrder {
   moneda:                string;
   paymentReference:      string | null;
   paidAt:                string | null;
+  onTrial?:              boolean;
+  trialEndsAt?:          string | null;
   instanceId:            string | null;
   createdAt:             string;
 }

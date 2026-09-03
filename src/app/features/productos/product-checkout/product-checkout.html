@@ -16,6 +16,9 @@
         @if (p.etiqueta) {
           <p class="text-sm text-white/50 mt-1">{{ p.etiqueta }}</p>
         }
+        @if (hasTrial()) {
+          <p class="text-sm text-emerald-300 mt-1">Incluye {{ trialDays() }} días de prueba sin cobro.</p>
+        }
       </div>
 
       @if (error()) {
@@ -65,9 +68,26 @@
 
           <button type="submit" [disabled]="empresaForm.invalid"
                   class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 font-medium disabled:opacity-40">
-            Continuar al pago
+            {{ hasTrial() ? 'Continuar' : 'Continuar al pago' }}
           </button>
         </form>
+      }
+
+      @if (step() === 'elige') {
+        <div class="space-y-4 rounded-xl border border-white/10 p-5 bg-white/[0.03]">
+          <h2 class="font-semibold">Periodo de prueba</h2>
+          <p class="text-sm text-white/60">
+            Empieza con {{ trialDays() }} días gratis. El pago es simulado y solo se usa si quieres activar el plan ahora o cuando termine la prueba.
+          </p>
+          <button type="button" [disabled]="startingTrial()" (click)="startTrial()"
+                  class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 font-medium disabled:opacity-40">
+            {{ startingTrial() ? 'Activando…' : 'Empezar prueba de ' + trialDays() + ' días' }}
+          </button>
+          <button type="button" (click)="goToPago()"
+                  class="w-full py-3 rounded-lg border border-white/15 hover:bg-white/5 font-medium">
+            Pagar ahora (simulado) y saltar la prueba
+          </button>
+        </div>
       }
 
       @if (step() === 'pago') {
@@ -111,6 +131,11 @@
                   class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-40">
             {{ paying() ? 'Procesando…' : 'Pagar ahora' }}
           </button>
+          @if (hasTrial() && orderId()) {
+            <button type="button" (click)="step.set('elige')" class="w-full text-sm text-white/50 hover:text-white">
+              Volver a la prueba
+            </button>
+          }
         </form>
       }
     }

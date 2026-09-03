@@ -210,6 +210,15 @@ export class AppLayout implements OnInit, OnDestroy {
     return shift || '-';
   });
 
+  readonly trialBanner = computed(() => {
+    if (this.auth.isPlatformAdmin()) return null;
+    const user = this.auth.currentUser();
+    if (!user?.onTrial || !user.trialEndsAt || !user.orderId) return null;
+    const days = this.auth.trialDaysLeft();
+    if (days == null) return null;
+    return { days, orderId: user.orderId };
+  });
+
   ngOnInit(): void {
     const token = this.auth.getToken();
     if (token) this.notifSvc.connect(token);
