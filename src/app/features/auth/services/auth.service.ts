@@ -56,6 +56,7 @@ export class AuthService {
             platformAdmin: response.platformAdmin,
             databaseName:  response.databaseName,
             instanceId:    response.instanceId,
+            licensedFeatures: response.licensedFeatures,
           });
         }),
       );
@@ -100,6 +101,23 @@ export class AuthService {
     return this._user()?.platformAdmin === true;
   }
 
+  /** Demo legacy / Admin 0: sin lista de features = sin gate. */
+  isUnrestrictedLicense(): boolean {
+    if (this.isPlatformAdmin()) return true;
+    return this._user()?.licensedFeatures == null;
+  }
+
+  hasLicensedFeature(code: string): boolean {
+    if (this.isUnrestrictedLicense()) return true;
+    const features = this._user()?.licensedFeatures ?? [];
+    return features.some(f => f.toUpperCase() === code.toUpperCase());
+  }
+
+  hasAnyLicensedFeature(...codes: string[]): boolean {
+    if (codes.length === 0) return true;
+    return codes.some(c => this.hasLicensedFeature(c));
+  }
+
   // ── Persistencia ─────────────────────────────────────────────────────
 
   private persistSession(response: AuthResponse): void {
@@ -114,6 +132,7 @@ export class AuthService {
       platformAdmin: response.platformAdmin,
       databaseName:  response.databaseName,
       instanceId:    response.instanceId,
+      licensedFeatures: response.licensedFeatures,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
