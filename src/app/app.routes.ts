@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { platformAdminGuard } from './core/guards/platform-admin.guard';
+import { licenseGuard } from './core/guards/license.guard';
 
 export const routes: Routes = [
   // ── Productos (público, sin layout) ─────────────────────────────────
@@ -48,17 +50,19 @@ export const routes: Routes = [
       },
       {
         path: 'banco-info',
-        canActivate: [roleGuard('ADMIN', 'GERENTE')],
+        canActivate: [roleGuard('ADMIN', 'GERENTE'), licenseGuard('TRAININGS', 'EXAMS')],
         loadChildren: () =>
           import('./features/rh/rh.routes').then(m => m.RH_ROUTES),
       },
       {
         path: 'training',
+        canActivate: [licenseGuard('TRAININGS')],
         loadChildren: () =>
           import('./features/training/training.routes').then(m => m.TRAINING_ROUTES),
       },
       {
         path: 'gamification',
+        canActivate: [licenseGuard('GAMIFICATION')],
         loadChildren: () =>
           import('./features/gamification/gamification.routes').then(m => m.GAMIFICATION_ROUTES),
       },
@@ -69,18 +73,19 @@ export const routes: Routes = [
       },
       {
         path: 'trainer',
+        canActivate: [licenseGuard('EXAMS')],
         loadChildren: () =>
           import('./features/trainer/trainer.routes').then(m => m.TRAINER_ROUTES),
       },
       {
         path: 'licencias',
-        canActivate: [roleGuard('ADMIN')],
+        canActivate: [platformAdminGuard],
         loadChildren: () =>
           import('./features/licensing/licensing.routes').then(m => m.LICENSING_ROUTES),
       },
       {
         path: 'platform',
-        canActivate: [roleGuard('ADMIN')],
+        canActivate: [platformAdminGuard],
         loadChildren: () =>
           import('./features/platform/platform.routes').then(m => m.PLATFORM_ROUTES),
       },

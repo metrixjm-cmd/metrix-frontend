@@ -19,6 +19,8 @@ export interface AuthResponse {
   platformAdmin?: boolean;
   databaseName?: string;
   instanceId?:    string;
+  /** null/omitido = sin restricción; [] = plan sin módulos premium */
+  licensedFeatures?: string[] | null;
 }
 
 /**
@@ -35,6 +37,7 @@ export interface CurrentUser {
   platformAdmin?: boolean;
   databaseName?: string;
   instanceId?:    string;
+  licensedFeatures?: string[] | null;
 }
 
 /** Roles disponibles en METRIX (deben coincidir con el enum Role del backend). */
