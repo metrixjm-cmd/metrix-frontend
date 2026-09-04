@@ -3,9 +3,20 @@ import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { platformAdminGuard } from './core/guards/platform-admin.guard';
 import { licenseGuard } from './core/guards/license.guard';
+import { homeRedirectGuard } from './core/guards/home-redirect.guard';
 
 export const routes: Routes = [
-  // ── Productos (público, sin layout) ─────────────────────────────────
+  // ── Home: sin sesión → /productos; con sesión → /dashboard ──────────
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [homeRedirectGuard],
+    // Componente vacío: el guard siempre redirige con UrlTree.
+    loadComponent: () =>
+      import('./core/guards/home-redirect.placeholder').then(m => m.HomeRedirectPlaceholder),
+  },
+
+  // ── Productos (público, sin layout ni login) ────────────────────────
   {
     path: 'productos',
     loadChildren: () =>
@@ -98,6 +109,6 @@ export const routes: Routes = [
     ],
   },
 
-  // ── Fallback ─────────────────────────────────────────────────────────
-  { path: '**', redirectTo: 'auth/login' },
+  // ── Fallback: rutas desconocidas → catálogo público ─────────────────
+  { path: '**', redirectTo: 'productos' },
 ];
