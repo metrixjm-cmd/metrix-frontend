@@ -70,15 +70,23 @@
                 }
               </td>
               <td class="px-4 py-3">
-                <button type="button"
-                        class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50"
-                        [class]="i.status === 'ACTIVE'
-                          ? 'border-amber-400/40 text-amber-200 hover:bg-amber-500/10'
-                          : 'border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/10'"
-                        [disabled]="busyId() === i.id"
-                        (click)="toggleStatus(i)">
-                  {{ busyId() === i.id ? '…' : (i.status === 'ACTIVE' ? 'Suspender' : 'Reactivar') }}
-                </button>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button"
+                          class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50"
+                          [class]="i.status === 'ACTIVE'
+                            ? 'border-amber-400/40 text-amber-200 hover:bg-amber-500/10'
+                            : 'border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/10'"
+                          [disabled]="busyId() === i.id"
+                          (click)="toggleStatus(i)">
+                    {{ busyId() === i.id ? '…' : (i.status === 'ACTIVE' ? 'Suspender' : 'Reactivar') }}
+                  </button>
+                  <button type="button"
+                          class="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-400/40 text-red-300 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                          [disabled]="busyId() === i.id"
+                          (click)="deleteInstance(i)">
+                    Eliminar
+                  </button>
+                </div>
               </td>
             </tr>
           }
