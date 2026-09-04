@@ -17,4 +17,8 @@ export class PlatformService {
   updateStatus(id: string, status: MetrixInstanceStatus): Observable<MetrixInstance> {
     return this.http.patch<MetrixInstance>(`${this.base}/instances/${id}/status`, { status });
   }
+
+  deleteInstance(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/instances/${id}`);
+  }
 }
