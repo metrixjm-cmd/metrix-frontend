@@ -63,6 +63,29 @@ export class InstanceList implements OnInit {
     });
   }
 
+  deleteInstance(instance: MetrixInstance): void {
+    const ok = confirm(
+      `¿Eliminar permanentemente "${instance.empresaNombre}"?\n\n` +
+        'Se borrará la instancia, el acceso de login y la base de datos del cliente. Esta acción no se puede deshacer.',
+    );
+    if (!ok) return;
+
+    this.busyId.set(instance.id);
+    this.actionError.set('');
+    this.platformSvc.deleteInstance(instance.id).subscribe({
+      next: () => {
+        this.instances.update(list => list.filter(i => i.id !== instance.id));
+        this.busyId.set(null);
+      },
+      error: err => {
+        this.actionError.set(
+          err?.error?.error ?? err?.error?.message ?? 'No se pudo eliminar la instancia.',
+        );
+        this.busyId.set(null);
+      },
+    });
+  }
+
   limitsLabel(i: MetrixInstance): string {
     const users = i.maxUsuarios != null ? `${i.maxUsuarios} usuarios` : 'usuarios n/d';
     const branches = i.sucursalesContratadas != null

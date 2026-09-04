@@ -25,6 +25,8 @@ export class ProductProvision {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly success = signal('');
+  readonly showPassword = signal(false);
+  readonly showConfirmPassword = signal(false);
   readonly orderId = this.route.snapshot.paramMap.get('orderId') ?? '';
 
   readonly form = this.fb.group({
@@ -33,6 +35,14 @@ export class ProductProvision {
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
   }, { validators: passwordsMatch });
+
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
+
+  toggleConfirmPassword(): void {
+    this.showConfirmPassword.update(v => !v);
+  }
 
   submit(): void {
     if (this.form.invalid || !this.orderId) return;
