@@ -10,8 +10,10 @@ import { AuthService } from '../../features/auth/services/auth.service';
  * Esto cubre automáticamente todos los endpoints protegidos del backend METRIX.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // No adjuntar token a rutas de autenticación (evita 403 por token expirado)
-  if (req.url.includes('/auth/')) {
+  // No adjuntar token a login ni al catálogo/compra públicos:
+  // un JWT viejo en localStorage (común en Firefox) hace fallar /productos/catalog
+  // aunque el endpoint sea permitAll.
+  if (req.url.includes('/auth/') || req.url.includes('/productos/')) {
     return next(req);
   }
 
