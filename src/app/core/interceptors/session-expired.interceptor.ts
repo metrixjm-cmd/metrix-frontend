@@ -24,6 +24,7 @@ export const sessionExpiredInterceptor: HttpInterceptorFn = (req, next) => {
         err instanceof HttpErrorResponse &&
         err.status === 401 &&
         !req.url.includes('/auth/') &&
+        !req.url.includes('/productos/') &&
         authService.isAuthenticated()
       ) {
         authService.logout({ sessionExpired: true });
