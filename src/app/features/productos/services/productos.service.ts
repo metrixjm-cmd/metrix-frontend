@@ -38,6 +38,11 @@ export class ProductosService {
     return this.http.post<CheckoutSession>(`${this.base}/orders/${orderId}/checkout`, {});
   }
 
+  syncPayment(orderId: string, paymentId?: string): Observable<ProductOrder> {
+    const q = paymentId ? `?paymentId=${encodeURIComponent(paymentId)}` : '';
+    return this.http.post<ProductOrder>(`${this.base}/orders/${orderId}/sync-payment${q}`, {});
+  }
+
   payOrder(orderId: string, body: SimulatedPaymentRequest): Observable<ProductOrder> {
     return this.http.post<ProductOrder>(`${this.base}/orders/${orderId}/pay`, body);
   }
