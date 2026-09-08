@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
+import { licenseGuard } from '../../core/guards/license.guard';
 
 export const RH_ROUTES: Routes = [
-  // ── Hub "Banco de Información" ──────────────────────────────────────
+  // ── Hub "Banco de Datos" (núcleo — sin gate de licencia) ─────────────
   {
     path: '',
     loadComponent: () => import('./banco-info/banco-info').then(m => m.BancoInfo),
@@ -37,37 +38,42 @@ export const RH_ROUTES: Routes = [
     loadComponent: () => import('./task-template-list/task-template-list').then(m => m.TaskTemplateList),
   },
 
-  // ── Plantillas de capacitación ───────────────────────────────────────
+  // ── Plantillas de capacitación (TRAININGS) ───────────────────────────
   {
     path: 'plantillas',
+    canActivate: [licenseGuard('TRAININGS')],
     loadComponent: () =>
       import('./template-list/template-list').then(m => m.TemplateList),
   },
 
-  // ── Materiales de capacitación ───────────────────────────────────────
+  // ── Materiales de capacitación (TRAININGS) ───────────────────────────
   {
     path: 'materiales',
+    canActivate: [licenseGuard('TRAININGS')],
     loadComponent: () =>
       import('./material-list/material-list').then(m => m.MaterialList),
   },
 
-  // ── Bitácora de exámenes ──────────────────────────────────────────────
+  // ── Bitácora de exámenes (EXAMS) ─────────────────────────────────────
   {
     path: 'bitacora-examenes',
+    canActivate: [licenseGuard('EXAMS')],
     loadComponent: () =>
       import('./bitacora-examenes/bitacora-examenes').then(m => m.BitacoraExamenes),
   },
 
-  // ── Banco de preguntas ───────────────────────────────────────────────
+  // ── Banco de preguntas (EXAMS) ───────────────────────────────────────
   {
     path: 'banco-preguntas',
+    canActivate: [licenseGuard('EXAMS')],
     loadComponent: () =>
       import('./banco-preguntas/banco-preguntas').then(m => m.BancoPreguntasComponent),
   },
 
-  // ── Plantillas de examen ─────────────────────────────────────────────
+  // ── Plantillas de examen (EXAMS) ─────────────────────────────────────
   {
     path: 'plantillas-examen',
+    canActivate: [licenseGuard('EXAMS')],
     loadComponent: () =>
       import('./plantillas-examen/plantillas-examen').then(m => m.PlantillasExamenComponent),
   },

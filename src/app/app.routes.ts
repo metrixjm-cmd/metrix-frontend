@@ -61,7 +61,7 @@ export const routes: Routes = [
       },
       {
         path: 'banco-info',
-        canActivate: [roleGuard('ADMIN', 'GERENTE'), licenseGuard('TRAININGS', 'EXAMS')],
+        canActivate: [roleGuard('ADMIN', 'GERENTE')],
         loadChildren: () =>
           import('./features/rh/rh.routes').then(m => m.RH_ROUTES),
       },
