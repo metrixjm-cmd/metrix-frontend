@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { environment } from '../../../../environments/environment';
 import { ProductOrder } from '../productos.models';
 import { ProductosService } from '../services/productos.service';
 import { AuthService } from '../../auth/services/auth.service';
@@ -23,6 +24,7 @@ export class ProductPay implements OnInit {
   readonly paying = signal(false);
   readonly error = signal('');
   readonly order = signal<ProductOrder | null>(null);
+  readonly useCardForm = !environment.production;
 
   readonly paymentForm = this.fb.group({
     cardholderName: ['', Validators.required],
@@ -42,6 +44,13 @@ export class ProductPay implements OnInit {
       next: order => {
         this.order.set(order);
         this.loading.set(false);
+        if (order.paymentStatus === 'APPROVED' || order.status === 'PAID') {
+          this.afterPaid(order);
+          return;
+        }
+        if (!this.useCardForm) {
+          this.redirectToMercadoPago(order.id);
+        }
       },
       error: () => {
         this.error.set('Orden no encontrada.');
@@ -55,19 +64,43 @@ export class ProductPay implements OnInit {
     if (this.paymentForm.invalid || !current) return;
     this.paying.set(true);
     this.error.set('');
-    this.productosSvc.payOrder(current.id, this.paymentForm.getRawValue() as never).subscribe({
-      next: paid => {
-        this.auth.clearTrialState();
-        if (paid.instanceId) {
-          void this.router.navigate(['/auth/login']);
-        } else {
-          void this.router.navigate(['/productos/provision', paid.id]);
-        }
+    this.productosSvc.createCheckout(current.id).subscribe({
+      next: () => {
+        this.productosSvc.payOrder(current.id, this.paymentForm.getRawValue() as never).subscribe({
+          next: paid => this.afterPaid(paid),
+          error: err => {
+            this.paying.set(false);
+            this.error.set(err?.error?.error ?? err?.error?.message ?? 'El pago no pudo procesarse.');
+          },
+        });
       },
       error: err => {
         this.paying.set(false);
-        this.error.set(err?.error?.error ?? err?.error?.message ?? 'El pago no pudo procesarse.');
+        this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo iniciar el checkout.');
       },
     });
+  }
+
+  private redirectToMercadoPago(orderId: string): void {
+    this.paying.set(true);
+    this.productosSvc.createCheckout(orderId).subscribe({
+      next: session => {
+        const url = session.sandboxInitPoint || session.initPoint;
+        window.location.assign(url);
+      },
+      error: err => {
+        this.paying.set(false);
+        this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo iniciar Mercado Pago.');
+      },
+    });
+  }
+
+  private afterPaid(paid: ProductOrder): void {
+    this.auth.clearTrialState();
+    if (paid.instanceId) {
+      void this.router.navigate(['/auth/login']);
+    } else {
+      void this.router.navigate(['/productos/provision', paid.id]);
+    }
   }
 }

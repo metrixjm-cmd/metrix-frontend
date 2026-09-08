@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { LicensePackage } from '../../licensing/licensing.models';
 import {
+  CheckoutSession,
   CreateProductOrderRequest,
   ProductOrder,
   ProvisionMetrixRequest,
@@ -31,6 +32,10 @@ export class ProductosService {
 
   getOrder(orderId: string): Observable<ProductOrder> {
     return this.http.get<ProductOrder>(`${this.base}/orders/${orderId}`);
+  }
+
+  createCheckout(orderId: string): Observable<CheckoutSession> {
+    return this.http.post<CheckoutSession>(`${this.base}/orders/${orderId}/checkout`, {});
   }
 
   payOrder(orderId: string, body: SimulatedPaymentRequest): Observable<ProductOrder> {
