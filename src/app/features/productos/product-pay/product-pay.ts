@@ -85,7 +85,9 @@ export class ProductPay implements OnInit {
     this.paying.set(true);
     this.productosSvc.createCheckout(orderId).subscribe({
       next: session => {
-        const url = session.sandboxInitPoint || session.initPoint;
+        const url = !environment.production && session.sandboxInitPoint
+          ? session.sandboxInitPoint
+          : session.initPoint;
         window.location.assign(url);
       },
       error: err => {
