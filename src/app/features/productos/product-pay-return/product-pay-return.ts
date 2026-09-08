@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { catchError, interval, startWith, switchMap, takeWhile } from 'rxjs';
+import { catchError, exhaustMap, interval, startWith, takeWhile } from 'rxjs';
 
 import { ProductOrder } from '../productos.models';
 import { ProductosService } from '../services/productos.service';
@@ -44,15 +44,20 @@ export class ProductPayReturn implements OnInit {
       this.message.set('Pago pendiente. Estamos esperando la confirmación…');
     }
 
+    // MP devuelve payment_id en la return URL; sirve como pista para el sync.
+    const paymentId = this.route.snapshot.queryParamMap.get('payment_id') ?? undefined;
+
     let attempts = 0;
     interval(2000)
       .pipe(
         startWith(0),
         takeWhile(() => !this.done && attempts < 30, true),
-        switchMap(() => {
+        // exhaustMap: el sync consulta a MP y puede tardar más de 2 s; con switchMap cada tick
+        // abortaba la petición anterior y nunca llegaba a completarse.
+        exhaustMap(() => {
           attempts += 1;
           // Reconciliar con MP (cubre webhook 401 / retraso); si aún no hay approved, caer a GET.
-          return this.productosSvc.syncPayment(orderId).pipe(
+          return this.productosSvc.syncPayment(orderId, paymentId).pipe(
             catchError(() => this.productosSvc.getOrder(orderId)),
           );
         }),
