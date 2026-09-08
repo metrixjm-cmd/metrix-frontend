@@ -49,6 +49,14 @@ export class ProductPay implements OnInit {
           return;
         }
         if (!this.useCardForm) {
+          // Evita bucle infinito: simulated redirige de vuelta a /productos/pago/:id
+          if (order.paymentProvider === 'SIMULATED'
+              || (order.preferenceId ?? '').startsWith('SIM-PREF-')) {
+            this.error.set(
+              'Pagos en modo simulado. Mercado Pago no está activo en el servidor.',
+            );
+            return;
+          }
           this.redirectToMercadoPago(order.id);
         }
       },
@@ -88,6 +96,13 @@ export class ProductPay implements OnInit {
         const url = !environment.production && session.sandboxInitPoint
           ? session.sandboxInitPoint
           : session.initPoint;
+        if (!url || url.includes(`/productos/pago/${orderId}`)) {
+          this.paying.set(false);
+          this.error.set(
+            'Checkout inválido (no es Mercado Pago). Revisa METRIX_PAYMENTS_PROVIDER.',
+          );
+          return;
+        }
         window.location.assign(url);
       },
       error: err => {
