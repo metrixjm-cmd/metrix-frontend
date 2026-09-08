@@ -24,6 +24,10 @@ export class BancoInfo implements OnInit {
   readonly isAdmin   = computed(() => this.auth.hasRole('ADMIN'));
   readonly isManager = computed(() => this.auth.hasAnyRole('ADMIN', 'GERENTE'));
 
+  /** Secciones premium del hub — limitadas al plan del tenant. */
+  readonly hasTrainings = computed(() => this.auth.hasLicensedFeature('TRAININGS'));
+  readonly hasExams     = computed(() => this.auth.hasLicensedFeature('EXAMS'));
+
   readonly totalUsers      = computed(() => this.rhSvc.users().length);
   readonly totalStores     = computed(() => this.settingsSvc.stores().length);
   readonly activeUsers     = computed(() => this.rhSvc.users().filter(u => u.activo).length);
@@ -41,10 +45,12 @@ export class BancoInfo implements OnInit {
     } else if (user?.storeId) {
       this.rhSvc.loadUsersByStore(user.storeId);
     }
-    if (this.isAdmin()) {
-      this.trainerSvc.loadAll();
-    } else if (user?.storeId) {
-      this.trainerSvc.loadByStore(user.storeId);
+    if (this.hasExams()) {
+      if (this.isAdmin()) {
+        this.trainerSvc.loadAll();
+      } else if (user?.storeId) {
+        this.trainerSvc.loadByStore(user.storeId);
+      }
     }
     this.taskTemplateSvc.loadAll().catch(() => undefined);
     this.catalogSvc.loadCategorias();
