@@ -17,6 +17,11 @@ export const PRODUCTOS_ROUTES: Routes = [
       import('./product-pay/product-pay').then(m => m.ProductPay),
   },
   {
+    path: 'pago-retorno/:orderId',
+    loadComponent: () =>
+      import('./product-pay-return/product-pay-return').then(m => m.ProductPayReturn),
+  },
+  {
     path: 'provision/:orderId',
     loadComponent: () =>
       import('./product-provision/product-provision').then(m => m.ProductProvision),

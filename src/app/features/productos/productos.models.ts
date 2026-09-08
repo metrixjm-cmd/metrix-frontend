@@ -1,6 +1,8 @@
 import type { LicenseAccent, LicensePackage, LicensePricingModel } from '../licensing/licensing.models';
 
 export type ProductOrderStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'TRIAL' | 'PAID' | 'PROVISIONED' | 'CANCELLED';
+export type PaymentProvider = 'SIMULATED' | 'MERCADOPAGO';
+export type OrderPaymentStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface ProductOrderPackageSnapshot {
   packageId:            string;
@@ -30,6 +32,10 @@ export interface ProductOrder {
   totalCobrado:          number;
   moneda:                string;
   paymentReference:      string | null;
+  preferenceId?:         string | null;
+  mpPaymentId?:          string | null;
+  paymentProvider?:      PaymentProvider | null;
+  paymentStatus?:        OrderPaymentStatus | null;
   paidAt:                string | null;
   onTrial?:              boolean;
   trialEndsAt?:          string | null;
@@ -53,6 +59,18 @@ export interface SimulatedPaymentRequest {
   expiryMonth:       string;
   expiryYear:        string;
   cvv:               string;
+}
+
+export interface CheckoutSession {
+  orderId:            string;
+  preferenceId:       string;
+  initPoint:          string;
+  sandboxInitPoint?:  string | null;
+  status:             ProductOrderStatus;
+  totalCobrado:       number;
+  moneda:             string;
+  paymentProvider?:   PaymentProvider | null;
+  paymentStatus?:     OrderPaymentStatus | null;
 }
 
 export interface ProvisionMetrixRequest {

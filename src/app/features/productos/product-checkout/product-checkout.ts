@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { LicensePackage } from '../../licensing/licensing.models';
+import { environment } from '../../../../environments/environment';
 import { ProductosService } from '../services/productos.service';
 
 @Component({
@@ -27,6 +28,8 @@ export class ProductCheckout implements OnInit {
 
   readonly trialDays = computed(() => this.pkg()?.diasPrueba ?? 7);
   readonly hasTrial = computed(() => this.trialDays() > 0);
+  /** En local (simulated) se muestra formulario de tarjeta; en MP se redirige. */
+  readonly useCardForm = computed(() => !environment.production);
 
   readonly empresaForm = this.fb.group({
     empresaNombre:         ['', Validators.required],
@@ -110,20 +113,52 @@ export class ProductCheckout implements OnInit {
 
   goToPago(): void {
     this.error.set('');
-    this.step.set('pago');
+    if (this.useCardForm()) {
+      this.step.set('pago');
+      return;
+    }
+    this.startCheckoutRedirect();
+  }
+
+  /** Checkout Pro: crea preferencia y redirige a Mercado Pago (o a /pago en local). */
+  startCheckoutRedirect(): void {
+    if (!this.orderId()) return;
+    this.paying.set(true);
+    this.error.set('');
+    this.productosSvc.createCheckout(this.orderId()!).subscribe({
+      next: session => {
+        const url = !environment.production && session.sandboxInitPoint
+          ? session.sandboxInitPoint
+          : session.initPoint;
+        window.location.assign(url);
+      },
+      error: err => {
+        this.paying.set(false);
+        this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo iniciar el checkout.');
+      },
+    });
   }
 
   submitPago(): void {
     if (this.paymentForm.invalid || !this.orderId()) return;
     this.paying.set(true);
     this.error.set('');
-    this.productosSvc.payOrder(this.orderId()!, this.paymentForm.getRawValue() as never).subscribe({
+    // Preferencia primero (trazabilidad), luego cobro simulado.
+    this.productosSvc.createCheckout(this.orderId()!).subscribe({
       next: () => {
-        void this.router.navigate(['/productos/provision', this.orderId()]);
+        this.productosSvc.payOrder(this.orderId()!, this.paymentForm.getRawValue() as never).subscribe({
+          next: () => {
+            void this.router.navigate(['/productos/provision', this.orderId()]);
+          },
+          error: err => {
+            this.paying.set(false);
+            this.error.set(err?.error?.error ?? err?.error?.message ?? 'El pago no pudo procesarse.');
+          },
+        });
       },
       error: err => {
         this.paying.set(false);
-        this.error.set(err?.error?.error ?? err?.error?.message ?? 'El pago no pudo procesarse.');
+        this.error.set(err?.error?.error ?? err?.error?.message ?? 'No se pudo iniciar el checkout.');
       },
     });
   }

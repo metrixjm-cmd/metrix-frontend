@@ -77,66 +77,82 @@
         <div class="space-y-4 rounded-xl border border-white/10 p-5 bg-white/[0.03]">
           <h2 class="font-semibold">Periodo de prueba</h2>
           <p class="text-sm text-white/60">
-            Empieza con {{ trialDays() }} días gratis. El pago es simulado y solo se usa si quieres activar el plan ahora o cuando termine la prueba.
+            Empieza con {{ trialDays() }} días gratis. Puedes pagar después para activar el plan o cuando termine la prueba.
           </p>
           <button type="button" [disabled]="startingTrial()" (click)="startTrial()"
                   class="w-full py-3 rounded-lg bg-brand-600 hover:bg-brand-500 font-medium disabled:opacity-40">
             {{ startingTrial() ? 'Activando…' : 'Empezar prueba de ' + trialDays() + ' días' }}
           </button>
-          <button type="button" (click)="goToPago()"
-                  class="w-full py-3 rounded-lg border border-white/15 hover:bg-white/5 font-medium">
-            Pagar ahora (simulado) y saltar la prueba
+          <button type="button" [disabled]="paying()" (click)="goToPago()"
+                  class="w-full py-3 rounded-lg border border-white/15 hover:bg-white/5 font-medium disabled:opacity-40">
+            {{ paying() ? 'Redirigiendo…' : (useCardForm() ? 'Pagar ahora y saltar la prueba' : 'Pagar ahora con Mercado Pago') }}
           </button>
         </div>
       }
 
       @if (step() === 'pago') {
-        <form [formGroup]="paymentForm" (ngSubmit)="submitPago()" class="space-y-4">
-          <h2 class="font-semibold">Pago simulado</h2>
-          <p class="text-sm text-white/50">Pasarela en modo demo — cualquier tarjeta válida funciona. Termina en 0000 para simular rechazo.</p>
+        @if (useCardForm()) {
+          <form [formGroup]="paymentForm" (ngSubmit)="submitPago()" class="space-y-4">
+            <h2 class="font-semibold">Pago (modo local)</h2>
+            <p class="text-sm text-white/50">Pasarela simulada — cualquier tarjeta válida funciona. Termina en 0000 para simular rechazo.</p>
 
-          <label class="block space-y-1.5">
-            <span class="text-sm text-white/70">Nombre del titular de la tarjeta</span>
-            <input id="cardholderName" formControlName="cardholderName"
-                   placeholder="Como aparece en la tarjeta"
-                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          </label>
-
-          <label class="block space-y-1.5">
-            <span class="text-sm text-white/70">Número de tarjeta</span>
-            <input id="cardNumber" formControlName="cardNumber"
-                   placeholder="16 dígitos, sin espacios"
-                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-          </label>
-
-          <div class="grid grid-cols-3 gap-3">
             <label class="block space-y-1.5">
-              <span class="text-sm text-white/70">Mes de vencimiento</span>
-              <input id="expiryMonth" formControlName="expiryMonth" placeholder="MM" maxlength="2"
+              <span class="text-sm text-white/70">Nombre del titular de la tarjeta</span>
+              <input id="cardholderName" formControlName="cardholderName"
+                     placeholder="Como aparece en la tarjeta"
                      class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
             </label>
-            <label class="block space-y-1.5">
-              <span class="text-sm text-white/70">Año de vencimiento</span>
-              <input id="expiryYear" formControlName="expiryYear" placeholder="AAAA" maxlength="4"
-                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-            </label>
-            <label class="block space-y-1.5">
-              <span class="text-sm text-white/70">CVV</span>
-              <input id="cvv" formControlName="cvv" placeholder="3 o 4 dígitos" maxlength="4"
-                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
-            </label>
-          </div>
 
-          <button type="submit" [disabled]="paymentForm.invalid || paying()"
-                  class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-40">
-            {{ paying() ? 'Procesando…' : 'Pagar ahora' }}
-          </button>
-          @if (hasTrial() && orderId()) {
-            <button type="button" (click)="step.set('elige')" class="w-full text-sm text-white/50 hover:text-white">
-              Volver a la prueba
+            <label class="block space-y-1.5">
+              <span class="text-sm text-white/70">Número de tarjeta</span>
+              <input id="cardNumber" formControlName="cardNumber"
+                     placeholder="16 dígitos, sin espacios"
+                     class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+            </label>
+
+            <div class="grid grid-cols-3 gap-3">
+              <label class="block space-y-1.5">
+                <span class="text-sm text-white/70">Mes de vencimiento</span>
+                <input id="expiryMonth" formControlName="expiryMonth" placeholder="MM" maxlength="2"
+                       class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+              </label>
+              <label class="block space-y-1.5">
+                <span class="text-sm text-white/70">Año de vencimiento</span>
+                <input id="expiryYear" formControlName="expiryYear" placeholder="AAAA" maxlength="4"
+                       class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+              </label>
+              <label class="block space-y-1.5">
+                <span class="text-sm text-white/70">CVV</span>
+                <input id="cvv" formControlName="cvv" placeholder="3 o 4 dígitos" maxlength="4"
+                       class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+              </label>
+            </div>
+
+            <button type="submit" [disabled]="paymentForm.invalid || paying()"
+                    class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-40">
+              {{ paying() ? 'Procesando…' : 'Pagar ahora' }}
             </button>
-          }
-        </form>
+            @if (hasTrial() && orderId()) {
+              <button type="button" (click)="step.set('elige')" class="w-full text-sm text-white/50 hover:text-white">
+                Volver a la prueba
+              </button>
+            }
+          </form>
+        } @else {
+          <div class="space-y-4 rounded-xl border border-white/10 p-5 bg-white/[0.03]">
+            <h2 class="font-semibold">Pagar con Mercado Pago</h2>
+            <p class="text-sm text-white/60">Te redirigiremos a Mercado Pago. Al volver confirmaremos el pago automáticamente.</p>
+            <button type="button" [disabled]="paying()" (click)="startCheckoutRedirect()"
+                    class="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-40">
+              {{ paying() ? 'Redirigiendo…' : 'Ir a Mercado Pago' }}
+            </button>
+            @if (hasTrial() && orderId()) {
+              <button type="button" (click)="step.set('elige')" class="w-full text-sm text-white/50 hover:text-white">
+                Volver a la prueba
+              </button>
+            }
+          </div>
+        }
       }
     }
   </main>
