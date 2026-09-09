@@ -101,6 +101,39 @@
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="space-y-5">
 
+        <!-- ── Campo: código de plataforma ── -->
+        <div>
+          <label for="codigoEmpresa" class="block text-sm font-medium text-white/70 mb-1.5">
+            Código de plataforma
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h6m-6 4h6m-6 4h6" />
+              </svg>
+            </div>
+            <input
+              id="codigoEmpresa"
+              formControlName="codigoEmpresa"
+              type="text"
+              autocomplete="organization"
+              placeholder="Ej. TACOS-A3F2 o METRIX"
+              class="input-field pl-10 uppercase"
+              [class.input-error]="isFieldInvalid('codigoEmpresa')"
+            />
+          </div>
+          @if (isFieldInvalid('codigoEmpresa')) {
+            <p class="mt-1.5 text-xs text-red-300 flex items-center gap-1">
+              El código de plataforma es obligatorio.
+            </p>
+          } @else {
+            <p class="mt-1.5 text-xs text-white/40">
+              Admin 0 usa METRIX. Si compraste un plan, el código se muestra al crear tu METRIX.
+            </p>
+          }
+        </div>
+
         <!-- ── Campo: #Usuario ── -->
         <div>
           <label for="numeroUsuario" class="block text-sm font-medium text-white/70 mb-1.5">

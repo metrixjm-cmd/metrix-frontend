@@ -3,6 +3,7 @@ export type MetrixInstanceStatus = 'ACTIVE' | 'SUSPENDED';
 export interface MetrixInstance {
   id:                   string;
   databaseName:         string;
+  codigoEmpresa?:       string | null;
   empresaNombre:        string;
   licensePackageId:     string;
   licensePackageNombre: string;

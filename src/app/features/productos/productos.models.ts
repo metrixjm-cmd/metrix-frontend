@@ -85,6 +85,7 @@ export interface ProvisionMetrixResponse {
   databaseName:        string;
   adminNumeroUsuario:  string;
   loginUrl:            string;
+  codigoEmpresa?:      string;
   message:             string;
 }
 

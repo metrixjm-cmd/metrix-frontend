@@ -276,6 +276,11 @@
                   <div>
                     <p class="text-sm font-bold text-white">{{ auth.currentUser()?.nombre }}</p>
                     <p class="text-xs text-white/40">{{ auth.currentUser()?.roles?.[0] }}</p>
+                    @if (auth.currentUser()?.empresaNombre || auth.currentUser()?.codigoEmpresa) {
+                      <p class="text-[11px] text-cyan-300/80 mt-1">
+                        {{ auth.currentUser()?.empresaNombre || auth.currentUser()?.codigoEmpresa }}
+                      </p>
+                    }
                   </div>
                 </div>
                 <div class="mt-3 grid grid-cols-2 gap-2">

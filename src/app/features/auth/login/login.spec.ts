@@ -12,9 +12,10 @@ class RouterStub {
 }
 
 class ActivatedRouteStub {
+  params: Record<string, string | null> = {};
   snapshot = {
     queryParamMap: {
-      get: vi.fn().mockReturnValue(null),
+      get: (key: string) => this.params[key] ?? null,
     },
   };
 }
@@ -56,7 +57,6 @@ describe('Login', () => {
     roles: ['ADMIN'],
   };
 
-  /** Simula un login exitoso: publica el usuario y emite la respuesta. */
   function stubSuccessfulLogin(): void {
     auth.login.mockImplementationOnce(() => new Observable<AuthResponse>(subscriber => {
       auth.setUser(adminResponse);
@@ -69,23 +69,23 @@ describe('Login', () => {
     localStorage.clear();
     router = new RouterStub();
     auth = new AuthServiceStub();
+    route = new ActivatedRouteStub();
 
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
         { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useClass: ActivatedRouteStub },
+        { provide: ActivatedRoute, useValue: route },
         { provide: AuthService, useValue: auth },
       ],
     }).compileComponents();
-
-    route = TestBed.inject(ActivatedRoute) as unknown as ActivatedRouteStub;
   });
 
   it('redirects to the dashboard after signing in without returnUrl', () => {
     const component = TestBed.createComponent(Login).componentInstance;
 
     component.form.patchValue({
+      codigoEmpresa: 'METRIX',
       numeroUsuario: 'ADMIN001',
       password: 'Admin123456',
     });
@@ -93,14 +93,20 @@ describe('Login', () => {
 
     component.onSubmit();
 
+    expect(auth.login).toHaveBeenCalledWith({
+      codigoEmpresa: 'METRIX',
+      numeroUsuario: 'ADMIN001',
+      password: 'Admin123456',
+    });
     expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
   });
 
   it('honours the returnUrl the guard preserved', () => {
-    route.snapshot.queryParamMap.get.mockReturnValue('/kpi');
+    route.params['returnUrl'] = '/kpi';
     const component = TestBed.createComponent(Login).componentInstance;
 
     component.form.patchValue({
+      codigoEmpresa: 'METRIX',
       numeroUsuario: 'ADMIN001',
       password: 'Admin123456',
     });
@@ -109,5 +115,11 @@ describe('Login', () => {
     component.onSubmit();
 
     expect(router.navigateByUrl).toHaveBeenCalledWith('/kpi');
+  });
+
+  it('prefills codigoEmpresa from empresa query param', () => {
+    route.params['empresa'] = 'tacos-a3f2';
+    const component = TestBed.createComponent(Login).componentInstance;
+    expect(component.form.value.codigoEmpresa).toBe('TACOS-A3F2');
   });
 });

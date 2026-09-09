@@ -1,5 +1,6 @@
 /** Payload enviado al endpoint POST /auth/login */
 export interface LoginRequest {
+  codigoEmpresa?: string;
   numeroUsuario: string;
   password:      string;
 }
@@ -24,6 +25,8 @@ export interface AuthResponse {
   onTrial?: boolean;
   trialEndsAt?: string | null;
   orderId?: string | null;
+  codigoEmpresa?: string | null;
+  empresaNombre?: string | null;
 }
 
 /**
@@ -44,6 +47,8 @@ export interface CurrentUser {
   onTrial?: boolean;
   trialEndsAt?: string | null;
   orderId?: string | null;
+  codigoEmpresa?: string | null;
+  empresaNombre?: string | null;
 }
 
 /** Roles disponibles en METRIX (deben coincidir con el enum Role del backend). */
