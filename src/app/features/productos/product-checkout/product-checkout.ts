@@ -48,6 +48,12 @@ export class ProductCheckout implements OnInit {
   });
 
   ngOnInit(): void {
+    this.empresaForm.controls.contactoEmail.valueChanges.subscribe(value => {
+      const next = String(value ?? '').toLowerCase();
+      if (value !== next) {
+        this.empresaForm.controls.contactoEmail.setValue(next, { emitEvent: false });
+      }
+    });
     const packageId = this.route.snapshot.paramMap.get('packageId');
     if (!packageId) {
       void this.router.navigate(['/productos']);
@@ -82,7 +88,7 @@ export class ProductCheckout implements OnInit {
       packageId: this.pkg()!.id,
       empresaNombre: v.empresaNombre!,
       contactoNombre: v.contactoNombre!,
-      contactoEmail: v.contactoEmail!,
+      contactoEmail: String(v.contactoEmail ?? '').trim().toLowerCase(),
       contactoTelefono: v.contactoTelefono || undefined,
       sucursalesContratadas: Number(v.sucursalesContratadas),
     }).subscribe({

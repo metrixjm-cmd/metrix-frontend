@@ -17,10 +17,35 @@ export class InstanceList implements OnInit {
   readonly error = signal('');
   readonly actionError = signal('');
   readonly busyId = signal<string | null>(null);
+  readonly copiedKey = signal<string | null>(null);
   readonly instances = signal<MetrixInstance[]>([]);
 
   ngOnInit(): void {
     this.reload();
+  }
+
+  async copyText(event: MouseEvent, instanceId: string, kind: 'codigo' | 'admin', value: string | null | undefined): Promise<void> {
+    event.stopPropagation();
+    const text = value?.trim();
+    if (!text) return;
+    const key = `${instanceId}:${kind}`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    this.copiedKey.set(key);
+    setTimeout(() => {
+      if (this.copiedKey() === key) this.copiedKey.set(null);
+    }, 1200);
   }
 
   reload(): void {

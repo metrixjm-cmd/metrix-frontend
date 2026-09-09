@@ -35,9 +35,27 @@ export class ProductProvision {
   readonly form = this.fb.group({
     numeroUsuario:   ['', [Validators.required, Validators.minLength(3), Validators.maxLength(32)]],
     adminNombre:     [''],
+    adminEmail:      ['', [Validators.required, Validators.email, Validators.maxLength(120)]],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
   }, { validators: passwordsMatch });
+
+  constructor() {
+    this.form.get('adminEmail')?.valueChanges.subscribe(value => {
+      const next = String(value ?? '').toLowerCase();
+      if (value !== next) {
+        this.form.get('adminEmail')?.setValue(next, { emitEvent: false });
+      }
+    });
+    if (!this.orderId) return;
+    this.productosSvc.getOrder(this.orderId).subscribe({
+      next: order => {
+        if (order.contactoEmail && !this.form.controls.adminEmail.value) {
+          this.form.patchValue({ adminEmail: order.contactoEmail.toLowerCase() });
+        }
+      },
+    });
+  }
 
   togglePassword(): void {
     this.showPassword.update(v => !v);
@@ -75,6 +93,7 @@ export class ProductProvision {
       password: v.password!,
       confirmPassword: v.confirmPassword!,
       adminNombre: v.adminNombre || undefined,
+      adminEmail: String(v.adminEmail ?? '').trim().toLowerCase(),
     }).subscribe({
       next: res => {
         this.success.set(res.message);

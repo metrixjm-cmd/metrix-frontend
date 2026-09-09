@@ -49,6 +49,18 @@
         </label>
 
         <label class="block space-y-1.5">
+          <span class="text-sm text-white/70">Correo electrónico</span>
+          <input id="adminEmail" formControlName="adminEmail" type="email" autocomplete="email"
+                 placeholder="Ej. maria@empresa.com"
+                 class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 lowercase" />
+          @if (form.get('adminEmail')?.invalid && form.get('adminEmail')?.touched) {
+            <span class="block text-xs text-red-400">Escribe un correo válido, en minúsculas.</span>
+          } @else {
+            <span class="block text-xs text-white/45">Se guarda en minúsculas. Ejemplo: admin@restaurante.com</span>
+          }
+        </label>
+
+        <label class="block space-y-1.5">
           <span class="text-sm text-white/70">Contraseña</span>
           <div class="relative">
             <input id="password" formControlName="password"
