@@ -75,7 +75,7 @@ export class UserCreate implements OnInit {
     puesto:          ['', Validators.required],
     storeId:         [this.authSvc.currentUser()?.storeId ?? '', Validators.required],
     turno:           ['MATUTINO', Validators.required],
-    email:           ['', Validators.email],
+    email:           ['', [Validators.email]],
     fechaNacimiento: ['', [realBirthDateValidator, olderThanYearsValidator(17)]],
     password:        ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', Validators.required],
@@ -92,17 +92,25 @@ export class UserCreate implements OnInit {
       this.settingsSvc.loadAll();
     }
     this.form.get('nombre')?.valueChanges.subscribe(() => this.clearControlError('nombre', 'duplicate'));
-    this.form.get('email')?.valueChanges.subscribe(() => this.clearControlError('email', 'duplicate'));
+    this.form.get('email')?.valueChanges.subscribe(value => {
+      this.clearControlError('email', 'duplicate');
+      const next = String(value ?? '').toLowerCase();
+      if (value && value !== next) {
+        this.form.get('email')?.setValue(next, { emitEvent: false });
+      }
+    });
 
     this.form.get('roles')?.valueChanges.subscribe((roles) => {
       const selected = (roles as string[] | null)?.[0] ?? '';
       this.selectedRole.set(selected);
       this.syncPuestoForRole();
+      this.syncEmailValidators();
       this.refreshFolio();
     });
     this.form.get('puesto')?.valueChanges.subscribe(() => this.refreshFolio());
 
     this.syncPuestoForRole();
+    this.syncEmailValidators();
   }
 
   togglePassword(): void {
@@ -145,7 +153,7 @@ export class UserCreate implements OnInit {
       turno:           v.turno!,
       password:        v.password!,
       roles:           this.isAdmin() ? ((v.roles as string[]) ?? ['GERENTE']) : ['EJECUTADOR'],
-      ...(v.email           ? { email:           v.email }           : {}),
+      ...(v.email           ? { email: String(v.email).trim().toLowerCase() } : {}),
       ...(v.fechaNacimiento ? { fechaNacimiento: v.fechaNacimiento } : {}),
     };
 
@@ -176,6 +184,16 @@ export class UserCreate implements OnInit {
     this.http.get<{ numeroUsuario: string }>(
       `${environment.apiUrl}/users/next-folio?${params.toString()}`
     ).subscribe({ next: r => this.nextFolio.set(r.numeroUsuario), error: () => {} });
+  }
+
+  private syncEmailValidators(): void {
+    const control = this.form.get('email');
+    if (!control) return;
+    const required = this.selectedRole() === 'ADMIN';
+    control.setValidators(required
+      ? [Validators.required, Validators.email]
+      : [Validators.email]);
+    control.updateValueAndValidity({ emitEvent: false });
   }
 
   private syncPuestoForRole(): void {

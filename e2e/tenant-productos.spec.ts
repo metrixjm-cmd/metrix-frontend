@@ -34,6 +34,7 @@ test.describe('Tenant — productos → provision', () => {
 
     await page.getByLabel(/Usuario de acceso/i).fill(adminUser);
     await page.getByLabel(/Nombre del administrador/i).fill('Admin E2E');
+    await page.getByLabel(/Correo electrónico/i).fill(`admin${suffix}@metrix.test`);
     await page.getByLabel(/^Contraseña$/i).fill(password);
     await page.getByLabel(/Confirmar contraseña/i).fill(password);
     await page.getByRole('button', { name: /Crear mi METRIX/i }).click();

@@ -24,6 +24,7 @@
         <thead class="bg-white/[0.04] text-white/50">
           <tr>
             <th class="text-left px-4 py-3 font-medium">Empresa</th>
+            <th class="text-left px-4 py-3 font-medium">Código</th>
             <th class="text-left px-4 py-3 font-medium">Plan / límites</th>
             <th class="text-left px-4 py-3 font-medium">Admin</th>
             <th class="text-left px-4 py-3 font-medium">Estado</th>
@@ -36,11 +37,23 @@
             <tr class="border-t border-white/10 hover:bg-white/[0.02]">
               <td class="px-4 py-3">
                 <p class="font-medium text-white">{{ i.empresaNombre }}</p>
-                @if (i.codigoEmpresa) {
-                  <p class="text-xs text-cyan-300/80 font-mono mt-0.5">{{ i.codigoEmpresa }}</p>
-                }
                 <p class="text-xs text-white/40">{{ i.contactoEmail }}</p>
                 <p class="text-[11px] text-white/30 mt-0.5 font-mono">{{ i.databaseName }}</p>
+              </td>
+              <td class="px-4 py-3">
+                @if (i.codigoEmpresa) {
+                  <button type="button"
+                          class="inline-flex items-center gap-2 font-mono text-cyan-300 hover:text-cyan-200 transition-colors"
+                          (click)="copyText($event, i.id, 'codigo', i.codigoEmpresa)"
+                          title="Copiar código de plataforma">
+                    <span>{{ i.codigoEmpresa }}</span>
+                    @if (copiedKey() === i.id + ':codigo') {
+                      <span class="text-[11px] text-emerald-400 font-medium">Copiado</span>
+                    }
+                  </button>
+                } @else {
+                  <span class="text-white/30 text-xs">—</span>
+                }
               </td>
               <td class="px-4 py-3">
                 <p class="text-white/90">{{ i.licensePackageNombre }}</p>
@@ -48,7 +61,15 @@
                 <p class="text-[11px] text-white/35 mt-0.5">{{ modulesLabel(i) }}</p>
               </td>
               <td class="px-4 py-3">
-                <p class="text-white">{{ i.adminNumeroUsuario }}</p>
+                <button type="button"
+                        class="inline-flex items-center gap-2 text-white hover:text-cyan-300 transition-colors"
+                        (click)="copyText($event, i.id, 'admin', i.adminNumeroUsuario)"
+                        title="Copiar #Usuario">
+                  <span>{{ i.adminNumeroUsuario }}</span>
+                  @if (copiedKey() === i.id + ':admin') {
+                    <span class="text-[11px] text-emerald-400 font-medium">Copiado</span>
+                  }
+                </button>
                 <p class="text-xs text-white/40">{{ i.adminNombre }}</p>
               </td>
               <td class="px-4 py-3">
