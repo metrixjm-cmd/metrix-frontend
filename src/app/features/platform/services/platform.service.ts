@@ -21,4 +21,8 @@ export class PlatformService {
   deleteInstance(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/instances/${id}`);
   }
+
+  adjustTrial(id: string, deltaDays: number): Observable<MetrixInstance> {
+    return this.http.patch<MetrixInstance>(`${this.base}/instances/${id}/trial`, { deltaDays });
+  }
 }
