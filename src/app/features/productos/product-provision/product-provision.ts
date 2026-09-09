@@ -25,6 +25,9 @@ export class ProductProvision {
   readonly saving = signal(false);
   readonly error = signal('');
   readonly success = signal('');
+  readonly codigoEmpresa = signal('');
+  readonly adminUsuario = signal('');
+  readonly copied = signal(false);
   readonly showPassword = signal(false);
   readonly showConfirmPassword = signal(false);
   readonly orderId = this.route.snapshot.paramMap.get('orderId') ?? '';
@@ -44,6 +47,24 @@ export class ProductProvision {
     this.showConfirmPassword.update(v => !v);
   }
 
+  copyCodigo(): void {
+    const code = this.codigoEmpresa();
+    if (!code || !navigator.clipboard) return;
+    void navigator.clipboard.writeText(code).then(() => {
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    });
+  }
+
+  goToLogin(): void {
+    void this.router.navigate(['/auth/login'], {
+      queryParams: {
+        empresa: this.codigoEmpresa() || undefined,
+        usuario: this.adminUsuario() || undefined,
+      },
+    });
+  }
+
   submit(): void {
     if (this.form.invalid || !this.orderId) return;
     this.saving.set(true);
@@ -57,8 +78,9 @@ export class ProductProvision {
     }).subscribe({
       next: res => {
         this.success.set(res.message);
+        this.codigoEmpresa.set(res.codigoEmpresa ?? '');
+        this.adminUsuario.set(res.adminNumeroUsuario ?? v.numeroUsuario!.toUpperCase());
         this.saving.set(false);
-        setTimeout(() => void this.router.navigate(['/auth/login']), 2000);
       },
       error: err => {
         this.saving.set(false);

@@ -38,10 +38,13 @@ test.describe('Tenant — productos → provision', () => {
     await page.getByLabel(/Confirmar contraseña/i).fill(password);
     await page.getByRole('button', { name: /Crear mi METRIX/i }).click();
 
-    await expect(page.getByText(/Redirigiendo al login/i)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/Código de plataforma/i)).toBeVisible({ timeout: 30_000 });
+    const codigo = (await page.locator('.font-mono').first().innerText()).trim();
+    expect(codigo.length).toBeGreaterThan(3);
+    await page.getByRole('button', { name: /Ir al login/i }).click();
     await page.waitForURL(/\/auth\/login/, { timeout: 15_000 });
 
-    await uiLogin(page, { numeroUsuario: adminUser, password });
+    await uiLogin(page, { numeroUsuario: adminUser, password, codigoEmpresa: codigo });
     await expect(page).toHaveURL(/\/dashboard/);
     await expect(page.getByText(/Periodo de prueba/i)).toBeVisible();
 
@@ -59,7 +62,7 @@ test.describe('Tenant — productos → provision', () => {
     await expect(page).toHaveURL(/\/dashboard/);
 
     // API: features del plan Base
-    const tenant = await apiLogin({ numeroUsuario: adminUser, password });
+    const tenant = await apiLogin({ numeroUsuario: adminUser, password, codigoEmpresa: codigo });
     expect(tenant.platformAdmin).toBeFalsy();
     expect(tenant.licensedFeatures ?? []).not.toContain('EXAMS');
     expect(tenant.licensedFeatures ?? []).not.toContain('GAMIFICATION');
