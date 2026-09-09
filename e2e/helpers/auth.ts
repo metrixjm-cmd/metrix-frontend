@@ -18,14 +18,18 @@ export interface LoginResult {
 
 /** Usuarios de prueba — coinciden con los seed del proyecto */
 export const USERS = {
-  ADMIN:     { numeroUsuario: 'ADMIN001', password: 'Admin123456' },
+  ADMIN:     { numeroUsuario: 'ADMIN001', password: 'Admin123456', codigoEmpresa: 'METRIX' },
   GERENTE:   { numeroUsuario: 'GER001',   password: 'Gerente123'  },
   EJECUTADOR:{ numeroUsuario: 'EJE001',   password: 'Operador123' },
   EJECUTADOR2:{ numeroUsuario: 'EJE002',  password: 'Operador123' },
 } as const;
 
 /** Login por API y retorna datos del usuario + token */
-export async function apiLogin(user: { numeroUsuario: string; password: string }): Promise<LoginResult> {
+export async function apiLogin(user: {
+  numeroUsuario: string;
+  password: string;
+  codigoEmpresa?: string;
+}): Promise<LoginResult> {
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -36,12 +40,18 @@ export async function apiLogin(user: { numeroUsuario: string; password: string }
 }
 
 /** Login vía UI — navega a /auth/login, llena form, submits */
-export async function uiLogin(page: Page, user: { numeroUsuario: string; password: string }): Promise<void> {
+export async function uiLogin(page: Page, user: {
+  numeroUsuario: string;
+  password: string;
+  codigoEmpresa?: string;
+}): Promise<void> {
   await page.goto('/auth/login');
-  await page.locator('input[name="numeroUsuario"], input[formcontrolname="numeroUsuario"], input[type="text"]').first().fill(user.numeroUsuario);
-  await page.locator('input[name="password"], input[formcontrolname="password"], input[type="password"]').first().fill(user.password);
+  if (user.codigoEmpresa) {
+    await page.locator('input[formcontrolname="codigoEmpresa"]').fill(user.codigoEmpresa);
+  }
+  await page.locator('input[formcontrolname="numeroUsuario"]').fill(user.numeroUsuario);
+  await page.locator('input[formcontrolname="password"]').fill(user.password);
   await page.locator('button[type="submit"]').click();
-  // Esperar navegación al dashboard
   await page.waitForURL(url => !url.pathname.includes('/auth/login'), { timeout: 10_000 });
 }
 

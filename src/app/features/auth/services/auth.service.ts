@@ -60,6 +60,8 @@ export class AuthService {
             onTrial:       response.onTrial,
             trialEndsAt:   response.trialEndsAt,
             orderId:       response.orderId,
+            codigoEmpresa: response.codigoEmpresa,
+            empresaNombre: response.empresaNombre,
           });
         }),
       );
@@ -154,6 +156,8 @@ export class AuthService {
       onTrial:       response.onTrial,
       trialEndsAt:   response.trialEndsAt,
       orderId:       response.orderId,
+      codigoEmpresa: response.codigoEmpresa,
+      empresaNombre: response.empresaNombre,
     };
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
