@@ -41,12 +41,16 @@
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-white/70 mb-1">Correo electrÃƒÂ³nico</label>
-        <input formControlName="email" type="email"
+        <label class="block text-sm font-medium text-white/70 mb-1">
+          Correo electrónico{{ selectedRole() === 'ADMIN' ? ' *' : '' }}
+        </label>
+        <input formControlName="email" type="email" autocomplete="email"
                placeholder="ejemplo@correo.com"
-               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
-        @if (form.get('email')?.invalid && form.get('email')?.touched) {
-          <p class="text-xs text-red-600 mt-1">El formato del correo no es vÃƒÂ¡lido</p>
+               class="w-full border border-white/10 rounded-lg px-3 py-2 text-sm text-white bg-white/[0.05] lowercase focus:outline-none focus:ring-2 focus:ring-cyan-500/40">
+        @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+          <p class="text-xs text-red-400 mt-1">El correo es obligatorio para un administrador</p>
+        } @else if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+          <p class="text-xs text-red-400 mt-1">Escribe un correo válido, en minúsculas</p>
         }
         @if (form.get('email')?.hasError('duplicate') && form.get('email')?.touched) {
           <p class="text-xs text-red-600 mt-1">Ya existe un usuario con ese correo electrÃƒÂ³nico</p>

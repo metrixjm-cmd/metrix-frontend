@@ -78,6 +78,7 @@ export interface ProvisionMetrixRequest {
   password:        string;
   confirmPassword: string;
   adminNombre?:    string;
+  adminEmail:      string;
 }
 
 export interface ProvisionMetrixResponse {
