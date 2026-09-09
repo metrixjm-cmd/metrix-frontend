@@ -6,7 +6,7 @@ import { licenseGuard } from './core/guards/license.guard';
 import { homeRedirectGuard } from './core/guards/home-redirect.guard';
 
 export const routes: Routes = [
-  // ── Home: sin sesión → /productos; con sesión → /dashboard ──────────
+  // ── Home: sin sesión → /auth/login; con sesión → /dashboard ──────────
   {
     path: '',
     pathMatch: 'full',
@@ -15,6 +15,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./core/guards/home-redirect.placeholder').then(m => m.HomeRedirectPlaceholder),
   },
+
+  // Atajo: /login es la URL que la gente escribe; el login real vive en /auth/login.
+  { path: 'login', redirectTo: '/auth/login', pathMatch: 'full' },
 
   // ── Productos (público, sin layout ni login) ────────────────────────
   {
@@ -109,6 +112,6 @@ export const routes: Routes = [
     ],
   },
 
-  // ── Fallback: rutas desconocidas → catálogo público ─────────────────
-  { path: '**', redirectTo: 'productos' },
+  // ── Fallback: rutas desconocidas → login (no al catálogo) ────────
+  { path: '**', redirectTo: '/auth/login' },
 ];

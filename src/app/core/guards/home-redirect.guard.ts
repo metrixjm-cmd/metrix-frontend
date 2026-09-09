@@ -4,11 +4,11 @@ import { AuthService } from '../../features/auth/services/auth.service';
 
 /**
  * Entrada pública de la app:
- * - Sin sesión → catálogo de planes (`/productos`)
+ * - Sin sesión → login (`/auth/login`)
  * - Con sesión → dashboard
  */
 export const homeRedirectGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  return router.createUrlTree(auth.isAuthenticated() ? ['/dashboard'] : ['/productos']);
+  return router.createUrlTree(auth.isAuthenticated() ? ['/dashboard'] : ['/auth/login']);
 };
