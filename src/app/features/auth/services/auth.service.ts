@@ -1,4 +1,4 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
@@ -27,11 +27,22 @@ export class AuthService {
   // ── Estado reactivo (Signal API de Angular 17+) ──────────────────────
   private readonly _user = signal<CurrentUser | null>(this.loadFromStorage());
 
+  /**
+   * Reloj reactivo del contador de prueba: computed() no reacciona a Date.now(),
+   * así que sin esta señal los días restantes se congelan durante toda la sesión.
+   */
+  private readonly _now = signal(Date.now());
+
   /** Usuario en sesión. null si no hay sesión activa. */
   readonly currentUser = this._user.asReadonly();
 
   /** true si existe una sesión con token válido en localStorage. */
   readonly isAuthenticated = computed(() => this._user() !== null);
+
+  constructor() {
+    const tick = setInterval(() => this._now.set(Date.now()), 60_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(tick));
+  }
 
   // ── Acciones ─────────────────────────────────────────────────────────
 
@@ -124,19 +135,29 @@ export class AuthService {
   }
 
   clearTrialState(): void {
+    this.setTrialState(false, null);
+  }
+
+  /**
+   * Sincroniza el periodo de prueba con el servidor. La sesión guarda la fecha
+   * de fin que venía en el login, así que sin esto los días que Admin 0 suma o
+   * resta no se ven hasta volver a entrar.
+   */
+  setTrialState(onTrial: boolean, trialEndsAt: string | null): void {
     const user = this._user();
     if (!user) return;
-    const next = { ...user, onTrial: false, trialEndsAt: null };
+    if (user.onTrial === onTrial && user.trialEndsAt === trialEndsAt) return;
+    const next = { ...user, onTrial, trialEndsAt };
     this._user.set(next);
     localStorage.setItem(USER_KEY, JSON.stringify(next));
   }
 
-  trialDaysLeft(): number | null {
+  readonly trialDaysLeft = computed(() => {
     const user = this._user();
     if (!user?.onTrial || !user.trialEndsAt) return null;
-    const ms = new Date(user.trialEndsAt).getTime() - Date.now();
+    const ms = new Date(user.trialEndsAt).getTime() - this._now();
     return Math.max(0, Math.ceil(ms / 86_400_000));
-  }
+  });
 
   // ── Persistencia ─────────────────────────────────────────────────────
 

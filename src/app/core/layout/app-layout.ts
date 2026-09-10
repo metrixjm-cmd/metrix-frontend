@@ -4,6 +4,7 @@ import { AuthService }  from '../../features/auth/services/auth.service';
 import { NotificationService } from '../../features/notifications/notification.service';
 import { AppNotification } from '../../features/notifications/notification.models';
 import { SettingsService } from '../../features/settings/services/settings.service';
+import { ProductosService } from '../../features/productos/services/productos.service';
 import { ThemeService } from '../theme.service';
 
 export interface NavItem {
@@ -34,6 +35,7 @@ export class AppLayout implements OnInit, OnDestroy {
   readonly auth      = inject(AuthService);
   readonly notifSvc  = inject(NotificationService);
   private readonly settingsSvc = inject(SettingsService);
+  private readonly productosSvc = inject(ProductosService);
   // Inyectar ThemeService aplica el tema guardado en localStorage al iniciar la app
   private readonly _theme = inject(ThemeService);
 
@@ -222,6 +224,7 @@ export class AppLayout implements OnInit, OnDestroy {
     const token = this.auth.getToken();
     if (token) this.notifSvc.connect(token);
     if (this.settingsSvc.stores().length === 0) this.settingsSvc.loadAll();
+    this.refreshTrialState();
 
     // Tema automático por rol
     const roles = this.auth.currentUser()?.roles ?? [];
@@ -232,6 +235,16 @@ export class AppLayout implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.notifSvc.disconnect();
+  }
+
+  /** Trae los días de prueba vigentes; si falla, el banner se queda con los de la sesión. */
+  private refreshTrialState(): void {
+    const user = this.auth.currentUser();
+    if (this.auth.isPlatformAdmin() || !user?.orderId) return;
+    this.productosSvc.getOrder(user.orderId).subscribe({
+      next: order => this.auth.setTrialState(order.onTrial === true, order.trialEndsAt ?? null),
+      error: () => {},
+    });
   }
 
   // ── Sidebar ───────────────────────────────────────────────────────────
