@@ -4,20 +4,6 @@
     <p class="text-sm text-white/50 mt-0.5">Admin 0 — instancias provisionadas (no incluye el demo operativo)</p>
   </div>
 
-  @if (!loading() && instances().length > 0) {
-    <div class="flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-      <label class="text-xs text-white/60" for="trial-delta">Días a sumar o restar</label>
-      <input id="trial-delta"
-             type="number"
-             min="1"
-             max="365"
-             class="w-16 px-2 py-1.5 rounded-lg bg-white/5 border border-white/15 text-white text-sm text-center"
-             [value]="trialDelta()"
-             (input)="onTrialDeltaInput($event)" />
-      <p class="text-xs text-white/40">La prueba inicia en 7 días. Usa + / − en cada cliente para alargarla o acortarla.</p>
-    </div>
-  }
-
   @if (error()) {
     <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/25 text-red-300 text-sm">{{ error() }}</div>
   }
@@ -185,18 +171,31 @@
               <td class="px-4 py-3">
                 <div class="flex flex-wrap items-center gap-2">
                   @if (canAdjustTrial(i)) {
-                    <button type="button"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium border border-cyan-400/40 text-cyan-200 hover:bg-cyan-500/10 transition-colors disabled:opacity-50"
-                            [disabled]="busyId() === i.id"
-                            (click)="adjustTrial(i, 1)">
-                      + {{ trialDelta() }} d
-                    </button>
-                    <button type="button"
-                            class="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/20 text-white/80 hover:bg-white/5 transition-colors disabled:opacity-50"
-                            [disabled]="busyId() === i.id || !canSubtractTrial(i)"
-                            (click)="adjustTrial(i, -1)">
-                      − {{ trialDelta() }} d
-                    </button>
+                    <span class="inline-flex items-center gap-1 rounded-lg border border-white/15 bg-white/[0.03] p-0.5">
+                      <input #trialDays
+                             type="number"
+                             min="1"
+                             max="365"
+                             value="7"
+                             inputmode="numeric"
+                             class="w-14 bg-transparent px-1.5 py-1 text-center text-sm text-white outline-none"
+                             [attr.aria-label]="'Días de prueba para ' + i.empresaNombre"
+                             [disabled]="busyId() === i.id"
+                             (click)="$event.stopPropagation()"
+                             (keydown.enter)="adjustTrial(i, 1, trialDays.value)" />
+                      <button type="button"
+                              class="px-2.5 py-1 rounded-md text-xs font-medium text-cyan-200 hover:bg-cyan-500/10 transition-colors disabled:opacity-50"
+                              [disabled]="busyId() === i.id"
+                              (click)="adjustTrial(i, 1, trialDays.value)">
+                        + d
+                      </button>
+                      <button type="button"
+                              class="px-2.5 py-1 rounded-md text-xs font-medium text-white/80 hover:bg-white/5 transition-colors disabled:opacity-50"
+                              [disabled]="busyId() === i.id || !canSubtractTrial(i)"
+                              (click)="adjustTrial(i, -1, trialDays.value)">
+                        − d
+                      </button>
+                    </span>
                   }
                   <button type="button"
                           class="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/20 text-white/80 hover:bg-white/5 transition-colors disabled:opacity-50"
