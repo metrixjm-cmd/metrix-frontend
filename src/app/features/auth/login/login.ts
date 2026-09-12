@@ -9,11 +9,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService }  from '../services/auth.service';
 import { APP_VERSION }  from '../../../../environments/app-version';
+import { PwaInstall } from '../../../shared/components/pwa-install/pwa-install';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, PwaInstall],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

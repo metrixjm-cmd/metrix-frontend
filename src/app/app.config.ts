@@ -1,4 +1,4 @@
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, ENVIRONMENT_INITIALIZER, inject, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
@@ -6,6 +6,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { sessionExpiredInterceptor } from './core/interceptors/session-expired.interceptor';
+import { PwaInstallService } from './core/services/pwa-install.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,5 +20,13 @@ export const appConfig: ApplicationConfig = {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      multi: true,
+      useValue: () => {
+        inject(PwaInstallService);
+      },
+    },
   ],
 };
+
