@@ -25,6 +25,77 @@
     <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-sm">{{ actionError() }}</div>
   }
 
+  @if (issuedLink(); as link) {
+    <div class="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/25 text-cyan-100 text-sm space-y-2">
+      <p>Liga de un solo uso (cópiala si el correo no llegó):</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <code class="text-xs break-all text-cyan-200">{{ link.url }}</code>
+        <button type="button"
+                class="px-3 py-1.5 rounded-lg text-xs font-medium border border-cyan-400/40 text-cyan-200 hover:bg-cyan-500/10"
+                (click)="copyResetUrl(link.url)">
+          {{ copiedKey() === 'reset-url' ? 'Copiada' : 'Copiar liga' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (passwordResets().length > 0) {
+    <section class="rounded-xl border border-white/10 overflow-hidden">
+      <div class="px-4 py-3 bg-white/[0.04]">
+        <h2 class="text-sm font-semibold text-white">Solicitudes de contraseña</h2>
+        <p class="text-xs text-white/45 mt-0.5">El ADMIN de una licencia pidió reset. Aprueba para enviarle la liga.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-white/50">
+            <tr>
+              <th class="text-left px-4 py-2 font-medium">Empresa</th>
+              <th class="text-left px-4 py-2 font-medium">Admin</th>
+              <th class="text-left px-4 py-2 font-medium">Correo</th>
+              <th class="text-left px-4 py-2 font-medium">Estado</th>
+              <th class="text-left px-4 py-2 font-medium">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of passwordResets(); track r.id) {
+              <tr class="border-t border-white/10"
+                  [class.bg-cyan-500/10]="highlightResetId() === r.id">
+                <td class="px-4 py-3">
+                  <p class="text-white">{{ r.empresaNombre }}</p>
+                  <p class="text-xs text-white/40 font-mono">{{ r.codigoEmpresa }}</p>
+                </td>
+                <td class="px-4 py-3">
+                  <p class="text-white">{{ r.adminNombre }}</p>
+                  <p class="text-xs text-white/40">{{ r.numeroUsuario }}</p>
+                </td>
+                <td class="px-4 py-3 text-white/70">{{ r.destinationEmailMasked || 'Sin correo' }}</td>
+                <td class="px-4 py-3 text-white/70">{{ statusLabel(r.status) }}</td>
+                <td class="px-4 py-3">
+                  @if (r.status === 'PENDING') {
+                    <div class="flex flex-wrap gap-2">
+                      <button type="button"
+                              class="px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-400/40 text-emerald-200 hover:bg-emerald-500/10 disabled:opacity-50"
+                              [disabled]="busyId() === r.id"
+                              (click)="approveReset(r)">
+                        Aprobar
+                      </button>
+                      <button type="button"
+                              class="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/20 text-white/80 hover:bg-white/5 disabled:opacity-50"
+                              [disabled]="busyId() === r.id"
+                              (click)="rejectReset(r)">
+                        Rechazar
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
   @if (loading()) {
     <div class="h-48 rounded-xl bg-white/5 animate-pulse"></div>
   } @else if (instances().length === 0) {
@@ -127,6 +198,12 @@
                       − {{ trialDelta() }} d
                     </button>
                   }
+                  <button type="button"
+                          class="px-3 py-1.5 rounded-lg text-xs font-medium border border-white/20 text-white/80 hover:bg-white/5 transition-colors disabled:opacity-50"
+                          [disabled]="busyId() === i.id"
+                          (click)="sendResetLink(i)">
+                    Enviar liga de reset
+                  </button>
                   <button type="button"
                           class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors disabled:opacity-50"
                           [class]="i.status === 'ACTIVE'

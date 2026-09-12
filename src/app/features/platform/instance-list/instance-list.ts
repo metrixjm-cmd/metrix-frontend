@@ -1,8 +1,9 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { PlatformService } from '../services/platform.service';
-import { MetrixInstance, MetrixInstanceStatus } from '../platform.models';
+import { MetrixInstance, MetrixInstanceStatus, PasswordResetRequest } from '../platform.models';
 
 @Component({
   selector: 'app-instance-list',
@@ -12,6 +13,7 @@ import { MetrixInstance, MetrixInstanceStatus } from '../platform.models';
 })
 export class InstanceList implements OnInit {
   private readonly platformSvc = inject(PlatformService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly loading = signal(true);
   readonly error = signal('');
@@ -20,9 +22,14 @@ export class InstanceList implements OnInit {
   readonly copiedKey = signal<string | null>(null);
   readonly instances = signal<MetrixInstance[]>([]);
   readonly trialDelta = signal(1);
+  readonly passwordResets = signal<PasswordResetRequest[]>([]);
+  readonly issuedLink = signal<{ id: string; url: string } | null>(null);
+  readonly highlightResetId = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.highlightResetId.set(this.route.snapshot.queryParamMap.get('reset'));
     this.reload();
+    this.reloadPasswordResets();
   }
 
   async copyText(event: MouseEvent, instanceId: string, kind: 'codigo' | 'admin', value: string | null | undefined): Promise<void> {
@@ -61,6 +68,110 @@ export class InstanceList implements OnInit {
         this.error.set(this.apiMessage(err, 'No se pudieron cargar las instancias.'));
         this.loading.set(false);
       },
+    });
+  }
+
+  reloadPasswordResets(): void {
+    this.platformSvc.listPasswordResets().subscribe({
+      next: list => this.passwordResets.set(list),
+      error: err => this.actionError.set(this.apiMessage(err, 'No se pudieron cargar las solicitudes de contraseña.')),
+    });
+  }
+
+  approveReset(req: PasswordResetRequest): void {
+    if (!confirm(`¿Aprobar el cambio de contraseña de ${req.adminNombre || req.numeroUsuario} (${req.empresaNombre})?`)) {
+      return;
+    }
+    this.busyId.set(req.id);
+    this.actionError.set('');
+    this.platformSvc.approvePasswordReset(req.id).subscribe({
+      next: updated => {
+        this.upsertReset(updated);
+        if (updated.resetUrl) {
+          this.issuedLink.set({ id: updated.id, url: updated.resetUrl });
+        }
+        this.busyId.set(null);
+      },
+      error: err => {
+        this.actionError.set(this.apiMessage(err, 'No se pudo aprobar la solicitud.'));
+        this.busyId.set(null);
+      },
+    });
+  }
+
+  rejectReset(req: PasswordResetRequest): void {
+    if (!confirm(`¿Rechazar la solicitud de ${req.adminNombre || req.numeroUsuario}?`)) {
+      return;
+    }
+    this.busyId.set(req.id);
+    this.actionError.set('');
+    this.platformSvc.rejectPasswordReset(req.id).subscribe({
+      next: () => {
+        this.upsertReset({ ...req, status: 'REJECTED' });
+        this.busyId.set(null);
+      },
+      error: err => {
+        this.actionError.set(this.apiMessage(err, 'No se pudo rechazar la solicitud.'));
+        this.busyId.set(null);
+      },
+    });
+  }
+
+  sendResetLink(instance: MetrixInstance): void {
+    if (!confirm(`¿Enviar liga de reset al ADMIN de "${instance.empresaNombre}"?`)) {
+      return;
+    }
+    this.busyId.set(instance.id);
+    this.actionError.set('');
+    this.platformSvc.initiateInstancePasswordReset(instance.id).subscribe({
+      next: updated => {
+        this.upsertReset(updated);
+        if (updated.resetUrl) {
+          this.issuedLink.set({ id: updated.id, url: updated.resetUrl });
+        }
+        this.busyId.set(null);
+      },
+      error: err => {
+        this.actionError.set(this.apiMessage(err, 'No se pudo generar la liga de reset.'));
+        this.busyId.set(null);
+      },
+    });
+  }
+
+  async copyResetUrl(url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    this.copiedKey.set('reset-url');
+    setTimeout(() => {
+      if (this.copiedKey() === 'reset-url') this.copiedKey.set(null);
+    }, 1200);
+  }
+
+  statusLabel(status: PasswordResetRequest['status']): string {
+    switch (status) {
+      case 'PENDING': return 'Pendiente';
+      case 'APPROVED': return 'Liga enviada';
+      case 'REJECTED': return 'Rechazada';
+      case 'CONSUMED': return 'Usada';
+      case 'EXPIRED': return 'Vencida';
+    }
+  }
+
+  private upsertReset(updated: PasswordResetRequest): void {
+    this.passwordResets.update(list => {
+      const idx = list.findIndex(r => r.id === updated.id);
+      if (idx < 0) return [updated, ...list];
+      const next = list.slice();
+      next[idx] = { ...list[idx], ...updated, resetUrl: undefined };
+      return next;
     });
   }
 

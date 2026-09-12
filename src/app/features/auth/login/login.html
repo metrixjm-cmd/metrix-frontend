@@ -214,6 +214,13 @@
               </svg>
               La contraseña debe tener al menos 6 caracteres.
             </p>
+          } @else {
+            <p class="mt-1.5 text-right">
+              <a routerLink="/auth/forgot-password"
+                 class="text-xs text-cyan-300 hover:text-cyan-200 font-medium">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </p>
           }
         </div>
 

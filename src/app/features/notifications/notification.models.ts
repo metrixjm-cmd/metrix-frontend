@@ -23,7 +23,8 @@ export type NotificationType =
   | 'TRAINING_FAILED'
   | 'TRAINING_UPDATED'
   | 'TRAINING_DEADLINE_WARNING'
-  | 'TRAINING_OVERDUE';
+  | 'TRAINING_OVERDUE'
+  | 'LICENSE_PASSWORD_RESET_REQUESTED';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
@@ -39,6 +40,8 @@ export interface NotificationEvent {
   incidentId: string | null;
   examId:     string | null;
   storeId:    string;
+  instanceId?: string | null;
+  passwordResetRequestId?: string | null;
   timestamp: string; // ISO-8601
 }
 
