@@ -1,6 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { PwaInstall } from '../../shared/components/pwa-install/pwa-install';
+
 export interface FaqItem {
   id:       string;
   question: string;
@@ -17,7 +19,7 @@ export interface FaqCategory {
 @Component({
   selector: 'app-help',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PwaInstall],
   templateUrl: './help.html',
 })
 export class Help {
@@ -215,7 +217,7 @@ export class Help {
         {
           id: 'g3',
           question: '¿Puedo usar METRIX en mi teléfono o tableta?',
-          answer:   'Sí. METRIX es una PWA (Progressive Web App) con diseño responsive. En dispositivos móviles el menú lateral se convierte en un drawer que se abre con el ícono ☰. También puedes instalarla como app desde el navegador usando "Agregar a pantalla de inicio".',
+          answer:   'Sí. METRIX es una PWA con diseño responsive. En el teléfono el menú lateral se abre con ☰. Para instalarla como app usa la sección "Instalar METRIX" de esta misma página (o la de inicio de sesión): en Android y computadora el botón abre el diálogo del navegador; en iPhone hay que usar Compartir → Agregar a pantalla de inicio, porque Safari no permite instalar con un solo toque.',
         },
         {
           id: 'g4',

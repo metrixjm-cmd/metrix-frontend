@@ -6,6 +6,7 @@ import { AppNotification } from '../../features/notifications/notification.model
 import { SettingsService } from '../../features/settings/services/settings.service';
 import { ProductosService } from '../../features/productos/services/productos.service';
 import { ThemeService } from '../theme.service';
+import { PwaInstall } from '../../shared/components/pwa-install/pwa-install';
 
 export interface NavItem {
   label:    string;
@@ -27,7 +28,7 @@ export type { AppNotification };
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, PwaInstall],
   templateUrl: './app-layout.html',
   styleUrl:    './app-layout.scss',
 })
