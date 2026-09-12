@@ -21,7 +21,6 @@ export class InstanceList implements OnInit {
   readonly busyId = signal<string | null>(null);
   readonly copiedKey = signal<string | null>(null);
   readonly instances = signal<MetrixInstance[]>([]);
-  readonly trialDelta = signal(1);
   readonly passwordResets = signal<PasswordResetRequest[]>([]);
   readonly issuedLink = signal<{ id: string; url: string } | null>(null);
   readonly highlightResetId = signal<string | null>(null);
@@ -238,14 +237,9 @@ export class InstanceList implements OnInit {
     return Math.ceil(ms / 86_400_000);
   }
 
-  onTrialDeltaInput(event: Event): void {
-    const raw = Number((event.target as HTMLInputElement).value);
-    const n = Number.isFinite(raw) ? Math.trunc(raw) : 1;
-    this.trialDelta.set(Math.min(365, Math.max(1, n)));
-  }
-
-  adjustTrial(instance: MetrixInstance, sign: 1 | -1): void {
-    const days = this.trialDelta();
+  adjustTrial(instance: MetrixInstance, sign: 1 | -1, rawDays: string): void {
+    const parsed = Math.trunc(Number(rawDays));
+    const days = Number.isFinite(parsed) ? Math.min(365, Math.max(1, parsed)) : 1;
     const deltaDays = sign * days;
     const verb = sign > 0 ? `sumar ${days} día(s)` : `restar ${days} día(s)`;
     if (!confirm(`¿${verb} de prueba a "${instance.empresaNombre}"?`)) {
