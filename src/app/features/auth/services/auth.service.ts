@@ -78,6 +78,37 @@ export class AuthService {
       );
   }
 
+  requestPasswordReset(codigoEmpresa: string, numeroUsuario: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/password-reset/request`, {
+      codigoEmpresa,
+      numeroUsuario,
+    });
+  }
+
+  validatePasswordResetToken(token: string): Observable<{
+    valid: boolean;
+    codigoEmpresa: string;
+    empresaNombre: string;
+    numeroUsuario: string;
+    expiresAt: string;
+  }> {
+    return this.http.get<{
+      valid: boolean;
+      codigoEmpresa: string;
+      empresaNombre: string;
+      numeroUsuario: string;
+      expiresAt: string;
+    }>(`${this.apiUrl}/password-reset/validate`, { params: { token } });
+  }
+
+  confirmPasswordReset(token: string, newPassword: string, confirmPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/password-reset/confirm`, {
+      token,
+      newPassword,
+      confirmPassword,
+    });
+  }
+
   /**
    * Cierra la sesión: limpia localStorage, resetea el signal y
    * redirige al login.

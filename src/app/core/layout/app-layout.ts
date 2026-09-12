@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService }  from '../../features/auth/services/auth.service';
 import { NotificationService } from '../../features/notifications/notification.service';
 import { AppNotification } from '../../features/notifications/notification.models';
@@ -35,6 +35,7 @@ export type { AppNotification };
 export class AppLayout implements OnInit, OnDestroy {
   readonly auth      = inject(AuthService);
   readonly notifSvc  = inject(NotificationService);
+  private readonly router = inject(Router);
   private readonly settingsSvc = inject(SettingsService);
   private readonly productosSvc = inject(ProductosService);
   // Inyectar ThemeService aplica el tema guardado en localStorage al iniciar la app
@@ -289,8 +290,15 @@ export class AppLayout implements OnInit, OnDestroy {
    * de despachar una alerta sin borrarlas todas.
    */
   openNotification(n: AppNotification): void {
-    if (n.read) return;
-    this.notifSvc.markRead(n.id);
+    if (!n.read) {
+      this.notifSvc.markRead(n.id);
+    }
+    this.showNotifs.set(false);
+    if (n.type === 'LICENSE_PASSWORD_RESET_REQUESTED' && this.auth.isPlatformAdmin()) {
+      void this.router.navigate(['/platform'], {
+        queryParams: n.passwordResetRequestId ? { reset: n.passwordResetRequestId } : undefined,
+      });
+    }
   }
 
   closeDropdowns(): void {

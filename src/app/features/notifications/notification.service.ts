@@ -208,6 +208,8 @@ export class NotificationService {
       incidentId: null,
       examId: null,
       storeId: input.storeId ?? '',
+      instanceId: null,
+      passwordResetRequestId: null,
       timestamp,
       read: false,
       timeAgo: 'Ahora mismo',
