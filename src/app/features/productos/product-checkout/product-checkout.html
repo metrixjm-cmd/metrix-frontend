@@ -58,11 +58,15 @@
           </label>
 
           <label class="block space-y-1.5">
-            <span class="text-sm text-white/70">Sucursales a contratar</span>
+            <span class="text-sm text-white/70">
+              {{ billedPerBranch() ? 'Sucursales a contratar' : 'Sucursales incluidas' }}
+            </span>
             <input id="sucursalesContratadas" formControlName="sucursalesContratadas"
                    type="number" [attr.min]="sucursalesMin()" [attr.max]="sucursalesMax()"
+                   [readOnly]="!billedPerBranch()"
                    placeholder="Cantidad de sucursales"
-                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10" />
+                   class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10"
+                   [class.opacity-70]="!billedPerBranch()" />
             <span class="block text-xs text-white/45">{{ sucursalesHint() }}</span>
           </label>
 
