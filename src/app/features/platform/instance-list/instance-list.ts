@@ -273,10 +273,26 @@ export class InstanceList implements OnInit {
 
   limitsLabel(i: MetrixInstance): string {
     const users = i.maxUsuarios != null ? `${i.maxUsuarios} usuarios` : 'usuarios n/d';
-    const branches = i.sucursalesContratadas != null
-      ? `${i.sucursalesContratadas} suc.`
-      : (i.maxSucursales != null ? `máx ${i.maxSucursales} suc.` : 'suc. n/d');
+    const cap = i.effectiveMaxSucursales ?? i.maxSucursales;
+    if (i.pricingModel === 'PER_BRANCH' && i.sucursalesContratadas != null) {
+      const extra = cap != null && cap !== i.sucursalesContratadas ? ` / máx ${cap}` : '';
+      return `${users} · ${i.sucursalesContratadas} suc. contratadas${extra}`;
+    }
+    const branches = cap != null ? `hasta ${cap} suc.` : 'suc. n/d';
     return `${users} · ${branches}`;
+  }
+
+  planLabel(i: MetrixInstance): string {
+    return i.licensePackageNombre?.trim() || i.licensePackageId || 'Plan no registrado';
+  }
+
+  pricingLabel(i: MetrixInstance): string | null {
+    switch (i.pricingModel) {
+      case 'PER_BRANCH': return 'Por sucursal';
+      case 'FLAT_MONTHLY': return 'Cuota fija';
+      case 'PER_USER': return 'Por usuario';
+      default: return null;
+    }
   }
 
   modulesLabel(i: MetrixInstance): string {
