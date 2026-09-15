@@ -64,12 +64,16 @@ export class ProductCheckout implements OnInit {
         this.pkg.set(p);
         const sucursalesCtrl = this.empresaForm.controls.sucursalesContratadas;
         const min = p.minSucursales && p.minSucursales > 0 ? p.minSucursales : 1;
+        const max = p.maxSucursales && p.maxSucursales > 0 ? p.maxSucursales : null;
         const validators = [Validators.required, Validators.min(min)];
-        if (p.maxSucursales && p.maxSucursales > 0) {
-          validators.push(Validators.max(p.maxSucursales));
+        if (max) {
+          validators.push(Validators.max(max));
         }
         sucursalesCtrl.setValidators(validators);
-        sucursalesCtrl.patchValue(min);
+        // PER_BRANCH cobra por sucursal: el cliente elige N. En cuota fija el
+        // checkout no debe guardar 1 y dejar el cupo recortado.
+        const initial = this.billedPerBranch() ? min : (max ?? min);
+        sucursalesCtrl.patchValue(initial);
         sucursalesCtrl.updateValueAndValidity();
         this.loading.set(false);
       },
@@ -169,16 +173,26 @@ export class ProductCheckout implements OnInit {
     });
   }
 
+  billedPerBranch(): boolean {
+    return this.pkg()?.pricingModel === 'PER_BRANCH';
+  }
+
   sucursalesHint(): string {
     const p = this.pkg();
     if (!p) return 'Cantidad de sucursales incluidas en esta contratación.';
     const min = p.minSucursales;
     const max = p.maxSucursales;
+    if (!this.billedPerBranch()) {
+      if (max) {
+        return `La cuota es fija: puedes operar hasta ${max} sucursal${max === 1 ? '' : 'es'} con este plan.`;
+      }
+      return 'La cuota es fija; el cupo de sucursales lo define el plan, no este campo.';
+    }
     if (min && max && min === max) {
       return `Este plan incluye exactamente ${min} sucursal${min === 1 ? '' : 'es'}.`;
     }
     if (min && max) {
-      return `Este plan admite de ${min} a ${max} sucursales.`;
+      return `Este plan admite de ${min} a ${max} sucursales. El precio se calcula por sucursal.`;
     }
     if (min) return `Mínimo ${min} sucursal${min === 1 ? '' : 'es'} para este plan.`;
     if (max) return `Máximo ${max} sucursales para este plan.`;

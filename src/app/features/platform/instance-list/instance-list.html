@@ -96,7 +96,7 @@
           <tr>
             <th class="text-left px-4 py-3 font-medium">Empresa</th>
             <th class="text-left px-4 py-3 font-medium">Código</th>
-            <th class="text-left px-4 py-3 font-medium">Plan / límites</th>
+            <th class="text-left px-4 py-3 font-medium">Licencia</th>
             <th class="text-left px-4 py-3 font-medium">Admin</th>
             <th class="text-left px-4 py-3 font-medium">Estado</th>
             <th class="text-left px-4 py-3 font-medium">Fechas</th>
@@ -127,8 +127,17 @@
                 }
               </td>
               <td class="px-4 py-3">
-                <p class="text-white/90">{{ i.licensePackageNombre }}</p>
-                <p class="text-xs text-white/45 mt-0.5">{{ limitsLabel(i) }}</p>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold
+                             bg-cyan-500/15 text-cyan-200 border border-cyan-400/25">
+                  {{ planLabel(i) }}
+                </span>
+                @if (pricingLabel(i); as pricing) {
+                  <span class="ml-1.5 text-[11px] text-white/45">{{ pricing }}</span>
+                }
+                @if (i.licensePackageId) {
+                  <p class="text-[11px] text-white/35 mt-1 font-mono">{{ i.licensePackageId }}</p>
+                }
+                <p class="text-xs text-white/55 mt-1">{{ limitsLabel(i) }}</p>
                 <p class="text-[11px] text-white/35 mt-0.5">{{ modulesLabel(i) }}</p>
               </td>
               <td class="px-4 py-3">

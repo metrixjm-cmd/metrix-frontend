@@ -7,6 +7,7 @@ export interface MetrixInstance {
   empresaNombre:        string;
   licensePackageId:     string;
   licensePackageNombre: string;
+  pricingModel?:        'PER_BRANCH' | 'FLAT_MONTHLY' | 'PER_USER' | null;
   orderId:              string;
   adminNumeroUsuario:   string;
   adminNombre:          string;
@@ -15,6 +16,7 @@ export interface MetrixInstance {
   createdAt:            string;
   maxUsuarios?:         number | null;
   maxSucursales?:       number | null;
+  effectiveMaxSucursales?: number | null;
   sucursalesContratadas?: number | null;
   featureCodes?:        string[];
   paidAt?:              string | null;
