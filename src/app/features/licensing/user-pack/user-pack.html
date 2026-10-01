@@ -1,0 +1,83 @@
+<div class="p-4 sm:p-6 max-w-xl mx-auto">
+  <div class="mb-6">
+    <a routerLink="/dashboard" class="text-xs text-white/40 hover:text-white/70">Volver</a>
+    <h1 class="text-2xl font-bold text-white mt-2">Usuarios adicionales</h1>
+    <p class="text-sm text-white/50 mt-1">Un solo paquete por licencia. Cada pago cubre 30 días.</p>
+  </div>
+
+  @if (loading()) {
+    <p class="text-sm text-white/40">Cargando…</p>
+  } @else if (status(); as pack) {
+    <section class="bg-white/[0.04] border border-white/10 rounded-xl p-5 space-y-4">
+      @if (pack.maxUsuariosPlan != null) {
+        <p class="text-sm text-white/70">
+          Tu plan incluye <span class="text-white font-semibold">{{ pack.maxUsuariosPlan }} usuarios</span>.
+          @if (pack.vigente) {
+            Con el paquete vigente el cupo es
+            <span class="text-white font-semibold">{{ pack.maxUsuariosEfectivo }}</span>
+            hasta el {{ pack.vigenteHasta | date:'dd MMM yyyy' }}.
+          }
+        </p>
+      }
+
+      @if (pack.vencido && !pack.vigente) {
+        <p class="text-sm text-amber-200">
+          El paquete venció. El cupo volvió al del plan. Los colaboradores que ya existen siguen activos;
+          no podrás crear más hasta renovar o desactivar alguno.
+        </p>
+      }
+
+      @if (pack.disponible) {
+        <div class="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3">
+          <p class="text-xs uppercase tracking-wide text-white/40">Paquete</p>
+          <p class="text-lg font-bold text-white mt-1">
+            +{{ pack.usuariosPorPaquete }} usuarios
+          </p>
+          <p class="text-sm text-white/60 mt-1">
+            {{ formatPrecio(pack.precio, pack.moneda) }} cada {{ pack.periodoDias }} días.
+            Si ya está vigente, el siguiente pago alarga el periodo y no suma otro paquete.
+          </p>
+        </div>
+
+        @if (!showCard()) {
+          <button type="button" (click)="startPay()" [disabled]="paying()"
+                  class="w-full py-2.5 rounded-lg bg-cyan-500/90 hover:bg-cyan-400 text-slate-950 text-sm font-semibold disabled:opacity-50">
+            {{ paying() ? 'Redirigiendo…' : (pack.vigente ? 'Renovar paquete' : 'Pagar paquete') }}
+          </button>
+        }
+      } @else {
+        <p class="text-sm text-white/60">{{ pack.motivoNoDisponible }}</p>
+      }
+    </section>
+
+    @if (showCard()) {
+      <form [formGroup]="paymentForm" (ngSubmit)="submitCard()"
+            class="mt-4 bg-white/[0.04] border border-white/10 rounded-xl p-5 space-y-3">
+        <p class="text-sm text-white/70">Pago simulado (entorno local). Una tarjeta que termina en 0000 se rechaza.</p>
+        <input formControlName="cardholderName" placeholder="Nombre en la tarjeta" autocomplete="cc-name"
+               class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white">
+        <input formControlName="cardNumber" placeholder="Número de tarjeta" inputmode="numeric" autocomplete="cc-number"
+               class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white">
+        <div class="grid grid-cols-3 gap-2">
+          <input formControlName="expiryMonth" placeholder="MM" maxlength="2"
+                 class="px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white">
+          <input formControlName="expiryYear" placeholder="AAAA" maxlength="4"
+                 class="px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white">
+          <input formControlName="cvv" placeholder="CVV" maxlength="4"
+                 class="px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white">
+        </div>
+        <button type="submit" [disabled]="paymentForm.invalid || paying()"
+                class="w-full py-2.5 rounded-lg bg-cyan-500/90 hover:bg-cyan-400 text-slate-950 text-sm font-semibold disabled:opacity-50">
+          {{ paying() ? 'Procesando…' : 'Confirmar pago' }}
+        </button>
+      </form>
+    }
+  }
+
+  @if (paidMessage()) {
+    <p class="mt-4 text-sm text-emerald-300">{{ paidMessage() }}</p>
+  }
+  @if (error()) {
+    <p class="mt-4 text-sm text-red-300">{{ error() }}</p>
+  }
+</div>

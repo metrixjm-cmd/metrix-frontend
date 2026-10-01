@@ -1,0 +1,8 @@
+<div class="p-6 max-w-lg mx-auto">
+  <h1 class="text-xl font-bold text-white">Pago del paquete de usuarios</h1>
+  <p class="text-sm text-white/70 mt-3">{{ message() }}</p>
+  @if (error()) {
+    <p class="text-sm text-red-300 mt-2">{{ error() }}</p>
+    <a routerLink="/licencia/usuarios-extra" class="inline-block mt-4 text-sm text-cyan-300">Volver al paquete</a>
+  }
+</div>

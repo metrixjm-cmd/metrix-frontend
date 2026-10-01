@@ -18,8 +18,13 @@
   </div>
 
   @if (error()) {
-    <div class="mb-4 p-4 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm">
-      {{ error() }}
+    <div class="mb-4 p-4 bg-red-500/15 border border-red-500/25 rounded-xl text-red-400 text-sm space-y-2">
+      <p>{{ error() }}</p>
+      @if (isAdmin() && isUserLimitError()) {
+        <a routerLink="/licencia/usuarios-extra" class="inline-block text-cyan-300 font-semibold">
+          Ampliar con el paquete de usuarios
+        </a>
+      }
     </div>
   }
 

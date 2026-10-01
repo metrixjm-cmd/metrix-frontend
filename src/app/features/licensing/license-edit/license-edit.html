@@ -213,6 +213,23 @@
             </div>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/[0.06]">
+            <div>
+              <label for="usuariosPorPaquete" class="block text-xs font-medium text-white/60 mb-1.5">Usuarios del paquete extra</label>
+              <input id="usuariosPorPaquete" type="number" min="1" step="1" formControlName="usuariosPorPaquete"
+                     class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white
+                            focus:outline-none focus:border-brand-500 transition-colors">
+              <p class="text-xs text-white/30 mt-1">Un solo paquete por licencia. No se acumula.</p>
+            </div>
+            <div>
+              <label for="precioPaqueteUsuarios" class="block text-xs font-medium text-white/60 mb-1.5">Precio del paquete / 30 días</label>
+              <input id="precioPaqueteUsuarios" type="number" min="0" step="1" formControlName="precioPaqueteUsuarios"
+                     class="w-full px-3 py-2 bg-white/[0.05] border border-white/10 rounded-lg text-sm text-white
+                            focus:outline-none focus:border-brand-500 transition-colors">
+              <p class="text-xs text-white/30 mt-1">0 oculta el paquete. Si no se renueva, el cupo extra se pierde.</p>
+            </div>
+          </div>
+
           <div>
             <label for="soporte" class="block text-xs font-medium text-white/60 mb-1.5">Nivel de soporte</label>
             <input id="soporte" type="text" formControlName="soporte" maxlength="60"
@@ -347,6 +364,9 @@
             </p>
             <div class="space-y-1.5 pt-1 border-t border-white/[0.06] text-xs text-white/60">
               <p>{{ previewLimite(vista().usuariosIlimitados, vista().maxUsuarios, 'usuario', 'usuarios', 'Usuarios ilimitados') }}</p>
+              @if (previewPaquete(); as paquete) {
+                <p>{{ paquete }}</p>
+              }
               <p>{{ previewLimite(vista().sucursalesIlimitadas, vista().maxSucursales, 'sucursal', 'sucursales', 'Sucursales ilimitadas') }}</p>
               <p>{{ vista().soporte || 'Sin nivel de soporte definido' }}</p>
             </div>

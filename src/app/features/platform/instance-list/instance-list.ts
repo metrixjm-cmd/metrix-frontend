@@ -272,7 +272,11 @@ export class InstanceList implements OnInit {
   }
 
   limitsLabel(i: MetrixInstance): string {
-    const users = i.maxUsuarios != null ? `${i.maxUsuarios} usuarios` : 'usuarios n/d';
+    const users = i.maxUsuarios == null
+      ? 'usuarios n/d'
+      : i.effectiveMaxUsuarios != null && i.effectiveMaxUsuarios !== i.maxUsuarios
+        ? `${i.effectiveMaxUsuarios} usuarios (${i.maxUsuarios} del plan)`
+        : `${i.maxUsuarios} usuarios`;
     const cap = i.effectiveMaxSucursales ?? i.maxSucursales;
     if (i.pricingModel === 'PER_BRANCH' && i.sucursalesContratadas != null) {
       const extra = cap != null && cap !== i.sucursalesContratadas ? ` / máx ${cap}` : '';
