@@ -104,6 +104,18 @@ export const routes: Routes = [
           import('./features/platform/platform.routes').then(m => m.PLATFORM_ROUTES),
       },
       {
+        path: 'licencia/usuarios-extra/retorno/:orderId',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/licensing/user-pack/user-pack-return').then(m => m.UserPackReturn),
+      },
+      {
+        path: 'licencia/usuarios-extra',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () =>
+          import('./features/licensing/user-pack/user-pack').then(m => m.UserPackPage),
+      },
+      {
         path: 'help',
         loadChildren: () =>
           import('./features/help/help.routes').then(m => m.HELP_ROUTES),

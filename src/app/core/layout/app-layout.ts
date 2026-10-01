@@ -1,10 +1,14 @@
-import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, computed, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService }  from '../../features/auth/services/auth.service';
 import { NotificationService } from '../../features/notifications/notification.service';
 import { AppNotification } from '../../features/notifications/notification.models';
 import { SettingsService } from '../../features/settings/services/settings.service';
 import { ProductosService } from '../../features/productos/services/productos.service';
+import { UserPackService } from '../../features/licensing/user-pack/user-pack.service';
+import { UserPackStatus } from '../../features/licensing/user-pack/user-pack.models';
 import { ThemeService } from '../theme.service';
 import { PwaInstall } from '../../shared/components/pwa-install/pwa-install';
 
@@ -18,6 +22,8 @@ export interface NavItem {
   roles?:   string[];
   /** Solo Admin 0 (plataforma). */
   platformAdminOnly?: boolean;
+  /** ADMIN de una licencia, y solo si el plan ofrece el paquete extra. */
+  tenantAdminOnly?: boolean;
   /** Uno o más códigos de módulo del plan (TRAININGS, EXAMS, …). */
   licenseFeatures?: string[];
 }
@@ -38,6 +44,9 @@ export class AppLayout implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly settingsSvc = inject(SettingsService);
   private readonly productosSvc = inject(ProductosService);
+  private readonly userPackSvc = inject(UserPackService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly userPack = signal<UserPackStatus | null>(null);
   // Inyectar ThemeService aplica el tema guardado en localStorage al iniciar la app
   private readonly _theme = inject(ThemeService);
 
@@ -145,6 +154,14 @@ export class AppLayout implements OnInit, OnDestroy {
       iconPath: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
     },
     {
+      label: 'Más usuarios',
+      route: '/licencia/usuarios-extra',
+      exact: false,
+      roles: ['ADMIN'],
+      tenantAdminOnly: true,
+      iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    },
+    {
       label: 'Ayuda',
       route: '/help',
       exact: false,
@@ -161,6 +178,11 @@ export class AppLayout implements OnInit, OnDestroy {
 
     return this.allNavItems.filter(item => {
       if (item.platformAdminOnly && !isPlatformAdmin) return false;
+      if (item.tenantAdminOnly) {
+        if (isPlatformAdmin) return false;
+        const pack = this.userPack();
+        if (!pack || !(pack.disponible || pack.vigente || pack.vencido)) return false;
+      }
       if (item.licenseFeatures?.length
           && !this.auth.hasAnyLicensedFeature(...item.licenseFeatures)) {
         return false;
@@ -213,6 +235,23 @@ export class AppLayout implements OnInit, OnDestroy {
     return shift || '-';
   });
 
+  readonly userPackBanner = computed(() => {
+    const pack = this.userPack();
+    if (!pack || this.auth.isPlatformAdmin()) return null;
+    if (pack.vigente && pack.vigenteHasta) {
+      const days = Math.ceil((new Date(pack.vigenteHasta).getTime() - Date.now()) / 86_400_000);
+      if (days <= 7) {
+        const when = days <= 1 ? 'vence en menos de un día' : `vence en ${days} días`;
+        return `El paquete de ${pack.usuariosExtraVigentes} usuarios ${when}.`;
+      }
+      return null;
+    }
+    if (pack.vencido) {
+      return 'El paquete de usuarios adicionales venció. El cupo volvió al del plan.';
+    }
+    return null;
+  });
+
   readonly trialBanner = computed(() => {
     if (this.auth.isPlatformAdmin()) return null;
     const user = this.auth.currentUser();
@@ -227,6 +266,11 @@ export class AppLayout implements OnInit, OnDestroy {
     if (token) this.notifSvc.connect(token);
     if (this.settingsSvc.stores().length === 0) this.settingsSvc.loadAll();
     this.refreshTrialState();
+    this.loadUserPack();
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.loadUserPack());
 
     // Tema automático por rol
     const roles = this.auth.currentUser()?.roles ?? [];
@@ -237,6 +281,14 @@ export class AppLayout implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.notifSvc.disconnect();
+  }
+
+  private loadUserPack(): void {
+    if (this.auth.isPlatformAdmin() || !this.isAdminUser()) return;
+    this.userPackSvc.status().subscribe({
+      next: pack => this.userPack.set(pack),
+      error: () => {},
+    });
   }
 
   /** Trae los días de prueba vigentes; si falla, el banner se queda con los de la sesión. */

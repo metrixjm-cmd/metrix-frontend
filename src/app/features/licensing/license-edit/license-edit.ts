@@ -56,6 +56,8 @@ export class LicenseEdit implements OnInit {
     usuariosIlimitados:   [false],
     minUsuarios:   [null as number | null],
     maxUsuarios:   [0, [Validators.min(1)]],
+    usuariosPorPaquete: [10, [Validators.required, Validators.min(1)]],
+    precioPaqueteUsuarios: [0, [Validators.required, Validators.min(0)]],
     sucursalesIlimitadas: [false],
     minSucursales: [null as number | null],
     maxSucursales: [0, [Validators.min(1)]],
@@ -122,6 +124,8 @@ export class LicenseEdit implements OnInit {
       usuariosIlimitados:   p.maxUsuarios === null,
       minUsuarios:          p.minUsuarios,
       maxUsuarios:          p.maxUsuarios ?? 10,
+      usuariosPorPaquete:   p.usuariosPorPaquete ?? 10,
+      precioPaqueteUsuarios: p.precioPaqueteUsuarios ?? 0,
       sucursalesIlimitadas: p.maxSucursales === null,
       minSucursales:        p.minSucursales,
       maxSucursales:        p.maxSucursales ?? 1,
@@ -205,6 +209,15 @@ export class LicenseEdit implements OnInit {
     return this.formatPrecio(Number(v.precioMensual ?? 0), v.moneda ?? 'MXN');
   }
 
+  previewPaquete(): string | null {
+    const v = this.formValue();
+    if (v.usuariosIlimitados) return null;
+    const precio = Number(v.precioPaqueteUsuarios ?? 0);
+    if (precio <= 0) return null;
+    const n = Number(v.usuariosPorPaquete ?? 0);
+    return `+ ${n} usuarios por ${this.formatPrecio(precio, v.moneda ?? 'MXN')} / 30 días`;
+  }
+
   previewLimite(esIlimitado: boolean | null, valor: number | null, singular: string, plural: string, ilimitado: string): string {
     if (esIlimitado) return ilimitado;
     const n = Number(valor ?? 0);
@@ -239,6 +252,8 @@ export class LicenseEdit implements OnInit {
         precioImplementacion: Number(v.precioImplementacion ?? 0),
         minUsuarios:   v.usuariosIlimitados ? null : (v.minUsuarios ?? null),
         maxUsuarios:   v.usuariosIlimitados ? null : Number(v.maxUsuarios ?? 0),
+        usuariosPorPaquete: Number(v.usuariosPorPaquete ?? 10),
+        precioPaqueteUsuarios: Number(v.precioPaqueteUsuarios ?? 0),
         minSucursales: v.sucursalesIlimitadas ? null : (v.minSucursales ?? null),
         maxSucursales: v.sucursalesIlimitadas ? null : Number(v.maxSucursales ?? 0),
         soporte:   v.soporte?.trim() ?? '',

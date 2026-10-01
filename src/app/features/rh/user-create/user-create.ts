@@ -140,6 +140,10 @@ export class UserCreate implements OnInit {
     });
   }
 
+  isUserLimitError(): boolean {
+    return (this.error() ?? '').toLowerCase().includes('límite de usuarios');
+  }
+
   async onSubmit(): Promise<void> {
     if (this.form.invalid || this.saving()) return;
     this.clearControlError('nombre', 'duplicate');

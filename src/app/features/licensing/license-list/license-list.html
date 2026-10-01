@@ -131,6 +131,12 @@
                 </svg>
                 <span>{{ limiteTexto(p.maxUsuarios, 'usuario', 'usuarios', 'Usuarios ilimitados') }}</span>
               </div>
+              @if (p.maxUsuarios != null && (p.precioPaqueteUsuarios ?? 0) > 0) {
+                <div class="flex items-center gap-2 text-xs text-white/60">
+                  <span class="w-3.5 shrink-0"></span>
+                  <span>+ {{ p.usuariosPorPaquete ?? 10 }} usuarios por {{ formatPrecio(p.precioPaqueteUsuarios ?? 0, p.moneda) }} / 30 días</span>
+                </div>
+              }
               <div class="flex items-center gap-2 text-xs text-white/60">
                 <svg class="w-3.5 h-3.5 shrink-0 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

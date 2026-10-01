@@ -15,6 +15,7 @@ export interface MetrixInstance {
   status:               MetrixInstanceStatus;
   createdAt:            string;
   maxUsuarios?:         number | null;
+  effectiveMaxUsuarios?: number | null;
   maxSucursales?:       number | null;
   effectiveMaxSucursales?: number | null;
   sucursalesContratadas?: number | null;
