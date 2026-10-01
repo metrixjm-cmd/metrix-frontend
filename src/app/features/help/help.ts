@@ -234,6 +234,11 @@ export class Help {
           answer:   'Al activar un plan suele haber días de prueba (por defecto 7) sin cobro. Mientras está vigente verás un aviso con los días que quedan y un enlace para pagar. Cuando termina la prueba, hay que activar el plan para seguir operando. Admin 0 puede alargar o acortar esos días desde Clientes METRIX.',
         },
         {
+          id: 'a5',
+          question: '¿Puedo sumar más usuarios a mi plan?',
+          answer:   'Sí, un solo paquete por licencia. El tamaño (por defecto 10) y el precio los define Admin 0 en cada plan. El ADMIN lo paga en Más usuarios; cubre 30 días. Si no se renueva, el cupo vuelve al del plan: los colaboradores que ya existen siguen, pero no se pueden crear más por encima de ese límite. Comprar de nuevo alarga el periodo; no suma un segundo paquete.',
+        },
+        {
           id: 'a4',
           question: '¿Por qué no veo Capacitación, Exámenes o Gamificación?',
           answer:   'Esos módulos dependen del plan. Si no están incluidos, el menú y las secciones premium del Banco no aparecen. Dashboard, Tareas, Incidencias, Reportes (ADMIN/GERENTE) y el Banco de Datos núcleo sí están en todos los planes. En login, "Ver planes" abre el catálogo público.',

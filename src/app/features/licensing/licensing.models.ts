@@ -30,6 +30,10 @@ export interface LicensePackage {
 
   minUsuarios:   number | null;
   maxUsuarios:   number | null;
+  /** Usuarios del único paquete extra. Default 10. */
+  usuariosPorPaquete?: number;
+  /** Precio del paquete por 30 días. 0 = no se ofrece. */
+  precioPaqueteUsuarios?: number;
   minSucursales: number | null;
   maxSucursales: number | null;
 
