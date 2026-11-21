@@ -179,6 +179,7 @@ export class TaskList implements OnInit, OnDestroy {
   confirmCompleteId = signal<string | null>(null);
   successTaskId = signal<string | null>(null);
   successTaskTitle = signal('');
+  successOverdueDueAt = signal<string | null>(null);  // fecha de vencimiento si se finalizó fuera de plazo
 
   // ── Justificación de procesos incompletos ────────────────────────────
   justifyTask     = signal<TaskResponse | null>(null);
@@ -284,6 +285,7 @@ export class TaskList implements OnInit, OnDestroy {
     this.completingTaskId.set(task.id);
     this.actionError.set(null);
     const allDone = !task.processes?.length || task.processes.every(p => p.completed);
+    const overdueDueAt = task.dueAt && new Date(task.dueAt).getTime() < Date.now() ? task.dueAt : null;
     const request = allDone
       ? { newStatus: 'COMPLETED' as const }
       : {
@@ -298,12 +300,14 @@ export class TaskList implements OnInit, OnDestroy {
         if (allDone) {
           this.successTaskId.set(task.id);
           this.successTaskTitle.set(task.title);
+          this.successOverdueDueAt.set(overdueDueAt);
           setTimeout(() => {
             if (this.successTaskId() === task.id) {
               this.successTaskId.set(null);
               this.successTaskTitle.set('');
+              this.successOverdueDueAt.set(null);
             }
-          }, 4000);
+          }, overdueDueAt ? 6000 : 4000);
         }
       },
       error: (err) => { this.completingTaskId.set(null); this.actionError.set(this.extractMsg(err)); },

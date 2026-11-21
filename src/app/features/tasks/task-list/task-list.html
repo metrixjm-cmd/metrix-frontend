@@ -409,6 +409,11 @@
                 </div>
                 <p class="text-emerald-300 font-bold text-base">Excelente trabajo</p>
                 <p class="text-emerald-400 text-sm mt-1">Tarea completada exitosamente</p>
+                @if (successOverdueDueAt()) {
+                  <p class="text-amber-300 text-xs font-medium mt-2 px-3">
+                    Tarea vencida — venció el {{ successOverdueDueAt() | appDate:'due' }}. Se registró como completada fuera de plazo.
+                  </p>
+                }
                 <div class="flex items-center justify-center gap-1 mt-2">
                   <span class="text-lg animate-[bounce_1s_ease-in-out_infinite]" style="animation-delay: 0s">&#127881;</span>
                   <span class="text-lg animate-[bounce_1s_ease-in-out_infinite]" style="animation-delay: 0.15s">&#11088;</span>
@@ -906,7 +911,7 @@
   <!-- Modal justificación de procesos incompletos -->
   @if (justifyTask()) {
     <div class="fixed inset-0 z-[110] bg-black/50 backdrop-blur-[1px] flex items-center justify-center p-4">
-      <div class="w-full max-w-md bg-white/[0.04] border border-white/10 rounded-2xl">
+      <div class="w-full max-w-md bg-[#0e1628] border border-white/10 rounded-2xl">
         <div class="px-5 py-4 border-b border-white/[0.06]">
           <div class="flex items-center justify-between mb-1">
             <p class="text-xs font-semibold uppercase tracking-wide text-amber-400">Proceso incompleto</p>
