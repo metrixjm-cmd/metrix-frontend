@@ -596,7 +596,7 @@
                         @if (task.isRecurring && task.dayHistory?.length) {
                           <div class="w-full rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2">
                             <p class="text-[10px] font-semibold uppercase tracking-wider text-white/40">Días anteriores</p>
-                            @for (day of task.dayHistory.slice(-3); track day.date) {
+                            @for (day of task.dayHistory!.slice(-3); track day.date) {
                               <p class="mt-1 text-xs text-white/70">{{ cycleDateLabel(day.date) }} · {{ cycleStatus(day.status) }}</p>
                             }
                           </div>
