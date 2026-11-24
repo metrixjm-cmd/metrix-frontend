@@ -64,18 +64,46 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "deploy": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.deploy.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "host": "127.0.0.1",
+            "port": 4200
+          },
           "configurations": {
             "production": {
               "buildTarget": "metrix-app:build:production"
             },
             "development": {
               "buildTarget": "metrix-app:build:development"
+            },
+            "deploy": {
+              "buildTarget": "metrix-app:build:deploy"
             }
           },
           "defaultConfiguration": "development"

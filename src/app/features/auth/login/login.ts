@@ -9,6 +9,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService }  from '../services/auth.service';
 import { APP_VERSION }  from '../../../../environments/app-version';
+import { environment } from '../../../../environments/environment';
 import { PwaInstall } from '../../../shared/components/pwa-install/pwa-install';
 
 @Component({
@@ -33,6 +34,9 @@ export class Login {
   readonly isLoading    = signal(false);
   readonly errorMessage = signal('');
   readonly showPassword = signal(false);
+  readonly credentialsOpen = signal(false);
+  readonly showLocalCredentials = environment.showLocalCredentials;
+  readonly localCredentials = environment.localCredentials;
   readonly currentYear  = new Date().getFullYear();
   readonly appVersion   = APP_VERSION;
 
@@ -52,6 +56,19 @@ export class Login {
 
   togglePassword(): void {
     this.showPassword.update(v => !v);
+  }
+
+  toggleCredentials(): void {
+    this.credentialsOpen.update(v => !v);
+  }
+
+  usarCredencial(credencial: { codigoEmpresa: string; numeroUsuario: string; password: string }): void {
+    this.form.patchValue({
+      codigoEmpresa: credencial.codigoEmpresa,
+      numeroUsuario: credencial.numeroUsuario,
+      password: credencial.password,
+    });
+    this.errorMessage.set('');
   }
 
   onSubmit(): void {

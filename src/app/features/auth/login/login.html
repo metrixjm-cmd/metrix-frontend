@@ -258,6 +258,35 @@
           }
         </button>
 
+        @if (showLocalCredentials) {
+          <button
+            type="button"
+            (click)="toggleCredentials()"
+            class="w-full py-2 px-4 border border-white/15 text-white/70 hover:text-white hover:border-white/30
+                   text-sm font-medium rounded-lg transition-colors"
+          >
+            {{ credentialsOpen() ? 'Ocultar credenciales' : 'Credenciales locales' }}
+          </button>
+
+          @if (credentialsOpen()) {
+            <div class="space-y-2">
+              @for (credencial of localCredentials; track credencial.numeroUsuario) {
+                <button
+                  type="button"
+                  (click)="usarCredencial(credencial)"
+                  class="w-full text-left p-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-cyan-400/40"
+                >
+                  <p class="text-sm font-semibold text-white">{{ credencial.rol }}</p>
+                  <p class="mt-1 text-xs text-white/60">Plataforma {{ credencial.codigoEmpresa }}</p>
+                  <p class="text-xs text-white/60">Usuario {{ credencial.numeroUsuario }}</p>
+                  <p class="text-xs text-white/60">Contraseña {{ credencial.password }}</p>
+                </button>
+              }
+              <p class="text-xs text-white/40">Pulsa una cuenta para llenar el formulario. Luego inicia sesión.</p>
+            </div>
+          }
+        }
+
       </form>
 
       <div class="mt-6">
