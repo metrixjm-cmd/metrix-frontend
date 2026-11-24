@@ -59,7 +59,7 @@ export class Help {
         {
           id: 't2',
           question: '¿Qué significa cada estado de tarea?',
-          answer:   'Pendiente: asignada, aún no inicia. En Progreso: el asignado la empezó. Completada: se cerró con éxito (estado terminal). Fallida: no se pudo completar. Solo el asignado cambia Pendiente → En Progreso → Completada o Fallida. Para Completar hacen falta al menos una evidencia, todos los pasos del checklist y que el plazo no haya vencido. Si ya venció, hay que marcarla Fallida con la causa. El GERENTE ve "Mis Tareas" (las que le asignó el ADMIN) y "Tareas Delegadas" (las de su equipo).',
+          answer:   'Pendiente: asignada, aún no inicia. En Progreso: el asignado la empezó. Completada: se cerró con éxito (estado terminal). Fallida: no se pudo completar. Solo el asignado cambia Pendiente → En Progreso → Completada o Fallida. Para Completar hacen falta al menos una evidencia y todos los pasos del checklist. Si el plazo ya venció, igual se puede Completar: queda registrada como fuera de plazo y baja el On-Time. El GERENTE ve "Mis Tareas" (las que le asignó el ADMIN) y "Tareas Delegadas" (las de su equipo).',
         },
         {
           id: 't3',
@@ -74,7 +74,7 @@ export class Help {
         {
           id: 't4',
           question: '¿Qué pasa si una tarea falla?',
-          answer:   'El asignado la marca Fallida y escribe el motivo (mínimo 10 caracteres). Completada no se reabre. Si el plazo ya pasó, tampoco se Completa: hay que fallarla con la causa. Cada Fallida suma al KPI de Re-trabajo (tareas con al menos un fallo) y afecta el Over-all. Hoy no hay un botón para reabrir una Fallida: si hay que repetir el trabajo, se asigna de nuevo.',
+          answer:   'El asignado la marca Fallida y escribe el motivo (mínimo 10 caracteres). Completada no se reabre. Si el plazo ya pasó, se puede Completar igual: queda fuera de plazo en las métricas. Fallida es cuando no se pudo hacer el trabajo. Cada Fallida suma al KPI de Re-trabajo (tareas con al menos un fallo) y afecta el Over-all. Hoy no hay un botón para reabrir una Fallida: si hay que repetir el trabajo, se asigna de nuevo.',
         },
         {
           id: 't5',

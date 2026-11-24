@@ -298,6 +298,9 @@
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
         <p class="text-xl md:text-2xl font-bold text-emerald-600">{{ report.totalCompleted }}</p>
         <p class="text-xs text-white/50 mt-1">Completadas</p>
+        @if (report.totalCompletedLate) {
+          <p class="text-[11px] text-amber-300 mt-1">{{ report.totalCompletedLate }} fuera de plazo</p>
+        }
       </div>
       <div class="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center">
         <p class="text-xl md:text-2xl font-bold text-red-600">{{ report.totalFailed }}</p>
