@@ -1,9 +1,10 @@
-import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../notifications/notification.service';
 import {
   CreateTaskRequest,
   EvidenceUploadResponse,
@@ -21,9 +22,15 @@ import {
  */
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private readonly http       = inject(HttpClient);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly apiUrl     = `${environment.apiUrl}/tasks`;
+  private readonly http          = inject(HttpClient);
+  private readonly destroyRef    = inject(DestroyRef);
+  private readonly notifications = inject(NotificationService);
+  private readonly apiUrl        = `${environment.apiUrl}/tasks`;
+  private reloadSilent: (() => void) | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Reloj para marcar vencidas sin esperar a recargar. */
+  private readonly nowMs = signal(Date.now());
 
   // ── Estado reactivo ──────────────────────────────────────────────────────
   private readonly _tasks        = signal<TaskResponse[]>([]);
@@ -42,26 +49,51 @@ export class TaskService {
   readonly completedCount  = computed(() => this._tasks().filter(t => t.status === 'COMPLETED').length);
   readonly failedCount     = computed(() => this._tasks().filter(t => t.status === 'FAILED').length);
 
+  constructor() {
+    const clock = setInterval(() => this.nowMs.set(Date.now()), 15_000);
+    this.destroyRef.onDestroy(() => clearInterval(clock));
+
+    effect(() => {
+      const tick = this.notifications.taskSyncTick();
+      if (tick === 0) return;
+      untracked(() => this.scheduleRefresh());
+    });
+  }
+
+  /** Tarea abierta cuya hora límite ya pasó. Las repetitivas no tienen un vencimiento único. */
+  isOverdue(task: TaskResponse): boolean {
+    if (task.status === 'COMPLETED' || task.status === 'FAILED') return false;
+    if (task.isRecurring) return false;
+    if (!task.dueAt) return false;
+    return new Date(task.dueAt).getTime() < this.nowMs();
+  }
+
   // ── GET /admin/all — Todas las tareas del sistema (solo ADMIN) ────────────
 
-  loadAllTasks(): void {
-    this._loading.set(true);
-    this._error.set(null);
+  loadAllTasks(silent = false): void {
+    this.reloadSilent = () => this.loadAllTasks(true);
+    if (!silent) {
+      this._loading.set(true);
+      this._error.set(null);
+    }
 
     this.http
       .get<TaskResponse[]>(`${this.apiUrl}/admin/all`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
-        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); if (!silent) this._loading.set(false); },
+        error: err   => { if (!silent) { this._error.set(this.extractMessage(err)); this._loading.set(false); } },
       });
   }
 
   // ── GET /my — Tareas del usuario autenticado ─────────────────────────────
 
-  loadMyTasks(shift?: TaskShift): void {
-    this._loading.set(true);
-    this._error.set(null);
+  loadMyTasks(shift?: TaskShift, silent = false): void {
+    this.reloadSilent = () => this.loadMyTasks(shift, true);
+    if (!silent) {
+      this._loading.set(true);
+      this._error.set(null);
+    }
 
     let params = new HttpParams();
     if (shift) params = params.set('shift', shift);
@@ -70,16 +102,19 @@ export class TaskService {
       .get<TaskResponse[]>(`${this.apiUrl}/my`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
-        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); if (!silent) this._loading.set(false); },
+        error: err   => { if (!silent) { this._error.set(this.extractMessage(err)); this._loading.set(false); } },
       });
   }
 
   // ── GET /store/{storeId} — Tareas de una sucursal (ADMIN / GERENTE) ──────
 
-  loadTasksByStore(storeId: string, shift?: TaskShift): void {
-    this._loading.set(true);
-    this._error.set(null);
+  loadTasksByStore(storeId: string, shift?: TaskShift, silent = false): void {
+    this.reloadSilent = () => this.loadTasksByStore(storeId, shift, true);
+    if (!silent) {
+      this._loading.set(true);
+      this._error.set(null);
+    }
 
     let params = new HttpParams();
     if (shift) params = params.set('shift', shift);
@@ -88,16 +123,19 @@ export class TaskService {
       .get<TaskResponse[] | { content?: TaskResponse[] }>(`${this.apiUrl}/store/${storeId}`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  response => { this.setTasks(response); this._loading.set(false); },
-        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+        next:  response => { this.setTasks(response); if (!silent) this._loading.set(false); },
+        error: err   => { if (!silent) { this._error.set(this.extractMessage(err)); this._loading.set(false); } },
       });
   }
 
   // ── GET /user/{userId} — Portfolio de un colaborador (ADMIN / GERENTE) ───
 
-  loadTasksByUser(userId: string, shift?: TaskShift): void {
-    this._loading.set(true);
-    this._error.set(null);
+  loadTasksByUser(userId: string, shift?: TaskShift, silent = false): void {
+    this.reloadSilent = () => this.loadTasksByUser(userId, shift, true);
+    if (!silent) {
+      this._loading.set(true);
+      this._error.set(null);
+    }
 
     let params = new HttpParams();
     if (shift) params = params.set('shift', shift);
@@ -106,25 +144,37 @@ export class TaskService {
       .get<TaskResponse[]>(`${this.apiUrl}/user/${userId}`, { params })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  tasks => { this.setTasks(tasks); this._loading.set(false); },
-        error: err   => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+        next:  tasks => { this.setTasks(tasks); if (!silent) this._loading.set(false); },
+        error: err   => { if (!silent) { this._error.set(this.extractMessage(err)); this._loading.set(false); } },
       });
   }
 
   // ── GET /{id} — Detalle de una tarea ────────────────────────────────────
 
-  loadTaskById(id: string): void {
-    this._loading.set(true);
-    this._error.set(null);
-    this._selectedTask.set(null);
+  loadTaskById(id: string, silent = false): void {
+    if (!silent) {
+      this._loading.set(true);
+      this._error.set(null);
+      this._selectedTask.set(null);
+    }
 
     this.http
       .get<TaskResponse>(`${this.apiUrl}/${id}`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  task => { this._selectedTask.set(task); this._loading.set(false); },
-        error: err  => { this._error.set(this.extractMessage(err)); this._loading.set(false); },
+        next:  task => { this._selectedTask.set(task); if (!silent) this._loading.set(false); },
+        error: err  => { if (!silent) { this._error.set(this.extractMessage(err)); this._loading.set(false); } },
       });
+  }
+
+  private scheduleRefresh(): void {
+    if (this.refreshTimer !== null) clearTimeout(this.refreshTimer);
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null;
+      this.reloadSilent?.();
+      const selectedId = this._selectedTask()?.id;
+      if (selectedId) this.loadTaskById(selectedId, true);
+    }, 400);
   }
 
   // ── POST / — Crear tarea (ADMIN / GERENTE) ───────────────────────────────

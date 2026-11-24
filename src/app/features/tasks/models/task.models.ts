@@ -51,6 +51,8 @@ export interface TaskResponse {
   recurrenceDays:     string[];
   recurrenceStartTime: string | null;
   recurrenceEndTime:   string | null;
+  cycleDate?:          string | null;
+  dayHistory?:         { date: string; status: 'COMPLETED' | 'FAILED' | 'MISSED'; onTime?: boolean | null }[];
 
   createdBy: string;
   createdAt: string;

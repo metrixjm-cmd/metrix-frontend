@@ -9,7 +9,14 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge/st
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { AppDatePipe } from '../../../shared/pipes/app-date.pipe';
 import { TimeFormatPipe } from '../../../shared/pipes/time-format.pipe';
-import { CATEGORY_LABELS, SHIFT_LABELS } from '../models/task.models';
+import { CATEGORY_LABELS, SHIFT_LABELS, ProcessStepResponse, TaskResponse } from '../models/task.models';
+import {
+  cycleStatusLabel,
+  formatCycleDate,
+  isOperationalDay,
+  operationalToday,
+  stepStillOpen as markStepStillOpen,
+} from '../recurring-day';
 import { EvidenceUpload } from '../evidence-upload/evidence-upload';
 
 @Component({
@@ -19,6 +26,7 @@ import { EvidenceUpload } from '../evidence-upload/evidence-upload';
   templateUrl: './task-detail.html',
 })
 export class TaskDetail implements OnInit {
+  readonly today = operationalToday();
   readonly auth    = inject(AuthService);
   readonly taskSvc = inject(TaskService);
   private readonly settingsSvc = inject(SettingsService);
@@ -289,6 +297,22 @@ export class TaskDetail implements OnInit {
     if (hrs < 24) return remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
     const days = Math.floor(hrs / 24);
     return `${days}d ${hrs % 24}h`;
+  }
+
+  stepStillOpen(task: TaskResponse, step: ProcessStepResponse): boolean {
+    return markStepStillOpen(task.status, step.completed);
+  }
+
+  isToday(day: string): boolean {
+    return isOperationalDay(day, this.today.code);
+  }
+
+  cycleDateLabel(iso: string): string {
+    return formatCycleDate(iso);
+  }
+
+  cycleStatus(status: string): string {
+    return cycleStatusLabel(status);
   }
 
   getProcessReason(processTitle: string): string | null {
