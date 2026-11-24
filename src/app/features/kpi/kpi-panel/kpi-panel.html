@@ -188,6 +188,9 @@
             <div class="py-4 border-r border-white/[0.06]">
               <p class="text-2xl font-bold" [style.color]="pipelineHex.completed">{{ p.completed }}</p>
               <p class="text-white/50 font-medium mt-0.5">Completadas</p>
+              @if (p.completedLate > 0) {
+                <p class="text-[10px] text-amber-300 mt-1">{{ p.completedLate }} fuera de plazo</p>
+              }
             </div>
             <div class="py-4">
               <p class="text-2xl font-bold" [style.color]="pipelineHex.failed">{{ p.failed }}</p>

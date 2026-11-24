@@ -91,6 +91,8 @@ export interface KpiSummary {
   pipelineInProgress: number;
   pipelineCompleted: number;
   pipelineFailed: number;
+  /** Completadas con plazo vencido. Ausente en respuestas viejas. */
+  completedLate?: number;
   sparklineOnTime: number[];
   sparklineIgeo: number[];
   sparklineTaskTitles: string[];
@@ -146,6 +148,7 @@ export interface DailyReportResponse {
   totalCompleted: number;
   totalFailed: number;
   totalPending: number;
+  totalCompletedLate?: number;
 }
 
 // ── Sprint 17 — Over-all Analítico (microservicio Python analytics-service) ──────

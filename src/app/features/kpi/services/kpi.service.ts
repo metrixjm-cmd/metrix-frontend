@@ -108,7 +108,10 @@ export class KpiService {
         deltaUp:  true,
         // El denominador son las tareas cerradas (completadas + fallidas), no
         // solo las completadas — ver KpiServiceImpl.computeOnTimeRate.
-        sub:      'Tareas cerradas dentro de plazo',
+        // Las completadas tarde bajan este % y además se cuentan aparte.
+        sub:      (s.completedLate ?? 0) > 0
+          ? `Tareas cerradas dentro de plazo · ${s.completedLate} fuera de plazo`
+          : 'Tareas cerradas dentro de plazo',
         data:     s.sparklineOnTime,
         taskTitles: s.sparklineOnTime.length > 0 ? s.sparklineTaskTitles : [],
         viz:      'trend',
@@ -152,6 +155,7 @@ export class KpiService {
       inProgress: s.pipelineInProgress,
       completed:  s.pipelineCompleted,
       failed:     s.pipelineFailed,
+      completedLate: s.completedLate ?? 0,
     };
   });
 

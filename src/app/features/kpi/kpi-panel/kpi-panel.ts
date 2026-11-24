@@ -458,6 +458,7 @@ export class KpiPanel implements OnInit {
     return {
       pending: s.pipelinePending, inProgress: s.pipelineInProgress,
       completed: s.pipelineCompleted, failed: s.pipelineFailed,
+      completedLate: s.completedLate ?? 0,
       total: s.pipelinePending + s.pipelineInProgress + s.pipelineCompleted + s.pipelineFailed,
     };
   });

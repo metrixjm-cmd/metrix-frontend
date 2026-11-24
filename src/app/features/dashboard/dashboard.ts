@@ -87,11 +87,13 @@ export class Dashboard implements OnInit {
 
   readonly pipelineSteps = computed(() => {
     const c = this.kpiSvc.pipelineCounts();
+    const late = c?.completedLate ?? 0;
     return [
-      { label: 'Asignada',    color: 'text-white/50',    bg: 'bg-white/[0.08]',    count: c?.pending    ?? 0 },
-      { label: 'En Progreso', color: 'text-blue-400',    bg: 'bg-blue-500/[0.15]', count: c?.inProgress ?? 0 },
-      { label: 'Completada',  color: 'text-emerald-400', bg: 'bg-emerald-500/[0.15]', count: c?.completed ?? 0 },
-      { label: 'Fallida',     color: 'text-red-400',     bg: 'bg-red-500/[0.15]',  count: c?.failed     ?? 0 },
+      { label: 'Asignada',    color: 'text-white/50',    bg: 'bg-white/[0.08]',    count: c?.pending    ?? 0, hint: '' },
+      { label: 'En Progreso', color: 'text-blue-400',    bg: 'bg-blue-500/[0.15]', count: c?.inProgress ?? 0, hint: '' },
+      { label: 'Completada',  color: 'text-emerald-400', bg: 'bg-emerald-500/[0.15]', count: c?.completed ?? 0,
+        hint: late > 0 ? `${late} fuera de plazo` : '' },
+      { label: 'Fallida',     color: 'text-red-400',     bg: 'bg-red-500/[0.15]',  count: c?.failed     ?? 0, hint: '' },
     ];
   });
 

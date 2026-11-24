@@ -18,6 +18,13 @@ import {
   SHIFT_LABELS,
   STATUS_LABELS,
 } from '../models/task.models';
+import {
+  cycleStatusLabel,
+  formatCycleDate,
+  isOperationalDay,
+  operationalToday,
+  stepStillOpen as markStepStillOpen,
+} from '../recurring-day';
 
 @Component({
   selector: 'app-task-list',
@@ -642,9 +649,26 @@ export class TaskList implements OnInit, OnDestroy {
   }
 
   isOverdue(task: TaskResponse): boolean {
-    if (task.status === 'COMPLETED' || task.status === 'FAILED') return false;
-    if (task.isRecurring) return false;
-    return new Date(task.dueAt) < new Date();
+    return this.taskSvc.isOverdue(task);
+  }
+
+  readonly today = operationalToday();
+
+  /** Paso sin marcar en una tarea que sigue abierta: todavía no está mal. */
+  stepStillOpen(task: TaskResponse, step: ProcessStepResponse): boolean {
+    return markStepStillOpen(task.status, step.completed);
+  }
+
+  isToday(day: string): boolean {
+    return isOperationalDay(day, this.today.code);
+  }
+
+  cycleDateLabel(iso: string): string {
+    return formatCycleDate(iso);
+  }
+
+  cycleStatus(status: string): string {
+    return cycleStatusLabel(status);
   }
 
   getCategoryLabel(category: string): string {

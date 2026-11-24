@@ -34,11 +34,14 @@ export class NotificationService {
 
   private readonly _notifications = signal<AppNotification[]>([]);
   private readonly _connected     = signal(false);
+  /** Sube en cada aviso de tarea. La lista de actividades se vuelve a pedir. */
+  private readonly _taskSyncTick  = signal(0);
   /** Sin leer según la base. Sólo cuenta las persistidas. */
   private readonly _serverUnread  = signal(0);
 
   readonly notifications = this._notifications.asReadonly();
   readonly connected     = this._connected.asReadonly();
+  readonly taskSyncTick  = this._taskSyncTick.asReadonly();
 
   /**
    * Número de notificaciones no leídas.
@@ -87,6 +90,10 @@ export class NotificationService {
 
       this.eventSource.addEventListener('connected', () => {
         this.zone.run(() => this._connected.set(true));
+      });
+
+      this.eventSource.addEventListener('task-sync', () => {
+        this.zone.run(() => this._taskSyncTick.update(n => n + 1));
       });
 
       this.eventSource.addEventListener('notification', (event: MessageEvent) => {
